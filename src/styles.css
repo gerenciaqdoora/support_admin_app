@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1a2b48;
+  --color-primary-light: #2d4a7c;
+  --color-accent: #3b82f6;
+  
+  /* Estados de Ticket */
+  --color-support-open: #f59e0b;
+  --color-support-progress: #3b82f6;
+  --color-support-resolved: #10b981;
+  --color-support-closed: #64748b;
+  
+  --font-family-sans: "Inter", ui-sans-serif, system-ui;
+  
+  /* Glassmorphism utility */
+  --backdrop-blur-glass: blur(12px);
+  --bg-glass: rgba(255, 255, 255, 0.7);
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-slate-50;
+    font-family: var(--font-family-sans);
+  }
+}
+
+/* Micro-animations */
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+}
+
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur-glass);
+  @apply border border-white/20 shadow-xl;
+}

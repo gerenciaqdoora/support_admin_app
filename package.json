@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --host 0.0.0.0 --port 4203 --poll 2000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -17,6 +17,8 @@
     "@angular/forms": "^22.0.0-next.0",
     "@angular/platform-browser": "^22.0.0-next.0",
     "@angular/router": "^22.0.0-next.0",
+    "apexcharts": "^5.10.6",
+    "ng-apexcharts": "^2.4.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -24,9 +26,14 @@
     "@angular/build": "^22.0.0-next.5",
     "@angular/cli": "^22.0.0-next.5",
     "@angular/compiler-cli": "^22.0.0-next.0",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@vitest/browser": "^4.1.5",
     "jsdom": "^28.0.0",
+    "postcss": "^8.5.10",
     "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.5",
+    "webdriverio": "^9.27.0"
   }
 }
