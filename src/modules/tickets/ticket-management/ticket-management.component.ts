@@ -807,7 +807,7 @@ export class TicketManagementComponent implements OnInit {
       { id: 'comments', label: 'COMENTARIOS', icon: '💬', count: this.ticket()?.interactions?.length || 0 }
     ];
 
-    if (this._authService.isSupportRole()) {
+    if (this._authService.hasPortalAccess()) {
       baseTabs.push({ id: 'forensic', label: 'TRAZABILIDAD TÉCNICA', icon: '🛡️' });
 
       if (this.chatSessionStatus() === 'REQUESTED' || this.chatSessionStatus() === 'ACTIVE') {

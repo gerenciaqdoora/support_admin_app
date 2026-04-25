@@ -12,9 +12,9 @@ export const authGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // Verificar si tiene el rol de soporte
-  if (!authService.isSupportRole()) {
-    // Si está autenticado pero no es soporte, expulsar
+  // Verificar si tiene el rol de acceso al portal (Soporte o Admin)
+  if (!authService.hasPortalAccess()) {
+    // Si está autenticado pero no tiene el rol permitido, expulsar
     authService.logout();
     return false;
   }

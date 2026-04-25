@@ -20,6 +20,8 @@ export class AuthService {
   public currentUser = signal<User | null>(this._getUserFromStorage());
   public isAuthenticated = computed(() => this.currentUser() !== null);
   public isSupportRole = computed(() => this.currentUser()?.role === 'SUPPORT_ROLE');
+  public isAdminRole = computed(() => this.currentUser()?.role === 'ADMIN_ROLE');
+  public hasPortalAccess = computed(() => this.isSupportRole() || this.isAdminRole());
 
   constructor() {}
 

@@ -145,6 +145,32 @@ export class ShellComponent implements OnInit {
   }
 
   loadNavigation() {
+    if (this.auth.isAdminRole()) {
+      // Navegación completa forzada para Administradores
+      const fullNav = [
+        {
+          id: 'support',
+          title: 'Gestión Operativa',
+          children: [
+            { id: 'dashboard', title: 'Tablero', link: '/dashboard', icon: '📊' },
+            { id: 'tickets', title: 'Tickets', link: '/tickets', icon: '🎟️' },
+            { id: 'subscribers', title: 'Suscriptores', link: '/subscribers', icon: '👥' }
+          ]
+        },
+        {
+          id: 'admin',
+          title: 'Control y Auditoría TI',
+          children: [
+            { id: 'logs-ti', title: 'Logs TI', link: '/logs-ti', icon: '📜' },
+            { id: 'reports', title: 'Reportes', link: '/reports', icon: '📊' },
+            { id: 'help-center', title: 'Centro de Ayuda', link: '/help-center', icon: '📚' }
+          ]
+        }
+      ];
+      this.navigation.set(fullNav);
+      return;
+    }
+
     this.auth.getNavigation().subscribe({
       next: (nav) => {
         // Traducir 'Dashboard' a 'Tablero' en la navegación de forma robusta
