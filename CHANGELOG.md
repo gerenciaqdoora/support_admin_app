@@ -1,12 +1,11 @@
-# Changelog - support-portal
+# Historial de Cambios (Changelog) - support-portal
 
-All notable changes to this project will be documented in this file.
+Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
-- [2026-04-25] feat(security): implement enterprise support authentication and security hardening
+- [2026-04-25] feat(security): implementar autenticación de soporte empresarial y endurecimiento de seguridad
 
-- [2026-04-25] feat(auth): [security] extract user role from signed JWT claims (QD-01)
+- [2026-04-25] feat(auth): [security] extraer rol de usuario de los claims firmados del JWT (QD-01)
 
-- [2026-04-22] feat(ui): modernize subscriber directory with forensic dashboard and premium details
-
+- [2026-04-22] feat(ui): modernizar el directorio de suscriptores con un panel forense y detalles premium
