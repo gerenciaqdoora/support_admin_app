@@ -34,6 +34,32 @@ import { CommonModule } from '@angular/common';
           </div>
         </div>
 
+        <!-- Role Selector -->
+        <div class="px-10 pt-8 pb-2 flex gap-2">
+          <button 
+            type="button"
+            (click)="setLoginType('support')"
+            [class.bg-blue-600]="loginType() === 'support'"
+            [class.text-white]="loginType() === 'support'"
+            [class.bg-slate-800]="loginType() !== 'support'"
+            [class.text-slate-400]="loginType() !== 'support'"
+            class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border border-white/5 active:scale-95 cursor-pointer"
+          >
+            Agente Soporte
+          </button>
+          <button 
+            type="button"
+            (click)="setLoginType('admin')"
+            [class.bg-cyan-600]="loginType() === 'admin'"
+            [class.text-white]="loginType() === 'admin'"
+            [class.bg-slate-800]="loginType() !== 'admin'"
+            [class.text-slate-400]="loginType() !== 'admin'"
+            class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 border border-white/5 active:scale-95 cursor-pointer"
+          >
+            Administrador TI
+          </button>
+        </div>
+
         <!-- Form -->
         <div class="p-10">
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-7">
@@ -145,6 +171,7 @@ export class LoginComponent implements OnInit {
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  loginType = signal<'support' | 'admin'>('support');
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -154,6 +181,11 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     this.checkRemembered();
+  }
+
+  setLoginType(type: 'support' | 'admin') {
+    this.loginType.set(type);
+    this.errorMessage.set(null);
   }
 
   checkRemembered() {
@@ -177,7 +209,7 @@ export class LoginComponent implements OnInit {
 
     const { email, password, remember } = this.loginForm.value;
 
-    this.authService.login({ email: email!, password: password! }).subscribe({
+    this.authService.login({ email: email!, password: password! }, this.loginType()).subscribe({
       next: () => {
         if (remember) {
           localStorage.setItem('remembered_email', email!);

@@ -33,26 +33,18 @@ interface Breadcrumb {
         </div>
 
         <nav class="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto custom-scrollbar">
-          <a routerLink="/dashboard" routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer">
-            <span class="text-lg">📊</span>
-            Dashboard
-          </a>
-          <a routerLink="/tickets" routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer">
-            <span class="text-lg">🎫</span>
-            Tickets
-          </a>
-          <a routerLink="/subscribers" routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer">
-            <span class="text-lg">👥</span>
-            Suscriptores
-          </a>
-          <a routerLink="/reports" routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer">
-            <span class="text-lg">📈</span>
-            Reportes
-          </a>
-          <a routerLink="/logs-ti" routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm border border-transparent hover:border-white/10 cursor-pointer">
-            <span class="text-lg">📋</span>
-            Explorador de Logs
-          </a>
+          @for (section of navigation(); track section.id) {
+            @for (item of section.children; track item.id) {
+              <a [routerLink]="item.link" 
+                 routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" 
+                 [routerLinkActiveOptions]="{exact: item.link === '/dashboard'}" 
+                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer"
+              >
+                <span class="text-lg">{{ item.icon }}</span>
+                {{ item.title }}
+              </a>
+            }
+          }
         </nav>
 
         <div class="p-4 border-t border-white/5 bg-[#0f172a]/20">
@@ -106,7 +98,7 @@ interface Breadcrumb {
         </header>
 
         <!-- Page Area -->
-        <main class="flex-1 overflow-y-auto bg-[#f8fafc] p-8 custom-scrollbar">
+        <main class="flex-1 min-h-0 relative bg-[#f8fafc]">
           <router-outlet></router-outlet>
         </main>
       </div>
@@ -127,13 +119,22 @@ export class ShellComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
 
   breadcrumbs = signal<Breadcrumb[]>([]);
+  navigation = signal<any[]>([]);
 
   ngOnInit() {
     this.updateBreadcrumbs();
+    this.loadNavigation();
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateBreadcrumbs();
+    });
+  }
+
+  loadNavigation() {
+    this.auth.getNavigation().subscribe({
+      next: (nav) => this.navigation.set(nav),
+      error: () => {}
     });
   }
 

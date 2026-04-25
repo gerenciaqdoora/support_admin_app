@@ -21,12 +21,24 @@ export const routes: Routes = [
       {
         path: 'tickets',
         loadComponent: () => import('@modules/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
-        data: { breadcrumb: 'Tickets' }
+        data: { breadcrumb: 'Tickets' },
+        children: [
+          {
+            path: 'create',
+            loadComponent: () => import('@modules/tickets/ticket-create/ticket-create.component').then(m => m.TicketCreateComponent),
+            data: { breadcrumb: 'Nuevo Ticket' }
+          },
+          {
+            path: ':id',
+            loadComponent: () => import('@modules/tickets/ticket-preview/ticket-preview.component').then(m => m.TicketPreviewComponent),
+            data: { breadcrumb: 'Vista Previa' }
+          }
+        ]
       },
       {
-        path: 'tickets/:id',
-        loadComponent: () => import('@modules/tickets/ticket-detail/ticket-detail.component').then(m => m.TicketDetailComponent),
-        data: { breadcrumb: 'Detalle de Ticket' }
+        path: 'tickets/:id/manage',
+        loadComponent: () => import('@modules/tickets/ticket-management/ticket-management.component').then(m => m.TicketManagementComponent),
+        data: { breadcrumb: 'Gestión Forense' }
       },
       {
         path: 'subscribers',

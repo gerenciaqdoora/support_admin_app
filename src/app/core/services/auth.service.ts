@@ -24,10 +24,13 @@ export class AuthService {
   constructor() {}
 
   /**
-   * Authenticates the support agent and stores tokens
+   * Authenticates the user and stores tokens
+   * @param credentials Login credentials
+   * @param type Login type ('support' | 'admin')
    */
-  login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this._http.post<{ data: AuthResponse }>('/v1/login/support', credentials).pipe(
+  login(credentials: LoginCredentials, type: 'support' | 'admin' = 'support'): Observable<AuthResponse> {
+    const endpoint = `/v1/login/${type}`;
+    return this._http.post<{ data: AuthResponse }>(endpoint, credentials).pipe(
       map(res => res.data),
       tap((response) => this._setSession(response)),
       catchError(error => throwError(() => error))
@@ -86,6 +89,14 @@ export class AuthService {
   }
 
   private _setSession(authResult: AuthResponse): void {
+    // Extract role from JWT if it's missing in the user object (Security hardening QD-01)
+    if (!authResult.user.role && authResult.access_token) {
+      const decoded = this._decodeToken(authResult.access_token);
+      if (decoded && decoded.role) {
+        authResult.user.role = decoded.role;
+      }
+    }
+
     localStorage.setItem(this.ACCESS_TOKEN_KEY, authResult.access_token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, authResult.refresh_token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
@@ -100,12 +111,35 @@ export class AuthService {
     this._router.navigate(['/login']);
   }
 
+  /**
+   * Fetches the navigation structure for the current user
+   */
+  getNavigation(): Observable<any[]> {
+    return this._http.get<{ data: { navigation: any[] } }>('/v1/navigation').pipe(
+      map(res => res.data.navigation),
+      catchError(error => throwError(() => error))
+    );
+  }
+
   private _getUserFromStorage(): User | null {
     const userStr = localStorage.getItem(this.USER_KEY);
     if (!userStr) return null;
     try {
       return JSON.parse(userStr) as User;
     } catch {
+      return null;
+    }
+  }
+
+  private _decodeToken(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
       return null;
     }
   }
