@@ -16,7 +16,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('@modules/dashboard/dashboard.component').then(m => m.DashboardComponent),
-        data: { breadcrumb: 'Dashboard' }
+        data: { breadcrumb: 'Tablero' }
       },
       {
         path: 'tickets',

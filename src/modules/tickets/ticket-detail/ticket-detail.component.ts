@@ -125,7 +125,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
               </div>
               <div class="bg-green-50/30 rounded-3xl p-8 border border-green-100 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full bg-green-600 opacity-40"></div>
-                <div class="text-sm text-slate-800 font-black mb-4 uppercase tracking-tighter">Official Resolution</div>
+                <div class="text-sm text-slate-800 font-black mb-4 uppercase tracking-tighter">Resolución Oficial</div>
                 <div class="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
                   {{ ticket()?.solution || 'El caso ha sido marcado como resuelto satisfactoriamente.' }}
                 </div>

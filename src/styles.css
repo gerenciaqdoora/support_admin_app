@@ -5,6 +5,14 @@
   --color-primary-light: #2d4a7c;
   --color-accent: #3b82f6;
   
+  /* Enterprise Palette */
+  --color-enterprise-blue: #0052CC;
+  --color-enterprise-blue-hover: #0065FF;
+  --color-enterprise-text: #172B4D;
+  --color-enterprise-subtle: #6B778C;
+  --color-enterprise-border: #DFE1E6;
+  --color-enterprise-bg: #FFFFFF;
+  
   /* Estados de Ticket */
   --color-support-open: #f59e0b;
   --color-support-progress: #3b82f6;

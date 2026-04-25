@@ -14,74 +14,77 @@ interface Breadcrumb {
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="flex h-screen overflow-hidden bg-slate-50 font-sans">
-      <!-- Sidebar -->
-      <aside class="w-64 bg-[#1e293b] text-white flex-shrink-0 hidden lg:flex flex-col shadow-2xl z-20">
-        <!-- Logo QdoorA Oficial -->
-        <div class="p-8 flex flex-col items-center border-b border-white/5 bg-[#0f172a]/40">
-          <div class="flex items-center gap-3">
-            <svg width="180" height="50" viewBox="0 0 360 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Q -->
-              <circle cx="50" cy="50" r="38" stroke="#00BCD4" stroke-width="14" fill="none"/>
-              <path d="M72 75L90 95" stroke="#00BCD4" stroke-width="14" stroke-linecap="round"/>
-              <!-- doorA -->
-              <text x="105" y="75" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="78" fill="#FFFFFF" letter-spacing="-4">doorA</text>
-              <!-- Slogan -->
-              <text x="105" y="98" font-family="'Outfit', 'Inter', sans-serif" font-weight="700" font-size="11" fill="#94a3b8" letter-spacing="2.5">RENTABILIZA Y VALORA TU TRABAJO</text>
-            </svg>
-          </div>
+    <div class="flex h-screen overflow-hidden bg-[#f8fafc] font-sans">
+      
+      <!-- Premium Enterprise Sidebar (Navy Contrast) -->
+      <aside class="w-64 bg-[#172B4D] text-white flex-shrink-0 hidden lg:flex flex-col z-20 shadow-[8px_0_24px_rgba(0,0,0,0.1)]">
+        
+        <!-- Logo Section -->
+        <div class="p-4 flex flex-col items-center border-b border-white/5 bg-[#0d1b32]/40">
+           <img src="/images/qdoora/QdoorA-color-para-fondo-negro.png" class="h-28 w-auto object-contain" alt="Logo de QdoorA">
         </div>
 
-        <nav class="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <!-- Navigation Menu -->
+        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
           @for (section of navigation(); track section.id) {
+            @if (section.title) {
+              <div class="px-4 pt-4 pb-2 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                {{ section.title }}
+              </div>
+            }
             @for (item of section.children; track item.id) {
               <a [routerLink]="item.link" 
-                 routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white" 
+                 routerLinkActive="bg-blue-600 shadow-lg shadow-blue-900/40 text-white font-bold" 
                  [routerLinkActiveOptions]="{exact: item.link === '/dashboard'}" 
-                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer"
+                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white/5 group text-slate-400 font-bold text-sm cursor-pointer border border-transparent"
               >
-                <span class="text-lg">{{ item.icon }}</span>
-                {{ item.title }}
+                <span class="text-lg transition-transform group-hover:scale-110">{{ item.icon }}</span>
+                <span class="tracking-tight">{{ item.title }}</span>
+                
+                <!-- Active Indicator -->
+                <div class="ml-auto w-1 h-3 rounded-full bg-cyan-400 opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
               </a>
             }
           }
         </nav>
 
-        <div class="p-4 border-t border-white/5 bg-[#0f172a]/20">
-          <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5">
-            <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 overflow-hidden flex items-center justify-center">
-              <span class="text-blue-400 font-black text-xs">{{ auth.currentUser()?.name?.substring(0, 2)?.toUpperCase() }}</span>
+        <!-- User Profile Bottom -->
+        <div class="p-4 border-t border-white/5 bg-[#0d1b32]/20">
+          <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform">
+              <span class="text-white font-black text-xs">{{ auth.currentUser()?.name?.substring(0, 2)?.toUpperCase() }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-[11px] font-black text-white truncate">{{ auth.currentUser()?.name }}</p>
-              <p class="text-[9px] text-blue-400 font-bold uppercase tracking-tighter">{{ auth.currentUser()?.role }}</p>
+              <p class="text-[9px] text-cyan-400 font-black uppercase tracking-wider">{{ auth.currentUser()?.role }}</p>
             </div>
           </div>
         </div>
       </aside>
 
-      <!-- Main Content -->
+      <!-- Main Content Area -->
       <div class="flex-1 flex flex-col min-w-0 relative">
-        <!-- Header Premium con Glassmorphism -->
-        <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 z-40 sticky top-0">
+        
+        <!-- Header con Contraste Refinado -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-40 sticky top-0 shadow-sm">
           <div class="flex items-center gap-6">
             <button class="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors cursor-pointer">
                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round"/></svg>
             </button>
             
-            <!-- Breadcrumbs Premium -->
-            <nav class="flex items-center gap-3">
-              <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2">
+              <div class="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                 <a routerLink="/" class="hover:text-blue-600 transition-all">QdoorA</a>
                 <span class="text-slate-300">/</span>
               </div>
               @for (bc of breadcrumbs(); track bc.url; let last = $last) {
-                <div class="flex items-center gap-3 animate-in fade-in slide-in-from-left-1 duration-300">
+                <div class="flex items-center gap-2 animate-in fade-in slide-in-from-left-1 duration-300">
                   @if (last) {
-                    <span class="text-[11px] font-black text-slate-900 uppercase tracking-tight bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 shadow-sm">{{ bc.label }}</span>
+                    <span class="text-[11px] font-bold text-slate-900 tracking-tight bg-slate-50 px-3 py-1 rounded-md border border-slate-200">{{ bc.label }}</span>
                   } @else {
-                    <a [routerLink]="bc.url" class="text-[11px] font-black text-slate-400 hover:text-blue-600 uppercase tracking-tight transition-all">{{ bc.label }}</a>
-                    <span class="text-slate-300 text-[10px]">/</span>
+                    <a [routerLink]="bc.url" class="text-[11px] font-medium text-slate-500 hover:text-blue-600 tracking-tight transition-all">{{ bc.label }}</a>
+                    <span class="text-slate-300">/</span>
                   }
                 </div>
               }
@@ -89,17 +92,22 @@ interface Breadcrumb {
           </div>
           
           <div class="flex items-center gap-6">
-            <div class="h-8 w-px bg-slate-200/60"></div>
-            <button (click)="auth.logout()" class="group flex items-center gap-2.5 px-5 py-2.5 bg-white hover:bg-red-600 text-slate-700 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 hover:border-red-500 shadow-sm hover:shadow-lg hover:shadow-red-200 active:scale-95 cursor-pointer">
-              <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>Desconectarse</span>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <button (click)="auth.logout()" class="group flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Salir del Sistema</span>
             </button>
           </div>
         </header>
 
         <!-- Page Area -->
-        <main class="flex-1 min-h-0 relative bg-[#f8fafc]">
-          <router-outlet></router-outlet>
+        <main class="flex-1 min-h-0 relative bg-[#f4f7fa]">
+          <!-- Pattern Background sutil -->
+          <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#172B4D 1px, transparent 1px); background-size: 40px 40px;"></div>
+          
+          <div class="relative z-10 h-full overflow-y-auto custom-scrollbar">
+            <router-outlet></router-outlet>
+          </div>
         </main>
       </div>
     </div>
@@ -110,7 +118,12 @@ interface Breadcrumb {
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+    
+    .active {
+      background-color: #2563eb !important;
+      color: white !important;
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+    }
   `]
 })
 export class ShellComponent implements OnInit {
@@ -133,8 +146,18 @@ export class ShellComponent implements OnInit {
 
   loadNavigation() {
     this.auth.getNavigation().subscribe({
-      next: (nav) => this.navigation.set(nav),
-      error: () => {}
+      next: (nav) => {
+        // Traducir 'Dashboard' a 'Tablero' en la navegación de forma robusta
+        const translatedNav = nav.map(section => ({
+          ...section,
+          children: section.children?.map((item: any) => ({
+            ...item,
+            title: item.title?.trim().toLowerCase() === 'dashboard' ? 'Tablero' : item.title
+          })) || []
+        }));
+        this.navigation.set(translatedNav);
+      },
+      error: () => { }
     });
   }
 
