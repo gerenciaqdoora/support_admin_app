@@ -1,0 +1,365 @@
+<div class="max-w-5xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+  <!-- Header Section -->
+  <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        <span class="bg-blue-600 text-white p-1.5 rounded-lg shadow-lg shadow-blue-500/30 text-base"
+          >🚢</span
+        >
+        Nuevo Suscriptor Plan Aduana
+      </h1>
+      <p class="mt-1 text-slate-500 text-xs font-medium">
+        Complete los datos para configurar la nueva agencia de aduanas.
+      </p>
+    </div>
+    <a
+      routerLink="/subscribers"
+      class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      Ir al listado de suscriptores
+    </a>
+  </div>
+
+  <!-- Main Form Card -->
+  <div
+    class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden"
+  >
+    <!-- Alerts Area -->
+    <div #alertContainer>
+      @if (errorMessage()) {
+        <div
+          class="mx-6 mt-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-in zoom-in duration-300"
+        >
+          <div
+            class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white shrink-0"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-[10px] font-black text-red-900 uppercase tracking-wider">Error</p>
+            <p class="text-red-700 text-[10px] font-bold">{{ errorMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div
+          class="mx-6 mt-6 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3 animate-in zoom-in duration-300"
+        >
+          <div
+            class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shrink-0"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-[10px] font-black text-emerald-900 uppercase tracking-wider">¡Éxito!</p>
+            <p class="text-emerald-700 text-[10px] font-bold">{{ successMessage() }}</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 md:p-8 space-y-8">
+      <!-- Section 1: User Account -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-2">
+          <div class="w-1 h-4 bg-blue-500 rounded-full"></div>
+          <h2 class="text-sm font-black text-slate-800 uppercase tracking-tight">
+            Cuenta de Usuario
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Email -->
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Correo Electrónico</label
+            >
+            <input
+              formControlName="email"
+              type="email"
+              placeholder="admin@agencia.com"
+              [class.border-red-300]="form.get('email')?.invalid && form.get('email')?.touched"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- First Name -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Nombres</label
+            >
+            <input
+              formControlName="first_name"
+              type="text"
+              placeholder="John"
+              [class.border-red-300]="
+                form.get('first_name')?.invalid && form.get('first_name')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('first_name')?.invalid && form.get('first_name')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- Last Name -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Apellidos</label
+            >
+            <input
+              formControlName="last_name"
+              type="text"
+              placeholder="Doe"
+              [class.border-red-300]="
+                form.get('last_name')?.invalid && form.get('last_name')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('last_name')?.invalid && form.get('last_name')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- DNI -->
+          <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-1">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >RUT Personal</label
+            >
+            <input
+              formControlName="dni"
+              type="text"
+              placeholder="12.345.678-9"
+              (input)="formatRut($event, 'dni')"
+              [class.border-red-300]="form.get('dni')?.invalid && form.get('dni')?.touched"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('dni')?.invalid && form.get('dni')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="h-px bg-slate-100"></div>
+
+      <!-- Section 2: Company Data -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-2">
+          <div class="w-1 h-4 bg-cyan-400 rounded-full"></div>
+          <h2 class="text-sm font-black text-slate-800 uppercase tracking-tight">
+            Datos de la Empresa
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Social Reason -->
+          <div class="flex flex-col gap-1.5 md:col-span-3">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Razón Social</label
+            >
+            <input
+              formControlName="social_reason"
+              type="text"
+              placeholder="Agencia de Aduanas Doe Ltda."
+              [class.border-red-300]="
+                form.get('social_reason')?.invalid && form.get('social_reason')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('social_reason')?.invalid && form.get('social_reason')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- Company RUT -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >RUT Empresa</label
+            >
+            <input
+              formControlName="rut"
+              type="text"
+              placeholder="77.666.555-4"
+              (input)="formatRut($event, 'rut')"
+              [class.border-red-300]="form.get('rut')?.invalid && form.get('rut')?.touched"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('rut')?.invalid && form.get('rut')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- Agent Name -->
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Nombre Agente Aduana</label
+            >
+            <input
+              formControlName="agent_name"
+              type="text"
+              placeholder="John Doe Smith"
+              [class.border-red-300]="
+                form.get('agent_name')?.invalid && form.get('agent_name')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('agent_name')?.invalid && form.get('agent_name')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- Agent Code -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Código Agente</label
+            >
+            <input
+              formControlName="agent_code"
+              type="text"
+              placeholder="ADU-1234"
+              [class.border-red-300]="
+                form.get('agent_code')?.invalid && form.get('agent_code')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+            @if (form.get('agent_code')?.invalid && form.get('agent_code')?.touched) {
+              <span
+                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+              >
+                * Requerido
+              </span>
+            }
+          </div>
+
+          <!-- Phone -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Teléfono</label
+            >
+            <input
+              formControlName="phone"
+              type="text"
+              placeholder="+56 9 ..."
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+          </div>
+
+          <!-- Address -->
+          <div class="flex flex-col gap-1.5 md:col-span-4">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Dirección Comercial</label
+            >
+            <input
+              formControlName="address"
+              type="text"
+              placeholder="Av. Principal #123, Valparaíso"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer / Action Area -->
+      <div
+        class="pt-6 flex flex-col md:flex-row items-center justify-end gap-3 bg-slate-50/50 -mx-6 -mb-6 p-6 md:p-8 border-t border-slate-100"
+      >
+        <button
+          type="button"
+          (click)="form.reset()"
+          class="w-full md:w-auto px-6 py-3 text-slate-500 font-bold hover:text-slate-800 transition-all cursor-pointer text-sm"
+        >
+          Limpiar
+        </button>
+        <button
+          type="submit"
+          [disabled]="isLoading()"
+          class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+        >
+          @if (isLoading()) {
+            <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Procesando...
+          } @else {
+            <span>Confirmar y Crear Suscriptor</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Info Box -->
+  <div class="mt-8 p-6 bg-blue-50/50 border border-blue-100 rounded-3xl flex gap-4">
+    <span class="text-2xl">💡</span>
+    <div class="text-xs text-blue-800 leading-relaxed font-medium">
+      Al confirmar la creación, el sistema generará automáticamente la base de datos para la
+      empresa, asignará los módulos de **Contabilidad, Nómina y Aduana**, e iniciará el proceso
+      asíncrono de clonación del Plan de Cuentas (PUC) estándar para agencias.
+    </div>
+  </div>
+</div>

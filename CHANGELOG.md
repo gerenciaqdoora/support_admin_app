@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-04-30] feat[admin]: implementación de formulario compacto para creación de suscriptor aduana con señales y validación de RUT
+
 - [2026-04-25] feat(security): implementar autenticación de soporte empresarial y endurecimiento de seguridad
 
 - [2026-04-25] feat(auth): [security] extraer rol de usuario de los claims firmados del JWT (QD-01)

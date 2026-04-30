@@ -5,7 +5,8 @@ import { authGuard } from '@core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () => import('../modules/auth/login/login.component').then(m => m.LoginComponent)
+    loadComponent: () =>
+      import('../modules/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: '',
@@ -15,60 +16,90 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
-        loadComponent: () => import('@modules/dashboard/dashboard.component').then(m => m.DashboardComponent),
-        data: { breadcrumb: 'Tablero' }
+        loadComponent: () =>
+          import('@modules/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+        data: { breadcrumb: 'Tablero' },
       },
       {
         path: 'tickets',
-        loadComponent: () => import('@modules/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
+        loadComponent: () =>
+          import('@modules/tickets/ticket-list/ticket-list.component').then(
+            (m) => m.TicketListComponent,
+          ),
         data: { breadcrumb: 'Tickets' },
         children: [
           {
             path: 'create',
-            loadComponent: () => import('@modules/tickets/ticket-create/ticket-create.component').then(m => m.TicketCreateComponent),
-            data: { breadcrumb: 'Nuevo Ticket' }
+            loadComponent: () =>
+              import('@modules/tickets/ticket-create/ticket-create.component').then(
+                (m) => m.TicketCreateComponent,
+              ),
+            data: { breadcrumb: 'Nuevo Ticket' },
           },
           {
             path: ':id',
-            loadComponent: () => import('@modules/tickets/ticket-preview/ticket-preview.component').then(m => m.TicketPreviewComponent),
-            data: { breadcrumb: 'Vista Previa' }
-          }
-        ]
+            loadComponent: () =>
+              import('@modules/tickets/ticket-preview/ticket-preview.component').then(
+                (m) => m.TicketPreviewComponent,
+              ),
+            data: { breadcrumb: 'Vista Previa' },
+          },
+        ],
       },
       {
         path: 'tickets/:id/manage',
-        loadComponent: () => import('@modules/tickets/ticket-management/ticket-management.component').then(m => m.TicketManagementComponent),
-        data: { breadcrumb: 'Gestión Forense' }
+        loadComponent: () =>
+          import('@modules/tickets/ticket-management/ticket-management.component').then(
+            (m) => m.TicketManagementComponent,
+          ),
+        data: { breadcrumb: 'Gestión Forense' },
       },
       {
         path: 'subscribers',
-        loadComponent: () => import('@modules/subscribers/subscriber-list/subscriber-list.component').then(m => m.SubscriberListComponent),
-        data: { breadcrumb: 'Suscriptores' }
+        loadComponent: () =>
+          import('@modules/subscribers/subscriber-list/subscriber-list.component').then(
+            (m) => m.SubscriberListComponent,
+          ),
+        data: { breadcrumb: 'Suscriptores' },
       },
       {
         path: 'subscribers/:id',
-        loadComponent: () => import('@modules/subscribers/subscriber-detail/subscriber-detail.component').then(m => m.SubscriberDetailComponent),
-        data: { breadcrumb: 'Detalle de Suscriptor' }
+        loadComponent: () =>
+          import('@modules/subscribers/subscriber-detail/subscriber-detail.component').then(
+            (m) => m.SubscriberDetailComponent,
+          ),
+        data: { breadcrumb: 'Detalle de Suscriptor' },
       },
       {
         path: 'reports',
-        loadComponent: () => import('@modules/reports/reports.component').then(m => m.ReportsComponent),
-        data: { breadcrumb: 'Reportes' }
+        loadComponent: () =>
+          import('@modules/reports/reports.component').then((m) => m.ReportsComponent),
+        data: { breadcrumb: 'Reportes' },
       },
       {
         path: 'help-center',
-        loadComponent: () => import('@modules/help-center/help-center.component').then(m => m.HelpCenterComponent),
-        data: { breadcrumb: 'Centro de Ayuda' }
+        loadComponent: () =>
+          import('@modules/help-center/help-center.component').then((m) => m.HelpCenterComponent),
+        data: { breadcrumb: 'Centro de Ayuda' },
       },
       {
         path: 'logs-ti',
-        loadComponent: () => import('@modules/logs-ti/logs-ti.component').then(m => m.LogsTiComponent),
-        data: { breadcrumb: 'Logs TI' }
-      }
-    ]
+        loadComponent: () =>
+          import('@modules/logs-ti/logs-ti.component').then((m) => m.LogsTiComponent),
+        data: { breadcrumb: 'Logs TI' },
+      },
+      {
+        path: 'admin/customs-subscriber/create',
+        loadComponent: () =>
+          import('@modules/admin/customs-subscriber/create-customs-subscriber.component').then(
+            (m) => m.CreateCustomsSubscriberComponent,
+          ),
+        data: { breadcrumb: 'Nuevo Plan Aduana' },
+      },
+    ],
   },
   {
     path: '**',
-    redirectTo: 'login'
-  }
+    redirectTo: 'login',
+  },
 ];
