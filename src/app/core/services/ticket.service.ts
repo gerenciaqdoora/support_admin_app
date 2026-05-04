@@ -8,7 +8,7 @@ import { Observable, tap, map } from 'rxjs';
 })
 export class TicketService {
   private _http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost/api/v1/support';
+  private readonly API_URL = '/api/v1/support';
 
   // Signal para la lista de tickets actual
   tickets = signal<Ticket[]>([]);

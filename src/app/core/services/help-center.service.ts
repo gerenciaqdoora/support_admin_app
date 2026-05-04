@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class HelpCenterService {
   private _http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost/api/v1/support/help-center';
+  private readonly API_URL = '/api/v1/support/help-center';
 
   // Signals para parámetros
   searchQuery = signal<string>('');

@@ -21,7 +21,7 @@ export interface AnalyticsDashboard {
 })
 export class AnalyticsService {
   private _http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost/api/v1/support/analytics';
+  private readonly API_URL = '/api/v1/support/analytics';
 
   dashboardData = signal<AnalyticsDashboard | null>(null);
   isLoading = signal<boolean>(false);

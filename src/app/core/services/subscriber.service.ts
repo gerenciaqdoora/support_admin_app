@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class SubscriberService {
   private _http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost/api/v1/support/subscribers';
+  private readonly API_URL = '/api/v1/support/subscribers';
 
   // Signal para disparar búsquedas
   searchQuery = signal<string>('');
