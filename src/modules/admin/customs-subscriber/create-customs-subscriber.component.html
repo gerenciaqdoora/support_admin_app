@@ -48,6 +48,17 @@
           <div class="flex-1">
             <p class="text-[10px] font-black text-red-900 uppercase tracking-wider">Error</p>
             <p class="text-red-700 text-[10px] font-bold">{{ errorMessage() }}</p>
+            
+            @if (validationErrors().length > 0) {
+              <ul class="mt-2 space-y-1">
+                @for (error of validationErrors(); track $index) {
+                  <li class="text-red-600 text-[9px] font-bold flex items-center gap-1.5">
+                    <span class="w-1 h-1 bg-red-400 rounded-full"></span>
+                    {{ error }}
+                  </li>
+                }
+              </ul>
+            }
           </div>
         </div>
       }
@@ -230,50 +241,95 @@
             }
           </div>
 
-          <!-- Agent Name -->
-          <div class="flex flex-col gap-1.5 md:col-span-2">
+          <!-- Agent Selection (Custom Searchable Dropdown) -->
+          <div class="flex flex-col gap-1.5 md:col-span-2 relative">
             <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
-              >Nombre Agente Aduana</label
+              >Agencia de Aduana (Catálogo Oficial)</label
             >
-            <input
-              formControlName="agent_name"
-              type="text"
-              placeholder="John Doe Smith"
-              [class.border-red-300]="
-                form.get('agent_name')?.invalid && form.get('agent_name')?.touched
-              "
-              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
-            />
-            @if (form.get('agent_name')?.invalid && form.get('agent_name')?.touched) {
-              <span
-                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
+            
+            <div 
+              (click)="toggleDropdown('agent', $event)"
+              [class.border-red-300]="form.get('aduana_anexo51_agent_id')?.invalid && form.get('aduana_anexo51_agent_id')?.touched"
+              [class.border-blue-500]="activeDropdown() === 'agent'"
+              class="bg-slate-50 border border-slate-200 rounded-2xl px-5 py-2.5 text-[10px] font-black text-slate-700 cursor-pointer flex justify-between items-center hover:bg-white hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/5 shadow-sm transition-all min-h-[44px] group antialiased tracking-tight"
+            >
+              <span class="truncate uppercase">
+                {{ form.get('agent_name')?.value || 'Seleccione un agente...' }}
+              </span>
+              <svg 
+                class="h-4 w-4 text-slate-300 transition-transform group-hover:text-blue-500" 
+                [class.rotate-180]="activeDropdown() === 'agent'" 
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
               >
-                * Requerido
+                <path d="M19 9l-7 7-7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Dropdown Content -->
+            @if (activeDropdown() === 'agent') {
+              <div class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-[24px] mt-3 shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[100] animate-in slide-in-from-top-3 overflow-hidden flex flex-col max-h-[380px] ring-1 ring-slate-900/5">
+                <!-- Search Bar -->
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                  <div class="relative group">
+                    <input 
+                      type="text" 
+                      [value]="agentSearch()"
+                      (input)="agentSearch.set($any($event.target).value)"
+                      (click)="$event.stopPropagation()" 
+                      placeholder="Buscar agencia o código..." 
+                      class="w-full bg-white border border-slate-200 rounded-2xl px-11 py-2.5 text-[11px] font-black outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
+                    >
+                    <svg class="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- List -->
+                <div class="overflow-y-auto custom-scrollbar flex-1 py-2 max-h-[300px]">
+                  @if (filteredAgents().length === 0) {
+                    <div class="px-6 py-8 text-center">
+                      <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">No se encontraron resultados</span>
+                    </div>
+                  }
+                  
+                  @for (agent of filteredAgents(); track agent.id) {
+                    <div 
+                      (click)="selectAgent(agent)" 
+                      class="mx-2 px-4 py-3.5 text-[10px] font-black text-slate-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer rounded-xl transition-all uppercase group relative overflow-hidden"
+                    >
+                      <div class="flex justify-between items-center relative z-10">
+                        <span class="truncate pr-4">{{ agent.name }}</span>
+                        <span class="text-[8px] px-2 py-0.5 bg-slate-100 text-slate-400 rounded-md group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                          {{ agent.code }}
+                        </span>
+                      </div>
+                      <div class="absolute inset-y-0 left-0 w-1 bg-blue-600 -translate-x-full group-hover:translate-x-0 transition-transform"></div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (form.get('aduana_anexo51_agent_id')?.invalid && form.get('aduana_anexo51_agent_id')?.touched) {
+              <span class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1">
+                * Selección obligatoria (Unicidad requerida)
               </span>
             }
           </div>
 
-          <!-- Agent Code -->
+          <!-- Agent Code (Read Only) -->
           <div class="flex flex-col gap-1.5">
             <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
-              >Código Agente</label
+              >Código Oficial</label
             >
             <input
               formControlName="agent_code"
               type="text"
-              placeholder="ADU-1234"
-              [class.border-red-300]="
-                form.get('agent_code')?.invalid && form.get('agent_code')?.touched
-              "
-              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+              readonly
+              placeholder="CÓDIGO"
+              class="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 text-sm shadow-inner cursor-not-allowed"
             />
-            @if (form.get('agent_code')?.invalid && form.get('agent_code')?.touched) {
-              <span
-                class="text-[9px] text-red-500 font-bold ml-1 animate-in fade-in slide-in-from-top-1"
-              >
-                * Requerido
-              </span>
-            }
           </div>
 
           <!-- Phone -->

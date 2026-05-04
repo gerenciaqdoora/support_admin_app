@@ -24,9 +24,18 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   return next(authReq).pipe(
     catchError((error: any) => {
       // Manejar error 401 Unauthorized
-      if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.includes('/login')) {
+      // Evitamos bucles infinitos si falla el refresh o el logout
+      const isAuthRoute = req.url.includes('/login') || req.url.includes('/refresh') || req.url.includes('/logout');
+
+      if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthRoute) {
         return handle401Error(authReq, next, authService);
       }
+
+      // Si el error es 401 en una ruta de auth (ej: falló el refresh), limpiamos sesión inmediatamente
+      if (error instanceof HttpErrorResponse && error.status === 401 && (req.url.includes('/refresh') || req.url.includes('/logout'))) {
+        authService.logout(true);
+      }
+
       return throwError(() => error);
     })
   );
@@ -50,7 +59,7 @@ function handle401Error(request: HttpRequest<unknown>, next: HttpHandlerFn, auth
       }),
       catchError((err: any) => {
         isRefreshing = false;
-        authService.logout();
+        authService.logout(true);
         return throwError(() => err);
       })
     );

@@ -1,10 +1,11 @@
-import { Component, inject, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, signal, ViewChild, ElementRef, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminCustomsService } from '../../../app/core/services/admin-customs.service';
-import { AduanaSubscriberData } from '../../../app/core/models/aduana-subscriber.model';
+import { AduanaSubscriberData, AduanaAgent } from '../../../app/core/models/aduana-subscriber.model';
 import { RutFormatPipe } from '../../../app/core/pipes/rut-format.pipe';
 import { Router, RouterLink } from '@angular/router';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-create-customs-subscriber',
@@ -22,6 +23,28 @@ export class CreateCustomsSubscriberComponent {
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  validationErrors = signal<string[]>([]);
+  aduanaAgents = signal<AduanaAgent[]>([]);
+
+  // Dropdown Management
+  activeDropdown = signal<string | null>(null);
+  agentSearch = signal('');
+
+  filteredAgents = computed(() => {
+    const search = this.agentSearch().toLowerCase().replace(/-/g, '').trim();
+    const list = this.aduanaAgents();
+    if (!search) return list;
+    return list.filter(a => {
+      const normalizedName = a.name.toLowerCase().replace(/-/g, '');
+      const normalizedCode = a.code.toLowerCase().replace(/-/g, '');
+      return normalizedName.includes(search) || normalizedCode.includes(search);
+    });
+  });
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    this.activeDropdown.set(null);
+  }
 
   form: FormGroup = this._fb.group({
     // User Data
@@ -33,11 +56,38 @@ export class CreateCustomsSubscriberComponent {
     // Company Data
     social_reason: ['', Validators.required],
     rut: ['', Validators.required],
-    agent_name: ['', Validators.required],
-    agent_code: ['', Validators.required],
+    aduana_anexo51_agent_id: ['', Validators.required],
+    agent_name: [{ value: '', disabled: true }, Validators.required],
+    agent_code: [{ value: '', disabled: true }, Validators.required],
     address: [''],
     phone: [''],
   });
+
+  ngOnInit() {
+    this.loadAgents();
+  }
+
+  loadAgents() {
+    this._adminService.getAduanaAgents().subscribe({
+      next: (agents) => this.aduanaAgents.set(agents),
+      error: () => this.errorMessage.set('Error al cargar catálogo de agentes.')
+    });
+  }
+
+  toggleDropdown(name: string, event: MouseEvent) {
+    event.stopPropagation();
+    this.activeDropdown.set(this.activeDropdown() === name ? null : name);
+  }
+
+  selectAgent(agent: AduanaAgent) {
+    this.form.patchValue({
+      aduana_anexo51_agent_id: agent.id,
+      agent_name: agent.name,
+      agent_code: agent.code
+    });
+    this.activeDropdown.set(null);
+    this.agentSearch.set('');
+  }
 
   formatRut(event: any, field: string) {
     let value = event.target.value.replace(/\./g, '').replace('-', '');
@@ -58,12 +108,13 @@ export class CreateCustomsSubscriberComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.successMessage.set(null);
+    this.validationErrors.set([]);
 
     const data: AduanaSubscriberData = {
-      ...this.form.value,
+      ...this.form.getRawValue(),
       name: this.form.value.email, // Usamos el email como nombre de usuario por defecto
-      dni: this.form.value.dni.replace(/\./g, '').replace('-', ''),
-      rut: this.form.value.rut.replace(/\./g, '').replace('-', ''),
+      dni: this.form.get('dni')?.value.replace(/\./g, '').replace('-', ''),
+      rut: this.form.get('rut')?.value.replace(/\./g, '').replace('-', ''),
     };
 
     this._adminService.createAduanaSubscriber(data).subscribe({
@@ -76,6 +127,13 @@ export class CreateCustomsSubscriberComponent {
       error: (error) => {
         this.isLoading.set(false);
         this.errorMessage.set(error.error?.message || 'Ocurrió un error al crear el suscriptor.');
+        
+        // Extract granular validation errors if present
+        if (error.error?.errors) {
+          const errors = Object.values(error.error.errors).flat() as string[];
+          this.validationErrors.set(errors);
+        }
+
         this.scrollToAlert();
       }
     });

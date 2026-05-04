@@ -41,10 +41,11 @@ export class AuthService {
 
   /**
    * Logs out the user, invalidates tokens on backend if possible, and clears local storage
+   * @param force If true, clears session immediately without backend call
    */
-  logout(): void {
+  logout(force: boolean = false): void {
     const user = this.currentUser();
-    if (user) {
+    if (user && !force) {
       // Intentar invalidar la sesión en el backend
       this._http.post(`/v1/logout/${user.id}`, {}).subscribe({
         next: () => this._clearSession(),
@@ -83,11 +84,11 @@ export class AuthService {
   // --- Utility Methods ---
 
   getAccessToken(): string | null {
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    return sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   private _setSession(authResult: AuthResponse): void {
@@ -99,16 +100,16 @@ export class AuthService {
       }
     }
 
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, authResult.access_token);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, authResult.refresh_token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
+    sessionStorage.setItem(this.ACCESS_TOKEN_KEY, authResult.access_token);
+    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, authResult.refresh_token);
+    sessionStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
     this.currentUser.set(authResult.user);
   }
 
   private _clearSession(): void {
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
     this.currentUser.set(null);
     this._router.navigate(['/login']);
   }
@@ -124,7 +125,7 @@ export class AuthService {
   }
 
   private _getUserFromStorage(): User | null {
-    const userStr = localStorage.getItem(this.USER_KEY);
+    const userStr = sessionStorage.getItem(this.USER_KEY);
     if (!userStr) return null;
     try {
       return JSON.parse(userStr) as User;

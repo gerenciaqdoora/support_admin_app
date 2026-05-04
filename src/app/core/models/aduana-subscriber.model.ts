@@ -10,8 +10,9 @@ export interface AduanaSubscriberData {
   // Company Data
   social_reason: string;
   rut: string;
-  agent_name: string;
-  agent_code: string;
+  aduana_anexo51_agent_id: number;
+  agent_name?: string;
+  agent_code?: string;
   address?: string;
   phone?: string;
 }
@@ -21,4 +22,10 @@ export interface AduanaSubscriberResponse {
   suscriptor_id: number;
   company_id: number;
   message?: string;
+}
+
+export interface AduanaAgent {
+  id: number;
+  code: string;
+  name: string;
 }
