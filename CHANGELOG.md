@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-04] feat(env): implementación de sistema de ambientes (dev, qa, prod)
+
 - [2026-05-04] feat(admin): implementacion de seleccion de agentes aduaneros y validacion reactiva
 
 - [2026-04-30] feat[admin]: implementación de formulario compacto para creación de suscriptor aduana con señales y validación de RUT
