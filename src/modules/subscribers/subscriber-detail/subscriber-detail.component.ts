@@ -1,15 +1,16 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { SubscriberService } from '@core/services/subscriber.service';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-subscriber-detail',
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
+    <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans relative">
       
       @if (subscriberResource.isLoading()) {
         <div class="flex-1 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md z-[100]">
@@ -50,7 +51,9 @@ import { rxResource } from '@angular/core/rxjs-interop';
             <button class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-sm">
               Enviar Notificación
             </button>
-            <button class="px-5 py-2.5 bg-red-50 border border-red-100 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95 shadow-sm">
+            <button 
+              (click)="confirmDelete()"
+              class="px-5 py-2.5 bg-red-50 border border-red-100 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-100 transition-all active:scale-95 shadow-sm">
               Suspender Cuenta
             </button>
           </div>
@@ -243,6 +246,42 @@ import { rxResource } from '@angular/core/rxjs-interop';
           </div>
         </div>
       }
+
+      <!-- Diálogo de Confirmación Premium -->
+      @if (isConfirmingDelete()) {
+        <div class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="p-10 text-center">
+              <div class="w-24 h-24 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-sm border border-red-100">
+                ⚠️
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter leading-tight">¿Confirmar Baja Definitiva?</h2>
+              <p class="text-slate-500 mt-4 text-sm font-medium leading-relaxed">
+                Esta acción liberará el correo electrónico del suscriptor y desactivará el acceso de forma permanente. 
+                <span class="block mt-2 font-black text-red-500 uppercase text-[10px] tracking-widest italic">Acción Irreversible</span>
+              </p>
+              
+              <div class="grid grid-cols-2 gap-4 mt-10">
+                <button 
+                  (click)="cancelDelete()"
+                  [disabled]="isDeleting()"
+                  class="px-6 py-4 bg-slate-50 text-slate-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-100 transition-all active:scale-95 border border-slate-200">
+                  Cancelar
+                </button>
+                <button 
+                  (click)="executeDelete()"
+                  [disabled]="isDeleting()"
+                  class="px-6 py-4 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-500/20 flex items-center justify-center gap-2">
+                  @if (isDeleting()) {
+                    <div class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  }
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -255,7 +294,12 @@ import { rxResource } from '@angular/core/rxjs-interop';
 })
 export class SubscriberDetailComponent {
   private _route = inject(ActivatedRoute);
+  private _router = inject(Router);
   private _subscriberService = inject(SubscriberService);
+
+  // Estados reactivos para la baja
+  isConfirmingDelete = signal(false);
+  isDeleting = signal(false);
 
   // Usamos rxResource para una gestión de datos más reactiva y robusta (Angular 21)
   subscriberResource = rxResource({
@@ -267,4 +311,34 @@ export class SubscriberDetailComponent {
     const res = this.subscriberResource.value();
     return res?.data || null;
   });
+
+  confirmDelete(): void {
+    this.isConfirmingDelete.set(true);
+  }
+
+  cancelDelete(): void {
+    this.isConfirmingDelete.set(false);
+  }
+
+  executeDelete(): void {
+    const id = Number(this._route.snapshot.params['id']);
+    if (!id) return;
+
+    this.isDeleting.set(true);
+
+    this._subscriberService.deleteSubscriber(id)
+      .pipe(finalize(() => this.isDeleting.set(false)))
+      .subscribe({
+        next: () => {
+          this.isConfirmingDelete.set(false);
+          // Redirigir al listado tras el éxito
+          this._router.navigate(['/subscribers']);
+        },
+        error: (err) => {
+          console.error('Error al dar de baja:', err);
+          // Aquí se podría integrar un Snackbar de error si existiera uno global
+          this.isConfirmingDelete.set(false);
+        }
+      });
+  }
 }

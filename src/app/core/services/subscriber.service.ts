@@ -34,4 +34,8 @@ export class SubscriberService {
   getSubscriberById(id: number): Observable<any> {
     return this._http.get<any>(`${this.API_URL}/${id}`);
   }
+
+  deleteSubscriber(id: number): Observable<any> {
+    return this._http.delete<any>(`${this.API_URL}/${id}`);
+  }
 }

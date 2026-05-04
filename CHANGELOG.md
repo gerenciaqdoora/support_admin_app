@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-04] feat(subscribers): botón de suspender cuenta con diálogo de confirmación premium
+
 - [2026-05-04] refactor(services): parametrización de URLs de API para soporte multi-ambiente
 
 - [2026-05-04] fix(deps): adición de dependencias faltantes (@angular/animations) para build de producción
