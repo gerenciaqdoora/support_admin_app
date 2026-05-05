@@ -38,4 +38,8 @@ export class SubscriberService {
   deleteSubscriber(id: number): Observable<any> {
     return this._http.delete<any>(`${this.API_URL}/${id}`);
   }
+
+  reactivateSubscriber(id: number): Observable<any> {
+    return this._http.post<any>(`${this.API_URL}/${id}/reactivate`, {});
+  }
 }

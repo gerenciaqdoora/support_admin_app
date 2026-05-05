@@ -76,23 +76,41 @@ import { FormsModule } from '@angular/forms';
             </thead>
             <tbody class="divide-y divide-slate-100">
               @for (suscriptor of subscriberService.subscribers(); track suscriptor.id) {
-                <tr [routerLink]="['/subscribers', suscriptor.id]" class="hover:bg-slate-50/80 cursor-pointer transition-all group border-l-[6px] border-transparent hover:border-blue-600 active:bg-blue-50">
+                <tr [routerLink]="['/subscribers', suscriptor.id]" 
+                    class="hover:bg-slate-50/80 cursor-pointer transition-all group border-l-[6px] border-transparent hover:border-blue-600 active:bg-blue-50 relative"
+                    [ngClass]="{'bg-slate-50/50 opacity-70 grayscale-[0.3]': suscriptor.deleted_at}">
                   <td class="px-6 py-4">
-                    <span class="text-[10px] font-black text-slate-400">#{{ suscriptor.id }}</span>
+                    <span class="text-[10px] font-black" [ngClass]="suscriptor.deleted_at ? 'text-slate-300' : 'text-slate-400'">#{{ suscriptor.id }}</span>
                   </td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                        {{ suscriptor.usuario?.name?.charAt(0) }}
+                      <div class="w-9 h-9 rounded-2xl flex items-center justify-center font-black text-xs border transition-all shadow-sm"
+                           [ngClass]="suscriptor.deleted_at ? 'bg-slate-200 text-slate-500 border-slate-300' : 'bg-blue-50 text-blue-600 border-blue-100 group-hover:bg-blue-600 group-hover:text-white'">
+                        @if (suscriptor.deleted_at) {
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        } @else {
+                          {{ suscriptor.usuario?.name?.charAt(0) }}
+                        }
                       </div>
                       <div class="flex flex-col">
-                        <span class="text-xs font-black text-slate-800 leading-tight uppercase tracking-tight">{{ suscriptor.usuario?.name }}</span>
-                        <span class="text-[10px] text-slate-400 font-bold lowercase tracking-tight">{{ suscriptor.usuario?.email }}</span>
+                        <span class="text-xs font-black leading-tight uppercase tracking-tight"
+                              [ngClass]="suscriptor.deleted_at ? 'text-slate-400' : 'text-slate-800'">
+                          {{ suscriptor.usuario?.name }}
+                        </span>
+                        <span class="text-[10px] font-bold lowercase tracking-tight"
+                              [ngClass]="suscriptor.deleted_at ? 'text-slate-300 italic' : 'text-slate-400'">
+                          {{ suscriptor.usuario?.email }}
+                        </span>
                       </div>
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    @if (suscriptor.es_demo) {
+                    @if (suscriptor.deleted_at) {
+                      <span class="px-3 py-1 rounded-full bg-slate-800 text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 w-fit shadow-lg shadow-slate-900/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                        Suspendido
+                      </span>
+                    } @else if (suscriptor.es_demo) {
                       <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-[8px] font-black uppercase tracking-widest border border-amber-100 flex items-center gap-1.5 w-fit">
                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                         Demo / Trial

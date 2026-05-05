@@ -4,6 +4,7 @@ export interface User {
     email: string;
     role: 'ADMIN_ROLE' | 'SUPPORT_ROLE' | 'SUBSCRIBER_ROLE' | 'USER_ROLE';
     avatar?: string;
+    deleted_at?: string;
 }
 
 export enum TicketStatus {
@@ -130,6 +131,7 @@ export interface Suscriptor {
     es_demo: boolean;
     date_subscribed: string;
     subscription_valid_to: string;
+    deleted_at?: string;
     usuario?: User;
     empresas?: any[];
     teamUsers?: any[];
