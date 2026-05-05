@@ -10,7 +10,7 @@ import { OnInit } from '@angular/core';
 @Component({
   selector: 'app-create-customs-subscriber',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RutFormatPipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './create-customs-subscriber.component.html',
 })
 export class CreateCustomsSubscriberComponent {

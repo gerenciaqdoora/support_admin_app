@@ -96,6 +96,15 @@ export const routes: Routes = [
           ),
         data: { breadcrumb: 'Nuevo Plan Aduana' },
       },
+      {
+        path: 'admin/email-tester',
+        loadComponent: () =>
+          import('@modules/admin/email-tester/email-tester.component').then(
+            (m) => m.EmailTesterComponent,
+          ),
+        data: { breadcrumb: 'Depurador de Emails' },
+      },
+
     ],
   },
   {

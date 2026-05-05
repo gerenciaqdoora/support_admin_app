@@ -240,6 +240,12 @@ export class ShellComponent implements OnInit {
               link: '/admin/customs-subscriber/create',
               icon: '🚢',
             },
+            {
+              id: 'email-tester',
+              title: 'Depurador de Emails',
+              link: '/admin/email-tester',
+              icon: '📧',
+            },
           ],
         },
       ];
