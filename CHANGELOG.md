@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-11] feat(customs): intensificar alerta de exito en creacion de suscriptor aduana con notificacion glassmorphism
+
 - [2026-05-05] feat(admin): implementar interfaz de Email Debugger con diseño Premium Bento y selectores reactivos
 
 - [2026-05-04] feat(subscribers): botón de suspender cuenta con diálogo de confirmación premium

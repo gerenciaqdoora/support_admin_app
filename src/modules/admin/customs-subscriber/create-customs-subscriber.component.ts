@@ -22,7 +22,7 @@ export class CreateCustomsSubscriberComponent {
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  successMessage = signal<string | null>(null);
+  notification = signal<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
   validationErrors = signal<string[]>([]);
   aduanaAgents = signal<AduanaAgent[]>([]);
 
@@ -99,6 +99,11 @@ export class CreateCustomsSubscriberComponent {
     }
   }
 
+  showNotification(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    this.notification.set({ message, type });
+    setTimeout(() => this.notification.set(null), 4000);
+  }
+
   onSubmit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -107,7 +112,6 @@ export class CreateCustomsSubscriberComponent {
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.successMessage.set(null);
     this.validationErrors.set([]);
 
     const data: AduanaSubscriberData = {
@@ -120,9 +124,8 @@ export class CreateCustomsSubscriberComponent {
     this._adminService.createAduanaSubscriber(data).subscribe({
       next: (response: any) => {
         this.isLoading.set(false);
-        this.successMessage.set(response.message);
+        this.showNotification(response.message);
         this.form.reset();
-        this.scrollToAlert();
       },
       error: (error) => {
         this.isLoading.set(false);
