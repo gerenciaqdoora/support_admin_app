@@ -246,6 +246,12 @@ export class ShellComponent implements OnInit {
               link: '/admin/email-tester',
               icon: '📧',
             },
+            {
+              id: 'nomina-features',
+              title: 'Configuraciones Empleador de Nómina',
+              link: '/admin/nomina-features',
+              icon: '⚙️',
+            },
           ],
         },
       ];

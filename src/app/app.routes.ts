@@ -104,7 +104,12 @@ export const routes: Routes = [
           ),
         data: { breadcrumb: 'Depurador de Emails' },
       },
-
+      {
+        path: 'admin/nomina-features',
+        loadComponent: () =>
+          import('@modules/admin/nomina-features/nomina-features.component').then((m) => m.default),
+        data: { breadcrumb: 'Configuraciones Empleador de Nómina' },
+      },
     ],
   },
   {

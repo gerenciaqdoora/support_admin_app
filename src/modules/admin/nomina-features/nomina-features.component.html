@@ -1,0 +1,413 @@
+<div class="p-6 max-w-7xl mx-auto flex flex-col flex-auto">
+  <div class="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+    <div
+      class="flex-shrink-0 flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-sm text-3xl"
+    >
+      ⚙️
+    </div>
+    <div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        Configuraciones Empleador de Nómina
+      </h1>
+      <p class="mt-1 text-slate-500 text-xs font-medium">
+        Administra qué opciones y características están disponibles para las empresas.
+      </p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center my-10">
+      <span class="text-gray-500">Cargando...</span>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (feature of features(); track feature.feature_key) {
+        <div
+          class="bg-gradient-to-b from-white to-gray-50/50 dark:from-[#1e293b] dark:to-[#0f172a] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 rounded-2xl p-6 flex flex-col ring-1 ring-gray-900/5 dark:ring-white/10"
+        >
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ feature.name }}</h2>
+
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                [checked]="feature.is_active_globally"
+                (click)="handleToggleClick($event, feature)"
+              />
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
+              ></div>
+            </label>
+          </div>
+
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-grow">
+            Clave:
+            <code
+              class="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 px-2 py-0.5 rounded-md text-xs font-mono tracking-wider ml-1"
+              >{{ feature.feature_key }}</code
+            >
+          </div>
+
+          <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+            <button
+              (click)="openInspectionModal(feature)"
+              class="w-full flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 font-medium rounded-xl transition-all duration-200 cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              Inspeccionar Configuración
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal for Inspection -->
+@if (inspectingFeature()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[90vh]"
+    >
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col gap-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Inspeccionar: {{ inspectingFeature()?.name }}
+          </h3>
+          <button
+            (click)="closeInspectionModal()"
+            class="text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
+          >
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg self-start">
+          <button
+            (click)="activeTab.set('code')"
+            [class.bg-white]="activeTab() === 'code'"
+            [class.dark:bg-gray-700]="activeTab() === 'code'"
+            [class.shadow]="activeTab() === 'code'"
+            [class.text-gray-900]="activeTab() === 'code'"
+            [class.dark:text-white]="activeTab() === 'code'"
+            [class.text-gray-500]="activeTab() !== 'code'"
+            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+              />
+            </svg>
+            Código (JSON)
+          </button>
+          <button
+            (click)="activeTab.set('view')"
+            [class.bg-white]="activeTab() === 'view'"
+            [class.dark:bg-gray-700]="activeTab() === 'view'"
+            [class.shadow]="activeTab() === 'view'"
+            [class.text-gray-900]="activeTab() === 'view'"
+            [class.dark:text-white]="activeTab() === 'view'"
+            [class.text-gray-500]="activeTab() !== 'view'"
+            class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all cursor-pointer"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+            Vista Cliente
+          </button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 flex-grow overflow-y-auto bg-gray-50 dark:bg-gray-900/20">
+        @if (activeTab() === 'code') {
+          <div
+            class="bg-[#0f172a] rounded-xl p-4 overflow-x-auto shadow-inner border border-gray-800"
+          >
+            <pre><code class="text-green-400 font-mono text-sm leading-relaxed">{{ jsonInput() }}</code></pre>
+          </div>
+        } @else {
+          <!-- Preview Renderer -->
+          <div
+            class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm ring-1 ring-gray-200 dark:ring-gray-700"
+          >
+            <h4
+              class="text-lg font-medium text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-700 pb-4 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Simulación de Formulario de Empresa
+            </h4>
+
+            @if (parsedSchema()) {
+              <div class="space-y-6">
+                @for (item of parsedSchema() | keyvalue; track item.key) {
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      {{ item.key }}
+                      @if (item.value['required']) {
+                        <span class="text-red-500 ml-1">*</span>
+                      }
+                    </label>
+
+                    @if (item.value['type'] === 'boolean') {
+                      <div class="mt-1">
+                        <label
+                          class="relative inline-flex items-center cursor-pointer opacity-70 pointer-events-none"
+                        >
+                          <input
+                            type="checkbox"
+                            class="sr-only peer"
+                            [checked]="item.value['default'] === true"
+                          />
+                          <div
+                            class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
+                          ></div>
+                        </label>
+                      </div>
+                    } @else if (item.value['type'] === 'select') {
+                      <select
+                        disabled
+                        class="mt-1 block w-full rounded-lg border-gray-300 px-3 py-2 shadow-sm sm:text-sm dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-400 opacity-60 bg-gray-50 border outline-none"
+                      >
+                        <option>Selecciona una opción</option>
+                        @for (opt of item.value['options']; track opt) {
+                          <option [value]="opt">{{ opt }}</option>
+                        }
+                      </select>
+                    } @else {
+                      <input
+                        type="text"
+                        disabled
+                        [placeholder]="
+                          'Ej: ' + (item.value['type'] === 'float' ? '1.5' : 'Valor predeterminado')
+                        "
+                        class="mt-1 block w-full rounded-lg border-gray-300 px-3 py-2 shadow-sm sm:text-sm dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-400 opacity-60 bg-gray-50 border outline-none"
+                      />
+                    }
+                    <div class="flex items-center justify-between mt-1">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        @if (item.value['description']) {
+                          {{ item.value['description'] }}
+                        } @else {
+                          Campo gestionado por el empleador.
+                        }
+                      </p>
+                      <span
+                        class="text-[10px] font-mono bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700"
+                        >{{ item.value['type'] }}</span
+                      >
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div
+                class="flex items-center justify-center p-10 text-gray-400 flex-col gap-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700"
+              >
+                <svg
+                  class="w-12 h-12 text-gray-300 dark:text-gray-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <span class="text-sm font-medium"
+                  >No se puede generar la vista previa. El esquema JSON es nulo o está vacío.</span
+                >
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end bg-white dark:bg-gray-800 rounded-b-2xl"
+      >
+        <button
+          (click)="closeInspectionModal()"
+          class="px-6 py-2.5 text-sm font-semibold text-white bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-sm transition-all cursor-pointer"
+        >
+          Cerrar Inspección
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Toast Notification -->
+@if (successMessage()) {
+  <div class="fixed bottom-4 right-4 z-[60] animate-fade-in-up">
+    <div
+      class="bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-4 py-3 rounded-xl shadow-lg border border-green-200 dark:border-green-800/50 flex items-center gap-3"
+    >
+      <svg
+        class="w-5 h-5 text-green-500 dark:text-green-400"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <span class="text-sm font-medium">{{ successMessage() }}</span>
+      <button
+        (click)="successMessage.set(null)"
+        class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Confirmation Modal -->
+@if (featureToToggle()) {
+  <div
+    class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm animate-fade-in"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden animate-slide-up"
+    >
+      <div class="p-6">
+        <div
+          class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4 mx-auto"
+        >
+          <svg
+            class="w-6 h-6 text-amber-600 dark:text-amber-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">
+          Confirmar Modificación
+        </h3>
+        <p class="text-center text-gray-500 dark:text-gray-400 text-sm">
+          ¿Estás seguro de que deseas
+          <strong class="text-gray-900 dark:text-white">{{
+            pendingToggleValue() ? 'ACTIVAR' : 'DESACTIVAR'
+          }}</strong>
+          la característica
+          <strong class="text-gray-900 dark:text-white">{{ featureToToggle()?.name }}</strong
+          >?
+        </p>
+        <p
+          class="text-center text-amber-600 dark:text-amber-500 text-xs mt-3 font-medium bg-amber-50 dark:bg-amber-500/10 p-2 rounded-lg"
+        >
+          Esta acción impactará la configuración de todas las empresas suscritas.
+        </p>
+      </div>
+      <div class="p-4 bg-gray-50 dark:bg-gray-900/50 flex gap-3 justify-center sm:justify-end">
+        <button
+          (click)="cancelToggle()"
+          [disabled]="isToggling()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmToggle()"
+          [disabled]="isToggling()"
+          class="px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-lg hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 flex items-center justify-center min-w-[120px] cursor-pointer"
+        >
+          @if (isToggling()) {
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Procesando...
+          } @else {
+            Confirmar Cambio
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
