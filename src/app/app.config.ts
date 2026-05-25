@@ -7,6 +7,7 @@ import localeEsCl from '@angular/common/locales/es-CL';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
 import { routes } from './app.routes';
 import { apiUrlInterceptor } from './core/interceptors/api-url.interceptor';
+import { provideIcons } from '@core/icons/icons.provider';
 
 registerLocaleData(localeEsCl);
 
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([apiUrlInterceptor, authInterceptor])),
     provideAnimationsAsync(),
-    { provide: LOCALE_ID, useValue: 'es-CL' }
+    { provide: LOCALE_ID, useValue: 'es-CL' },
+    ...provideIcons()
   ]
 };

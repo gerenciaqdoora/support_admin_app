@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { SubTipo, Cuenta, SubCuenta } from '../models/data/accountPlan';
 
@@ -13,6 +13,24 @@ export class PucManagerService {
 
   getPUC(): Observable<any> {
     return this._http.get<any>(this.API_URL);
+  }
+
+  getAccountPlanDataFull(): Observable<any> {
+    return this._http.get<any>(this.API_URL).pipe(
+      map((response: any) => response.data.record)
+    );
+  }
+
+  getAccountCategories(): Observable<any> {
+    return this._http.get<any>('/api/v1/account/plan/category/account').pipe(
+      map((response: any) => response.data.record)
+    );
+  }
+
+  getIfrsAccount(): Observable<any> {
+    return this._http.get<any>('/api/v1/account/plan/detail/ifrs/accounts').pipe(
+      map((response: any) => response.data.record)
+    );
   }
 
   createSubTipo(data: Partial<SubTipo>): Observable<any> {

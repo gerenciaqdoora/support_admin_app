@@ -3,7 +3,7 @@ FROM node:24 AS base
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
-RUN npm install -g @angular/cli@21 \
+RUN npm install -g @angular/cli@22.0.0-next.5 \
     && npm ci --legacy-peer-deps
 
 COPY . .

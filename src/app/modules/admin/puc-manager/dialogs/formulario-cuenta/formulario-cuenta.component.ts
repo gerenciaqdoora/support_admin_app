@@ -98,15 +98,15 @@ export class FormularioCuentaDialogComponent
     // Servicios de Plan de cuenta
     private _accountPlanService = inject(PucManagerService);
     // Método para obtener el control de asignacion_cuenta_contable
-    get asignacion_cuenta_contable(): Boolean { return this.form.get('asignacion_cuenta_contable')?.value }
+    get asignacion_cuenta_contable(): boolean { return this.form.get('asignacion_cuenta_contable')?.value }
     // Método para obtener el control de cuenta contable
-    get cuenta_maestra(): Boolean { return this.form.get('cuenta_maestra')?.value }
+    get cuenta_maestra(): any { return this.form.get('cuenta_maestra')?.value }
     // Método para obtener el control de entidad
     get control_trabaja_con_auxiliar_con_rut(): AbstractControl { return this.form.get('trabaja_con_auxiliar_con_rut')! }
     // Método para obtener el control de auxiliar
     get control_trabaja_con_auxiliar(): AbstractControl { return this.form.get('trabaja_con_auxiliar')! }
     // Maneja si cuenta tiene subcuentas asociadas
-    get cuenta_tiene_hijos(): Boolean { return this.cuenta?.is_expandable || false }
+    get cuenta_tiene_hijos(): boolean { return this.cuenta?.is_expandable || false }
     private alertName: string = 'subTypeForm';
     private _notificationService = inject(NotificationService);
     get resumenOperativa(): string {

@@ -7,7 +7,7 @@
         [type]="alertMessage.type"
         [name]="alertMessage.name"
         [showActionButton]="alertMessage.button_required"
-        (close)="onDismissed($event)"
+        (close)="onDismissed()"
         [actionText]="alertMessage.button_label"
         (actionClicked)="goToAction()"
     >

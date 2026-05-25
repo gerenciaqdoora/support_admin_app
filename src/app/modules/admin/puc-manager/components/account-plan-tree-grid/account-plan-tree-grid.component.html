@@ -1,100 +1,36 @@
-<div
-    class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden"
->
-    <!-- Header -->
-    
-
-
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
     <!-- Main -->
     <div class="flex flex-col overflow-hidden">
-        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto" >
-
-            <!-- EN CASO DE SER PUC SE DISPONIBILIZA EL REFRESH Y CLEAN FILTER -->
-            @if(!is_available_crud){
-                <div class="flex flex-col items-center justify-start p-2">
-                    <span class="font-bold">ACCIONES</span>
-                    <div class="flex flex-row items-center gap-2">
-                        <button
-                            mat-mini-fab
-                            aria-label="Clear filters"
-                            class="bg-primary-400"
-                            (click)="cleanFilters()"
-                            style="width: 30px; height: 30px; min-height: 30px;"
-                            >
-                            <mat-icon class="text-xs" style="padding: 3px;" svgIcon="mat_solid:cleaning_services"></mat-icon>
-                        </button>
-                        <button
-                            mat-mini-fab
-                            aria-label="Sync account plan"
-                            class="bg-primary-400"
-                            (click)="refreshData()"
-                            style="width: 30px; height: 30px; min-height: 30px;"
-                            >
-                            <mat-icon class="text-xs" style="padding: 3px;" svgIcon="mat_solid:sync"></mat-icon>
-                        </button>
-                        <button
-                            mat-mini-fab
-                            aria-label="Expand all"
-                            class="bg-accent-700"
-                            (click)="treeControl.expandAll()"
-                            style="width: 30px; height: 30px; min-height: 30px;"
-                            >
-                            <mat-icon class="text-xs" style="padding: 3px;" svgIcon="feather:maximize-2"></mat-icon>
-                        </button>
-                        <button
-                            mat-mini-fab
-                            aria-label="Collapse all"
-                            class="bg-accent-700"
-                            (click)="treeControl.collapseAll()"
-                            style="width: 30px; height: 30px; min-height: 30px;"
-                            >
-                            <mat-icon class="text-xs" style="padding: 3px;" svgIcon="feather:minimize-2"></mat-icon>
-                        </button>
-                    </div>
-                </div>
-            }
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
 
             <!-- TABLE -->
-            <table
-                mat-table
-                [dataSource]="dataSource"
-                class="w-full border-b border-gray-300 striped-rows hover:bg-indigo-200">
+            <table mat-table [dataSource]="dataSource" class="w-full border-b border-slate-200 striped-rows">
 
                 <!-- CODIGO -->
                 <ng-container matColumnDef="code">
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef
-                        class="hidden sm:table-cell h-[45px] max-h-[45px] max-w-[160px] w-[160px] border-b border-gray-200 overflow-hidden p-0"
-                        style="border-right: 1px solid #dee2e6;">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="hidden sm:table-cell h-12 max-h-12 max-w-[160px] w-[160px] border-b border-slate-200 p-0 border-r border-slate-200/60">
                         <div class="flex flex-col items-center justify-start p-2">
-                            <span class="text-primary-500 font-bold">CODIGO</span>
-                            <input
-                                matInput
-                                class="input-header-filter"
-                                [attr.autocomplete]="'off'"
-                                [formControl]="searchCodeControl"
-                            />
+                            <span
+                                class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Código</span>
+                            <input matInput class="input-header-filter" [attr.autocomplete]="'off'"
+                                [formControl]="searchCodeControl" />
                         </div>
                     </th>
-                    <td
-                        mat-cell
-                        *matCellDef="let data"
-                        class="hidden sm:table-cell h-[45px] max-h-[45px] max-w-[160px] w-[160px] border-b border-gray-200 overflow-hidden"
-                        style="border-right: 1px solid #dee2e6;"
+                    <td mat-cell *matCellDef="let data"
+                        class="hidden sm:table-cell h-11 max-h-11 max-w-[160px] w-[160px] border-b border-slate-200/50 border-r border-slate-200/60"
                         (click)="toggleNode(data)">
                         <div class="flex items-center justify-start">
-                            <button mat-icon-button
-                                style="width: 20px !important; height: 20px !important;"
-                                [style.visibility]="!data.expandable ? 'hidden' : ''"
-                                [style.marginLeft.px]="data.level * 8">
-                                <mat-icon class="text-md">
-                                    {{ treeControl.isExpanded(data) ? 'expand_more' : 'chevron_right' }}
-                                </mat-icon>
+                            <button [style.visibility]="!data.expandable ? 'hidden' : ''"
+                                [style.marginLeft.px]="data.level * 12"
+                                class="w-5 h-5 min-w-5 min-h-5 mr-1 flex items-center justify-center rounded-md hover:bg-slate-100/80 transition-colors text-slate-500 hover:text-slate-700">
+                                <mat-icon class="icon-size-4 flex items-center justify-center"
+                                    [svgIcon]="treeControl.isExpanded(data) ? 'heroicons_mini:chevron-down' : 'heroicons_mini:chevron-right'"></mat-icon>
                             </button>
                             <div class="flex flex-col items-start justify-center">
-                                <span class="text-md font-bold">{{ data.code }}</span>
-                                <span class="text-xs font-bold text-purple-700">{{ getDataTypeName(data) }}</span>
+                                <span class="text-sm font-bold text-slate-800">{{ data.code }}</span>
+                                <span class="text-[10px] uppercase font-bold text-indigo-500 mt-0.5">{{
+                                    getDataTypeName(data) }}</span>
                             </div>
                         </div>
                     </td>
@@ -102,85 +38,62 @@
 
                 <!-- NOMBRE -->
                 <ng-container matColumnDef="name">
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef
-                        class="h-[45px] max-h-[45px] border-b border-gray-200 p-0"
-                        style="border-right: 1px solid #dee2e6;">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="h-12 max-h-12 border-b border-slate-200 p-0 border-r border-slate-200/60">
                         <div class="flex flex-col items-center justify-start p-2">
-                            <span class="text-primary-500 font-bold">NOMBRE</span>
-                            <input
-                                matInput
-                                class="input-header-filter"
-                                [attr.autocomplete]="'off'"
-                                [formControl]="searchNameControl"
-                            />
+                            <span
+                                class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre</span>
+                            <input matInput class="input-header-filter" [attr.autocomplete]="'off'"
+                                [formControl]="searchNameControl" />
                         </div>
                     </th>
-                    <td
-                        mat-cell
-                        *matCellDef="let data"
-                        class="h-[45px] max-h-[45px] border-b border-gray-200"
-                        (click)="toggleNode(data)"
-                        style="border-right: 1px solid #dee2e6;">
+                    <td mat-cell *matCellDef="let data"
+                        class="h-11 max-h-11 border-b border-slate-200/50 border-r border-slate-200/60"
+                        (click)="toggleNode(data)">
                         <div class="flex items-center justify-start">
-                            <button mat-icon-button
-                                    [style.visibility]="!data.expandable ? 'hidden' : ''"
-                                    [style.marginLeft.px]="data.level * 8"
-                                    [class]="treeControl.isExpanded(data) ? 'text-blue-600 table-cell sm:hidden' : 'table-cell sm:hidden'">
-                                <mat-icon class="mat-icon-rtl-mirror">
-                                    {{ treeControl.isExpanded(data) ? 'expand_more' : 'chevron_right' }}
-                                </mat-icon>
+                            <button [style.visibility]="!data.expandable ? 'hidden' : ''"
+                                [style.marginLeft.px]="data.level * 12"
+                                [class]="treeControl.isExpanded(data) ? 'text-indigo-600' : 'text-slate-500'"
+                                class="w-5 h-5 min-w-5 min-h-5 mr-1 flex items-center justify-center rounded-md hover:bg-slate-100/80 transition-colors sm:hidden">
+                                <mat-icon class="icon-size-4 mat-icon-rtl-mirror"
+                                    [svgIcon]="treeControl.isExpanded(data) ? 'heroicons_mini:chevron-down' : 'heroicons_mini:chevron-right'"></mat-icon>
                             </button>
-                            <span class="text-md">{{ data.name | uppercase }}</span>
+                            <span class="text-sm font-medium text-slate-700">{{ data.name | uppercase }}</span>
                         </div>
                     </td>
                 </ng-container>
 
                 <!-- CUENTA MAESTRA -->
                 <ng-container matColumnDef="master">
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef
-                        class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px] p-0"
-                        style="border-right: 1px solid #dee2e6;">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="hidden md:table-cell h-12 max-h-12 border-b border-slate-200 max-w-[160px] w-[160px] p-0 border-r border-slate-200/60">
                         <div class="flex flex-col items-center justify-start p-2">
-                            <span class="text-primary-500 font-bold">C.MAESTRA</span>
-                            <mat-select
-                                #selectCuentaMaestra
-                                class="select-header-filter"
-                                panelWidth="300px"
-                                (selectionChange)="applyFilters($event)"
-                                [formControl]="searchCuentaMaestraControl">
-                                <mat-option
-                                    *ngFor="let option of account_categories"
-                                    [value]="option"
-                                    class="flex items-center text-default font-medium">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">C.
+                                Maestra</span>
+                            <mat-select #selectCuentaMaestra class="select-header-filter" panelClass="premium-dropdown-panel" panelWidth="300px"
+                                (selectionChange)="applyFilters($event)" [formControl]="searchCuentaMaestraControl">
+                                @for (option of account_categories; track option.id) {
+                                <mat-option [value]="option" class="flex items-center text-default font-medium">
                                     {{ option.name | uppercase }}
                                 </mat-option>
+                                }
                             </mat-select>
                         </div>
                     </th>
-                    <td
-                        mat-cell
-                        *matCellDef="let data"
-                        class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px]"
-                        (click)="toggleNode(data)"
-                        style="border-right: 1px solid #dee2e6;">
-                        <div class="flex items-center justify-start">
+                    <td mat-cell *matCellDef="let data"
+                        class="hidden md:table-cell h-11 max-h-11 border-b border-slate-200/50 max-w-[160px] w-[160px] border-r border-slate-200/60"
+                        (click)="toggleNode(data)">
+                        <div class="flex items-center justify-start px-2">
                             @if(data.level >= 2){
-                                @if(!data.expandable){
-                                    <span class="text-md">{{ getMasterAccount(data.account_category_id) }}</span>
-                                }
-                                @else{
-                                    <mat-icon
-                                        [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
-                                        matTooltipShowDelay="300"
-                                        matTooltipHideDelay="100"
-                                        class="text-yellow-600"
-                                        svgIcon="heroicons_outline:no-symbol"
-                                    ></mat-icon>
-                                }
+                            @if(!data.expandable){
+                            <span class="text-sm text-slate-600 font-medium">{{
+                                getMasterAccount(data.account_category_id) }}</span>
+                            }
+                            @else{
+                            <mat-icon [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
+                                matTooltipShowDelay="300" matTooltipHideDelay="100" class="text-amber-500 icon-size-5"
+                                svgIcon="heroicons_outline:no-symbol"></mat-icon>
+                            }
                             }
                         </div>
                     </td>
@@ -188,47 +101,34 @@
 
                 <!-- IFRS -->
                 <ng-container matColumnDef="ifrs">
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef
-                        class="hidden lg:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px] p-0"
-                        style="border-right: 1px solid #dee2e6;">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="hidden lg:table-cell h-12 max-h-12 border-b border-slate-200 max-w-[160px] w-[160px] p-0 border-r border-slate-200/60">
                         <div class="flex flex-col items-center justify-start p-2">
-                            <span class="text-primary-500 font-bold">C.IFRS SII</span>
-                            <mat-select
-                                class="select-header-filter"
-                                panelWidth="500px"
-                                (selectionChange)="applyFilters($event)"
-                                [formControl]="searchCuentaMaestraControl">
-                                <mat-option
-                                    *ngFor="let option of ifrs_accounts"
-                                    [value]="option"
-                                    class="flex items-center text-default font-medium">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">C. IFRS
+                                SII</span>
+                            <mat-select class="select-header-filter" panelClass="premium-dropdown-panel" panelWidth="500px"
+                                (selectionChange)="applyFilters($event)" [formControl]="searchCuentaIfrsControl">
+                                @for (option of ifrs_accounts; track option.code) {
+                                <mat-option [value]="option" class="flex items-center text-default font-medium">
                                     {{ option.code | uppercase }} | {{ option.name | uppercase }}
                                 </mat-option>
+                                }
                             </mat-select>
                         </div>
                     </th>
-                    <td
-                        mat-cell
-                        *matCellDef="let data"
-                        class="hidden lg:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px]"
-                        (click)="toggleNode(data)"
-                        style="border-right: 1px solid #dee2e6;">
-                        <div class="flex items-center justify-start">
+                    <td mat-cell *matCellDef="let data"
+                        class="hidden lg:table-cell h-11 max-h-11 border-b border-slate-200/50 max-w-[160px] w-[160px] border-r border-slate-200/60"
+                        (click)="toggleNode(data)">
+                        <div class="flex items-center justify-start px-2">
                             @if(data.level >= 2){
-                                @if(!data.expandable){
-                                    <span class="text-md">{{ data.ifrs_code }}</span>
-                                }
-                                @else{
-                                    <mat-icon
-                                        [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
-                                        matTooltipShowDelay="300"
-                                        matTooltipHideDelay="100"
-                                        class="text-yellow-600"
-                                        svgIcon="heroicons_outline:no-symbol"
-                                    ></mat-icon>
-                                }
+                            @if(!data.expandable){
+                            <span class="text-sm text-slate-600 font-medium">{{ data.ifrs_code }}</span>
+                            }
+                            @else{
+                            <mat-icon [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
+                                matTooltipShowDelay="300" matTooltipHideDelay="100" class="text-amber-500 icon-size-5"
+                                svgIcon="heroicons_outline:no-symbol"></mat-icon>
+                            }
                             }
                         </div>
                     </td>
@@ -236,70 +136,46 @@
 
                 <!-- AUXILIAR -->
                 <ng-container matColumnDef="auxiliar">
-                    <th
-                        mat-header-cell
-                        *matHeaderCellDef
-                        class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[100px] w-[100px] p-0"
-                        style="border-right: 1px solid #dee2e6;">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="hidden md:table-cell h-12 max-h-12 border-b border-slate-200 max-w-[120px] w-[120px] p-0 border-r border-slate-200/60">
                         <div class="flex flex-col items-center justify-start p-2">
-                            <span class="text-primary-500 font-bold">AUXILIAR</span>
-                            <mat-select
-                                class="select-header-filter"
-                                panelWidth="150px"
-                                [formControl]="searchAuxiliarControl"
-                                (selectionChange)="applyFilters($event)">
-                                <mat-option
-                                    *ngFor="let option of header_options_filter_auxiliar"
-                                    [value]="option"
-                                    class="flex items-center text-default font-medium">
+                            <span
+                                class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Auxiliar</span>
+                            <mat-select class="select-header-filter" panelClass="premium-dropdown-panel" panelWidth="150px"
+                                [formControl]="searchAuxiliarControl" (selectionChange)="applyFilters($event)">
+                                @for (option of header_options_filter_auxiliar; track option) {
+                                <mat-option [value]="option" class="flex items-center text-default font-medium">
                                     {{ option | uppercase }}
                                 </mat-option>
+                                }
                             </mat-select>
                         </div>
                     </th>
-                    <td
-                        mat-cell
-                        *matCellDef="let data"
-                        class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[100px] w-[100px]"
-                        (click)="toggleNode(data)"
-                        style="border-right: 1px solid #dee2e6;">
+                    <td mat-cell *matCellDef="let data"
+                        class="hidden md:table-cell h-11 max-h-11 border-b border-slate-200/50 max-w-[120px] w-[120px] border-r border-slate-200/60"
+                        (click)="toggleNode(data)">
                         <div class="flex items-center justify-center">
                             @if(data.level >= 2){
-                                @if(!data.expandable){
-                                    @if(data.trabaja_con_auxiliar_con_rut){
-                                        <mat-icon
-                                            [matTooltip]="'Auxiliar con RUT'"
-                                            matTooltipShowDelay="300"
-                                            matTooltipHideDelay="100"
-                                            class="text-green-600"
-                                            svgIcon="heroicons_outline:identification"
-                                        ></mat-icon>
-                                    }
-                                    @else if(data.trabaja_con_auxiliar){
-                                        <mat-icon
-                                            [matTooltip]="'Auxiliar sin RUT'"
-                                            matTooltipShowDelay="300"
-                                            matTooltipHideDelay="100"
-                                            class="text-green-600"
-                                            svgIcon="heroicons_outline:user-circle"
-                                        ></mat-icon>
-                                    }
-                                    @else{
-                                        <mat-icon
-                                            class="text-red-600"
-                                            svgIcon="heroicons_outline:x-circle"
-                                        ></mat-icon>
-                                    }
-                                }
-                                @else{
-                                    <mat-icon
-                                        [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
-                                        matTooltipShowDelay="300"
-                                        matTooltipHideDelay="100"
-                                        class="text-yellow-600"
-                                        svgIcon="heroicons_outline:no-symbol"
-                                    ></mat-icon>
-                                }
+                            @if(!data.expandable){
+                            @if(data.trabaja_con_auxiliar_con_rut){
+                            <mat-icon [matTooltip]="'Auxiliar con RUT'" matTooltipShowDelay="300"
+                                matTooltipHideDelay="100" class="text-emerald-500 icon-size-5"
+                                svgIcon="heroicons_outline:identification"></mat-icon>
+                            }
+                            @else if(data.trabaja_con_auxiliar){
+                            <mat-icon [matTooltip]="'Auxiliar sin RUT'" matTooltipShowDelay="300"
+                                matTooltipHideDelay="100" class="text-emerald-500 icon-size-5"
+                                svgIcon="heroicons_outline:user-circle"></mat-icon>
+                            }
+                            @else{
+                            <mat-icon class="text-rose-500 icon-size-5" svgIcon="heroicons_outline:x-circle"></mat-icon>
+                            }
+                            }
+                            @else{
+                            <mat-icon [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
+                                matTooltipShowDelay="300" matTooltipHideDelay="100" class="text-amber-500 icon-size-5"
+                                svgIcon="heroicons_outline:no-symbol"></mat-icon>
+                            }
                             }
                         </div>
                     </td>
@@ -307,166 +183,119 @@
 
                 <!-- CENTRO COSTO -->
                 @if(hasColumn("centro_costo")){
-                    <ng-container matColumnDef="centro_costo">
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef
-                            class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[100px] w-[100px] p-0"
-                            style="border-right: 1px solid #dee2e6;">
-                            <div class="flex flex-col items-center justify-start p-2">
-                                <span class="text-primary-500 font-bold">C.COSTO</span>
-                                <mat-select
-                                    class="select-header-filter"
-                                    [formControl]="searchCentroCostoControl"
-                                    (selectionChange)="applyFilters($event)">
-                                    <mat-option
-                                        *ngFor="let option of header_options_filter_bool"
-                                        [value]="option"
-                                        class="flex items-center text-default font-medium">
-                                        {{ option | uppercase }}
-                                    </mat-option>
-                                </mat-select>
-                            </div>
-                        </th>
-                        <td
-                            mat-cell
-                            *matCellDef="let data"
-                            class="hidden md:table-cell h-[45px] max-h-[45px] border-b border-gray-200 max-w-[100px] w-[100px]"
-                            (click)="toggleNode(data)"
-                            style="border-right: 1px solid #dee2e6;">
-                            <div class="flex items-center justify-center">
-                                @if(data.level >= 2){
-                                    @if(!data.expandable){
-                                        @if(data.trabaja_con_centro_costo){
-                                            <mat-icon
-                                                class="text-green-600"
-                                                svgIcon="heroicons_outline:check-badge"
-                                            ></mat-icon>
-                                        }
-                                        @if(!data.trabaja_con_centro_costo){
-                                            <mat-icon
-                                                class="text-red-600"
-                                                svgIcon="heroicons_outline:x-circle"
-                                            ></mat-icon>
-                                        }
-                                    }
-                                    @else{
-                                        <mat-icon
-                                            [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
-                                            matTooltipShowDelay="300"
-                                            matTooltipHideDelay="100"
-                                            class="text-yellow-600"
-                                            svgIcon="heroicons_outline:no-symbol"
-                                        ></mat-icon>
-                                    }
+                <ng-container matColumnDef="centro_costo">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="hidden md:table-cell h-12 max-h-12 border-b border-slate-200 max-w-[120px] w-[120px] p-0 border-r border-slate-200/60">
+                        <div class="flex flex-col items-center justify-start p-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">C.
+                                Costo</span>
+                            <mat-select class="select-header-filter" panelClass="premium-dropdown-panel" [formControl]="searchCentroCostoControl"
+                                (selectionChange)="applyFilters($event)">
+                                @for (option of header_options_filter_bool; track option) {
+                                <mat-option [value]="option" class="flex items-center text-default font-medium">
+                                    {{ option | uppercase }}
+                                </mat-option>
                                 }
-                            </div>
-                        </td>
-                    </ng-container>
+                            </mat-select>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let data"
+                        class="hidden md:table-cell h-11 max-h-11 border-b border-slate-200/50 max-w-[120px] w-[120px] border-r border-slate-200/60"
+                        (click)="toggleNode(data)">
+                        <div class="flex items-center justify-center">
+                            @if(data.level >= 2){
+                            @if(!data.expandable){
+                            @if(data.trabaja_con_centro_costo){
+                            <mat-icon class="text-emerald-500 icon-size-5"
+                                svgIcon="heroicons_outline:check-badge"></mat-icon>
+                            }
+                            @if(!data.trabaja_con_centro_costo){
+                            <mat-icon class="text-rose-500 icon-size-5" svgIcon="heroicons_outline:x-circle"></mat-icon>
+                            }
+                            }
+                            @else{
+                            <mat-icon [matTooltip]="'Subcuentas son las que poseen las configuraciones de cuenta mayor'"
+                                matTooltipShowDelay="300" matTooltipHideDelay="100" class="text-amber-500 icon-size-5"
+                                svgIcon="heroicons_outline:no-symbol"></mat-icon>
+                            }
+                            }
+                        </div>
+                    </td>
+                </ng-container>
                 }
 
                 <!-- ACCIONES -->
                 @if(hasColumn("actions")){
-                    <ng-container matColumnDef="actions">
-                        <th
-                            mat-header-cell
-                            *matHeaderCellDef
-                            class="h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px] overflow-hidden">
-                            <div class="flex flex-col items-center justify-start p-2">
-                                <span class="text-primary-500 font-bold">ACCIONES</span>
-                                <div class="flex flex-row items-center gap-2">
-                                    <button
-                                        mat-mini-fab
-                                        aria-label="Clear filters"
-                                        class="bg-primary-400"
-                                        (click)="cleanFilters()"
-                                        style="width: 30px; height: 30px; min-height: 30px;"
-                                        >
-                                        <mat-icon class="text-xs" style="padding: 3px;" svgIcon="mat_solid:cleaning_services"></mat-icon>
-                                    </button>
-                                    <button
-                                        mat-mini-fab
-                                        aria-label="Sync account plan"
-                                        class="bg-primary-400"
-                                        (click)="refreshData()"
-                                        style="width: 30px; height: 30px; min-height: 30px;"
-                                        >
-                                        <mat-icon class="text-xs" style="padding: 3px;" svgIcon="mat_solid:sync"></mat-icon>
-                                    </button>
-                                    <button
-                                        mat-mini-fab
-                                        aria-label="Expand all"
-                                        class="bg-accent-700"
-                                        (click)="treeControl.expandAll()"
-                                        style="width: 30px; height: 30px; min-height: 30px;"
-                                        >
-                                        <mat-icon class="text-xs" style="padding: 3px;" svgIcon="feather:maximize-2"></mat-icon>
-                                    </button>
-                                    <button
-                                        mat-mini-fab
-                                        aria-label="Collapse all"
-                                        class="bg-accent-700"
-                                        (click)="treeControl.collapseAll()"
-                                        style="width: 30px; height: 30px; min-height: 30px;"
-                                        >
-                                        <mat-icon class="text-xs" style="padding: 3px;" svgIcon="feather:minimize-2"></mat-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </th>
-                        <td
-                            mat-cell
-                            *matCellDef="let data"
-                            class="h-[45px] max-h-[45px] border-b border-gray-200 max-w-[160px] w-[160px] overflow-hidden">
-                            <!-- ACCIONES SOLO PARA PLAN DE CUENTA NO PUC -->
-                            <div class="flex space-x-1 justify-center items-center">
-                                <button
-                                    class="h-7 min-h-7 min-w-5 px-2 leading-6 bg-blue-500"
-                                    mat-stroked-button
-                                    (click)="onActionAddRow(data)"
-                                >
-                                    <mat-icon
-                                        class="icon-size-4 text-white"
-                                        [svgIcon]="'feather:plus'"
-                                    ></mat-icon>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="h-12 max-h-12 border-b border-slate-200 max-w-[160px] w-[160px] overflow-hidden">
+                        <div class="flex flex-col items-center justify-start p-2">
+                            <span
+                                class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Acciones</span>
+                            <div class="flex flex-row items-center gap-2">
+                                <button (click)="cleanFilters()"
+                                    class="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+                                    title="Limpiar filtros" aria-label="Clear filters">
+                                    <mat-icon class="icon-size-3.5" svgIcon="heroicons_outline:sparkles"></mat-icon>
                                 </button>
-                                <button
-                                    class="h-7 min-h-7 min-w-5 px-2 leading-6 bg-yellow-300"
-                                    mat-stroked-button
-                                    (click)="onActionEditRow(data)"
-                                    *ngIf="data.level > 0"
-                                >
-                                    <mat-icon
-                                        class="icon-size-4 text-black"
-                                        [svgIcon]="'feather:edit'"
-                                    ></mat-icon>
+                                <button (click)="refreshData()"
+                                    class="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+                                    title="Sincronizar datos" aria-label="Sync account plan">
+                                    <mat-icon class="icon-size-3.5" svgIcon="feather:refresh-cw"></mat-icon>
                                 </button>
-                                <button
-                                    class="h-7 min-h-7 min-w-5 px-2 leading-6 bg-red-600"
-                                    mat-stroked-button
-                                    (click)="onActionDeleteRow(data)"
-                                    *ngIf="data.level > 0"
-                                >
-                                    <mat-icon
-                                        class="icon-size-4 text-white"
-                                        [svgIcon]="'feather:trash-2'"
-                                    ></mat-icon>
+                                <button (click)="treeControl.expandAll()"
+                                    class="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+                                    title="Expandir todo" aria-label="Expand all">
+                                    <mat-icon class="icon-size-3.5"
+                                        svgIcon="heroicons_outline:arrows-pointing-out"></mat-icon>
+                                </button>
+                                <button (click)="treeControl.collapseAll()"
+                                    class="flex items-center justify-center w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+                                    title="Colapsar todo" aria-label="Collapse all">
+                                    <mat-icon class="icon-size-3.5"
+                                        svgIcon="heroicons_outline:arrows-pointing-in"></mat-icon>
                                 </button>
                             </div>
-                        </td>
-                    </ng-container>
+                        </div>
+                    </th>
+                    <td mat-cell *matCellDef="let data"
+                        class="h-11 max-h-11 border-b border-slate-200/50 max-w-[160px] w-[160px] overflow-hidden">
+                        <!-- ACCIONES SOLO PARA PLAN DE CUENTA NO PUC -->
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button (click)="onActionAddRow(data)"
+                                class="flex items-center justify-center w-7 h-7 rounded-md bg-green-50 text-green-600 hover:bg-green-100 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer"
+                                title="Crear cuenta">
+                                <mat-icon class="icon-size-4" [svgIcon]="'feather:plus'"></mat-icon>
+                            </button>
+                            @if (data.level > 0) {
+                            <button (click)="onActionEditRow(data)"
+                                class="flex items-center justify-center w-7 h-7 rounded-md bg-amber-50 text-amber-600 hover:bg-amber-100 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer"
+                                title="Editar cuenta">
+                                <mat-icon class="icon-size-4" [svgIcon]="'feather:edit'"></mat-icon>
+                            </button>
+                            <button (click)="onActionDeleteRow(data)"
+                                class="flex items-center justify-center w-7 h-7 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer"
+                                title="Eliminar cuenta">
+                                <mat-icon class="icon-size-4" [svgIcon]="'feather:trash-2'"></mat-icon>
+                            </button>
+                            }
+                        </div>
+                    </td>
+                </ng-container>
                 }
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true" class="h-[45px] max-h-[45px] border-b border-gray-200 bg-primary-100"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="h-[45px] max-h-[45px] cursor-pointer"></tr>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"
+                    class="h-12 max-h-12 border-b border-slate-200 bg-slate-50/80 backdrop-blur-md"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    class="h-11 max-h-11 cursor-pointer hover:bg-slate-50 transition-colors"></tr>
             </table>
 
             <!-- NO DATA -->
-            <div *ngIf="dataSource.data.length == 0">
-                <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                    Sin datos para mostrar
-                </div>
+            @if (dataSource.data.length === 0) {
+            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                Sin datos para mostrar
             </div>
+            }
 
         </div>
     </div>

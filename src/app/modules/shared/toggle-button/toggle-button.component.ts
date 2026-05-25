@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIcon } from '@angular/material/icon';
+import { MatSlideToggleChange, MatSlideToggle } from '@angular/material/slide-toggle';
 import { qdooraAnimations } from '@core/animations';
 
 @Component({
@@ -17,8 +17,8 @@ import { qdooraAnimations } from '@core/animations';
         FormsModule,
         ReactiveFormsModule,
         MatCheckboxModule,
-        MatSlideToggleModule,
-        MatIconModule,
+        MatSlideToggle,
+        MatIcon,
     ],
 })
 export class ToggleButtonComponent {

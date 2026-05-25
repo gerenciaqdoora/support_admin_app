@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RutFormatPipe } from 'app/core/pipes/rut-format.pipe';
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 
 @Component({
     selector: 'app-dialog-employee-info',

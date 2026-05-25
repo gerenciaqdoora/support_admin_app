@@ -17,6 +17,7 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+
 import { qdooraAnimations } from '@core/animations';
 import { QdooraAlertService } from '@core/components/alert/alert.service';
 import {

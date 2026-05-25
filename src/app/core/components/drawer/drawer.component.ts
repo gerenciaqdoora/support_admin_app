@@ -43,11 +43,11 @@ export class QdooraDrawerComponent implements OnChanges, OnInit, OnDestroy {
     static ngAcceptInputType_transparentOverlay: BooleanInput;
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    private _animationBuilder = inject(AnimationBuilder);
-    private _elementRef = inject(ElementRef);
-    private _renderer2 = inject(Renderer2);
-    private _qdooraDrawerService = inject(QdooraDrawerService);
-    private _qdooraUtilsService = inject(QdooraUtilsService);
+    private _animationBuilder: AnimationBuilder = inject(AnimationBuilder);
+    private _elementRef: ElementRef = inject(ElementRef);
+    private _renderer2: Renderer2 = inject(Renderer2);
+    private _qdooraDrawerService: QdooraDrawerService = inject(QdooraDrawerService);
+    private _qdooraUtilsService: QdooraUtilsService = inject(QdooraUtilsService);
 
     @Input() fixed: boolean = false;
     @Input() mode: QdooraDrawerMode = 'side';
@@ -67,8 +67,8 @@ export class QdooraDrawerComponent implements OnChanges, OnInit, OnDestroy {
     private _animationsEnabled: boolean = false;
     private readonly _handleOverlayClick = (): void => this.close();
     private _hovered: boolean = false;
-    private _overlay: HTMLElement;
-    private _player: AnimationPlayer;
+    private _overlay: HTMLElement | null = null;
+    private _player: AnimationPlayer | undefined;
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -109,7 +109,7 @@ export class QdooraDrawerComponent implements OnChanges, OnInit, OnDestroy {
      * @private
      */
     @HostListener('mouseenter')
-    private _onMouseenter(): void {
+    public _onMouseenter(): void {
         // Enable the animations
         this._enableAnimations();
 
@@ -123,7 +123,7 @@ export class QdooraDrawerComponent implements OnChanges, OnInit, OnDestroy {
      * @private
      */
     @HostListener('mouseleave')
-    private _onMouseleave(): void {
+    public _onMouseleave(): void {
         // Enable the animations
         this._enableAnimations();
 
@@ -385,7 +385,9 @@ export class QdooraDrawerComponent implements OnChanges, OnInit, OnDestroy {
                 );
 
                 // Remove the overlay
-                this._overlay.parentNode.removeChild(this._overlay);
+                if (this._overlay.parentNode) {
+                    this._overlay.parentNode.removeChild(this._overlay);
+                }
                 this._overlay = null;
             }
         });

@@ -68,7 +68,7 @@ export class FormularioSubTipoDialogComponent
     // Formulario
     form!: UntypedFormGroup;
     // Es creacion/edicion
-    is_new_record: Boolean = true;
+    is_new_record: boolean = true;
     // Loading state
     isLoading: boolean = false;
     // Estructura del codigo

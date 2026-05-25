@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { FlatNode, FoodNode } from './matTree';
 import { AuthService } from '@core/services/auth.service';
@@ -8,8 +8,6 @@ import { FlatTreeControl } from "@angular/cdk/tree";
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-
-
 import { MatButtonModule } from '@angular/material/button';
 import { PucManagerService } from '@core/services/puc-manager.service';
 import { NotificationService } from '@core/services/notification.service';
@@ -17,7 +15,7 @@ import { CategoriaCuenta, Cuenta, DialogAccountPlan, IfrsAccount, SubCuenta, Sub
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormularioSubTipoDialogComponent } from '../../dialogs/formulario-subtipo/formulario-subtipo.component';
 import { MatDialog } from '@angular/material/dialog';
 import { JsonResponse } from '@core/models/response/JsonResponse';
@@ -25,7 +23,7 @@ import { FormularioCuentaDialogComponent } from '../../dialogs/formulario-cuenta
 import { FormularioSubCuentaDialogComponent } from '../../dialogs/formulario-subcuenta/formulario-subcuenta.component';
 import { User } from '@core/models/auth.models';
 import { ChecklistDatabase } from './checklist-database.service';
-import { MatSelectChange, MatSelectModule } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -37,7 +35,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         CommonModule,
         MatTableModule,
         MatIconModule,
-
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,
@@ -47,51 +44,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatSelectModule,
         MatTooltipModule
     ],
-    styles: [
-        `
-        .example-headers-align .mat-expansion-panel-header-description {
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .example-headers-align .mat-mdc-form-field + .mat-mdc-form-field {
-            margin-left: 8px;
-        }
-        .input-header-filter{
-            background-color: white;
-            border-radius: 0.3rem;
-            border: 1px solid #64758b36;
-            padding: 4px;
-            font-size: 13px;
-            height: 30px;
-            width: 90%;
-        }
-        .select-header-filter{
-            background-color: white;
-            border-radius: 0.3rem;
-            border: 1px solid #64758b36;
-            padding: 4px;
-            font-size: 13px;
-            height: 30px;
-            width: 100%;
-        }
-
-        .striped-rows tr:nth-child(odd) {
-            background-color: #f0f9ff; /* Color de fondo para las filas impares */
-        }
-
-        .striped-rows tr:nth-child(even) {
-            background-color: #ffffff; /* Color de fondo para las filas pares */
-        }
-        `
-    ],
+    styles: [],
     providers: [
         ChecklistDatabase
     ]
 })
 export class AccountPlanTreeGridComponent
     implements OnInit, OnDestroy {
-
 
     user!: User;
     // Lista de categorias de cuenta
@@ -111,13 +70,13 @@ export class AccountPlanTreeGridComponent
     // Variables para almacenar el valor de búsqueda de código y nombre
     codeFilter: string = '';
     nameFilter: string = '';
-    searchCodeControl: UntypedFormControl = new UntypedFormControl();
-    searchNameControl: UntypedFormControl = new UntypedFormControl();
-    searchCuentaMaestraControl: UntypedFormControl = new UntypedFormControl();
-    searchCuentaIfrsControl: UntypedFormControl = new UntypedFormControl();
-    searchTerceroControl: UntypedFormControl = new UntypedFormControl();
-    searchAuxiliarControl: UntypedFormControl = new UntypedFormControl();
-    searchCentroCostoControl: UntypedFormControl = new UntypedFormControl();
+    searchCodeControl = new FormControl<string>('', { nonNullable: true });
+    searchNameControl = new FormControl<string>('', { nonNullable: true });
+    searchCuentaMaestraControl = new FormControl<CategoriaCuenta | null>(null);
+    searchCuentaIfrsControl = new FormControl<IfrsAccount | null>(null);
+    searchTerceroControl = new FormControl<string | null>(null);
+    searchAuxiliarControl = new FormControl<string | null>(null);
+    searchCentroCostoControl = new FormControl<string | null>(null);
     // Titulo
     titleHeader: string = 'Plan de Cuenta General';
     // Cargador de contenido
@@ -202,28 +161,12 @@ export class AccountPlanTreeGridComponent
         this._unsubscribeAll.complete();
     }
 
-    irAClonar() {
-        if (this.account_plan_company_id >= 0) {
-            this.router.navigate([`/accounting/account-plan/clonar/${this.account_plan_company_id}`]);
-        }
-    }
-
     /**
      * Funcion para ir a la vista de cuentas maestras
     */
     irAMasterAccounts() {
         const companyId = this.account_plan_company_id;
         this.router.navigate([`/accounting/account-plan/master-accounts/${companyId}`]);
-    }
-
-    /**
-     * Funcion para volver
-     */
-    volver() {
-        // account_plan_company_id == 0: PUC
-        // account_plan_company_id != 0: Plan de cuenta de alguna empresa
-        if (this.account_plan_company_id == 0) this.router.navigate(['/accounting/account-plan/selection']);
-        else if (this.account_plan_company_id > 0) this.router.navigate(['/accounting/account-plan/review']);
     }
 
     /**
@@ -251,8 +194,7 @@ export class AccountPlanTreeGridComponent
         this.route.data
             .subscribe((data: any) => {
 
-                console.log('data', data);
-
+                console.log('[AccountPlanTreeGridComponent] data', data);
 
                 // Rescatamos datos del plan de cuenta
                 this.matTreeControl.accountPlanInfo = data['accountPlanData']['structure'];
@@ -391,11 +333,11 @@ export class AccountPlanTreeGridComponent
     cleanFilters(apply: boolean = true): void {
         this.searchCodeControl.setValue('');
         this.searchNameControl.setValue('');
-        this.searchCuentaMaestraControl.setValue('');
-        this.searchCuentaIfrsControl.setValue('');
-        this.searchTerceroControl.setValue('');
-        this.searchAuxiliarControl.setValue('');
-        this.searchCentroCostoControl.setValue('');
+        this.searchCuentaMaestraControl.setValue(null);
+        this.searchCuentaIfrsControl.setValue(null);
+        this.searchTerceroControl.setValue(null);
+        this.searchAuxiliarControl.setValue(null);
+        this.searchCentroCostoControl.setValue(null);
 
         if (apply) {
             this.matTreeControl.dataChange.next(this.matTreeControl.initData);
@@ -769,7 +711,9 @@ export class AccountPlanTreeGridComponent
     /**
      * Funcion para buscar
      */
-    applyFilters(event: EventEmitter<MatSelectChange> | null = null): void {
+    applyFilters(event: any = null): void {
+        const centroCostoValue = this.searchCentroCostoControl.value;
+        const centroCostoFilter = centroCostoValue === 'SI' ? true : (centroCostoValue === 'NO' ? false : null);
 
         const filteredTree: FoodNode[] = this.filterTreeData(
             this.matTreeControl.initData,
@@ -777,12 +721,11 @@ export class AccountPlanTreeGridComponent
             this.nameFilter || null,
             this.searchCuentaMaestraControl.value?.id || null,
             this.searchCuentaIfrsControl.value?.code || null,
-            this.searchAuxiliarControl.value,
-            this.searchCentroCostoControl.value == 'SI' || null
+            this.searchAuxiliarControl.value || null,
+            centroCostoFilter
         );
 
         this.matTreeControl.dataChange.next(filteredTree);
-
     }
 
     private filterTreeData(

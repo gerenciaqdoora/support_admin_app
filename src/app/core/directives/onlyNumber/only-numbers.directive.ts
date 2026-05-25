@@ -11,8 +11,9 @@ export class OnlyNumbersDirective {
 
     constructor(private el: ElementRef) {}
 
-    @HostListener('input', ['$event.target.value'])
-    onInput(value: string) {
+    @HostListener('input', ['$event'])
+    onInput(event: Event) {
+        const value = (event.target as HTMLInputElement).value;
         if (!this.enableMask) {
             // Si la máscara está deshabilitada, pasa el valor sin formato
             this.onChange(value);

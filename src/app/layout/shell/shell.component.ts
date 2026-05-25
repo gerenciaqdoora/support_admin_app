@@ -306,7 +306,10 @@ export class ShellComponent implements OnInit {
 
       const label = child.snapshot.data['breadcrumb'];
       if (label) {
-        breadcrumbs.push({ label, url });
+        const alreadyExists = breadcrumbs.some(b => b.url === url);
+        if (!alreadyExists) {
+          breadcrumbs.push({ label, url });
+        }
       }
 
       return this.getBreadcrumbs(child, url, breadcrumbs);

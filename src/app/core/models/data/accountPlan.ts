@@ -109,7 +109,7 @@ export interface DialogAccountPlan {
     subtipo?: any | SubTipo;
     cuenta?: any | Cuenta;
     subcuenta?: any | SubCuenta;
-    is_new_record?: Boolean;
+    is_new_record?: boolean;
     account_plan?: Structure;
     account_categories?: CategoriaCuenta[];
     ifrs_accounts?: IfrsAccount[];

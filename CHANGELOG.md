@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-25] feat(puc): implementar panel grid de plan de cuentas y corregir visualizacion de filtros con scroll
+
 - [2026-05-25] feat(core): inicialización del portal de soporte y configuración de dependencias, layout y enrutamiento
 
 - [2026-05-25] fix(styles): resolver incompatibilidades de apply con importantes y clases de colores personalizadas

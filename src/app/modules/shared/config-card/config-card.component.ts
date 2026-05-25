@@ -1,4 +1,4 @@
-import { CommonModule, NgClass, UpperCasePipe } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,7 +15,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatButtonModule,
         MatIconModule,
         NgClass,
-        UpperCasePipe,
         MatTooltipModule
     ],
 })
