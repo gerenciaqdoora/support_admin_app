@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-25] feat(core): inicialización del portal de soporte y configuración de dependencias, layout y enrutamiento
+
 - [2026-05-25] fix(styles): resolver incompatibilidades de apply con importantes y clases de colores personalizadas
 
 - [2026-05-25] fix(styles): corregir definicion de colores de tema en tailwind v4 y ruta de referencia en default.scss
