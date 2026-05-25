@@ -1,4 +1,4 @@
-@reference "tailwindcss";
+@reference "../../../../styles.css";
 
 qdoora-alert {
     display: block;
@@ -36,7 +36,12 @@ qdoora-alert {
 
             .qdoora-alert-default-icon {
                 .mat-icon {
-                    @apply icon-size-5;
+                    width: 20px !important;
+                    height: 20px !important;
+                    min-width: 20px !important;
+                    min-height: 20px !important;
+                    font-size: 20px !important;
+                    line-height: 20px !important;
                 }
             }
 
@@ -135,7 +140,12 @@ qdoora-alert {
             pointer-events: auto !important;
 
             .mat-icon {
-                @apply icon-size-4;
+                width: 16px !important;
+                height: 16px !important;
+                min-width: 16px !important;
+                min-height: 16px !important;
+                font-size: 16px !important;
+                line-height: 16px !important;
             }
         }
     }

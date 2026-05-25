@@ -24,6 +24,45 @@
   /* Glassmorphism utility */
   --backdrop-blur-glass: blur(12px);
   --bg-glass: rgba(255, 255, 255, 0.7);
+
+  /* Theme color overrides */
+  --color-bg-card: var(--qdoora-bg-card);
+  --color-bg-hover: var(--qdoora-bg-hover);
+  --color-primary-600: var(--qdoora-primary-600);
+  --color-primary-400: var(--qdoora-primary-400);
+  --color-accent-600: var(--qdoora-accent-600);
+  --color-accent-400: var(--qdoora-accent-400);
+  --color-warn: var(--qdoora-warn);
+  --color-warn-600: var(--qdoora-warn-600);
+  --color-warn-400: var(--qdoora-warn-400);
+}
+
+:root {
+  --qdoora-border: #e2e8f0; /* slate-200 */
+  --qdoora-text-secondary: #64748b; /* slate-500 */
+  --qdoora-bg-card: #ffffff;
+  --qdoora-bg-hover: #f1f5f9; /* slate-100 */
+  --qdoora-primary-600: #1a2b48;
+  --qdoora-primary-400: #2d4a7c;
+  --qdoora-accent-600: #3b82f6;
+  --qdoora-accent-400: #60a5fa;
+  --qdoora-warn: #ef4444;
+  --qdoora-warn-600: #dc2626;
+  --qdoora-warn-400: #f87171;
+}
+
+.dark {
+  --qdoora-border: #334155; /* slate-700 */
+  --qdoora-text-secondary: #94a3b8; /* slate-400 */
+  --qdoora-bg-card: #1e293b; /* slate-800 */
+  --qdoora-bg-hover: #334155; /* slate-700 */
+  --qdoora-primary-600: #2d4a7c;
+  --qdoora-primary-400: #3b82f6;
+  --qdoora-accent-600: #2563eb;
+  --qdoora-accent-400: #60a5fa;
+  --qdoora-warn: #dc2626;
+  --qdoora-warn-600: #b91c1c;
+  --qdoora-warn-400: #f87171;
 }
 
 @layer base {
