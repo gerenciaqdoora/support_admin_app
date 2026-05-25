@@ -42,4 +42,8 @@ export class SubscriberService {
   reactivateSubscriber(id: number): Observable<any> {
     return this._http.post<any>(`${this.API_URL}/${id}/reactivate`, {});
   }
+
+  forcePasswordChange(subscriberId: number, userId: number): Observable<any> {
+    return this._http.post<any>(`${this.API_URL}/${subscriberId}/users/${userId}/force-password-change`, {});
+  }
 }

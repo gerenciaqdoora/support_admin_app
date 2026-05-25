@@ -168,6 +168,16 @@ import { AuthService } from '@core/services/auth.service';
                     >
                       Plan {{ subscriber.metrics?.plan_name }}
                     </span>
+                    @if (authService.isAdminRole()) {
+                      <button
+                        (click)="confirmForcePassword(subscriber.record?.usuario?.id || subscriber.record?.user_id)"
+                        class="px-3 py-1 rounded-full bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1"
+                        title="Forzar Cambio de Contraseña"
+                      >
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                        Reset PWD
+                      </button>
+                    }
                   </div>
                 </div>
                 <div
@@ -340,6 +350,9 @@ import { AuthService } from '@core/services/auth.service';
                       >
                         Email / Contacto
                       </th>
+                      <th class="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-right">
+                        Acciones
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100">
@@ -373,11 +386,24 @@ import { AuthService } from '@core/services/auth.service';
                             >{{ member.user?.email }}</span
                           >
                         </td>
+                        <td class="px-4 py-4 text-right">
+                          @if (authService.isAdminRole()) {
+                            <button
+                              (click)="confirmForcePassword(member.user?.id || member.user_id)"
+                              class="w-8 h-8 inline-flex rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors items-center justify-center cursor-pointer"
+                              title="Forzar Cambio Contraseña"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                              </svg>
+                            </button>
+                          }
+                        </td>
                       </tr>
                     } @empty {
                       <tr>
                         <td
-                          colspan="2"
+                          colspan="3"
                           class="py-12 text-center opacity-30 italic text-xs font-bold"
                         >
                           No hay personal asociado a este suscriptor.
@@ -503,6 +529,7 @@ import { AuthService } from '@core/services/auth.service';
             </div>
           </div>
         </div>
+      }
         <!-- Modal de Confirmación Reactivación -->
         @if (isConfirmingReactivate()) {
           <div
@@ -559,7 +586,49 @@ import { AuthService } from '@core/services/auth.service';
             </div>
           </div>
         }
-      }
+
+        <!-- Modal de Confirmación Cambio Contraseña -->
+        @if (isConfirmingForcePwd()) {
+          <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-blue-100 animate-in zoom-in-95 duration-300">
+              <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-3xl flex items-center justify-center text-4xl mb-8 mx-auto shadow-sm border border-blue-100">
+                🔑
+              </div>
+              <h2 class="text-2xl font-black text-slate-900 text-center uppercase tracking-tighter leading-tight">
+                Forzar Cambio Contraseña
+              </h2>
+              <p class="text-slate-500 text-center mt-4 text-sm font-medium leading-relaxed">
+                Esta acción bloqueará el acceso al usuario hasta que actualice sus credenciales.
+              </p>
+
+              <div class="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4">
+                <span class="text-xl">⚠️</span>
+                <p class="text-[11px] font-bold text-amber-700 leading-relaxed uppercase">
+                  El usuario será desconectado en su próxima interacción y deberá crear una nueva contraseña.
+                </p>
+              </div>
+
+              <div class="flex flex-col gap-3 mt-10">
+                <button
+                  (click)="executeForcePassword()"
+                  [disabled]="isForcingPwd()"
+                  class="w-full py-4 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  @if (isForcingPwd()) {
+                    <span class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  }
+                  Confirmar Cambio
+                </button>
+                <button
+                  (click)="cancelForcePassword()"
+                  class="w-full py-4 bg-slate-50 text-slate-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-95 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        }
     </div>
   `,
   styles: [
@@ -597,6 +666,9 @@ export class SubscriberDetailComponent {
   isConfirmingReactivate = signal(false);
   isDeleting = signal(false);
   isReactivating = signal(false);
+  isConfirmingForcePwd = signal(false);
+  selectedUserIdForPwd = signal<number | null>(null);
+  isForcingPwd = signal(false);
 
   // Usamos rxResource para una gestión de datos más reactiva y robusta (Angular 21)
   subscriberResource = rxResource({
@@ -676,6 +748,44 @@ export class SubscriberDetailComponent {
           // Alerta visual de plan vencido o colisión de correo
           alert(errorMsg);
           this.isConfirmingReactivate.set(false);
+        },
+      });
+  }
+
+  confirmForcePassword(userId: number | undefined): void {
+    if (userId && this.authService.isAdminRole()) {
+      this.selectedUserIdForPwd.set(userId);
+      this.isConfirmingForcePwd.set(true);
+    }
+  }
+
+  cancelForcePassword(): void {
+    this.isConfirmingForcePwd.set(false);
+    this.selectedUserIdForPwd.set(null);
+  }
+
+  executeForcePassword(): void {
+    const subscriberId = Number(this._route.snapshot.params['id']);
+    const userId = this.selectedUserIdForPwd();
+    if (!subscriberId || !userId) return;
+
+    this.isForcingPwd.set(true);
+
+    this._subscriberService
+      .forcePasswordChange(subscriberId, userId)
+      .pipe(finalize(() => this.isForcingPwd.set(false)))
+      .subscribe({
+        next: () => {
+          this.isConfirmingForcePwd.set(false);
+          this.selectedUserIdForPwd.set(null);
+          alert('Se ha forzado el cambio de contraseña exitosamente.');
+        },
+        error: (err) => {
+          console.error('Error al forzar cambio de contraseña:', err);
+          const errorMsg = err.error?.message || 'No se pudo forzar el cambio de contraseña.';
+          alert(errorMsg);
+          this.isConfirmingForcePwd.set(false);
+          this.selectedUserIdForPwd.set(null);
         },
       });
   }

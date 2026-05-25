@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-24] feat[subscribers]: agregar funcionalidad de forzar cambio de contraseña para suscriptores desde portal de soporte
+
 - [2026-05-13] feat(nomina): implementar inspección de esquemas y confirmación de toggle
 
 - [2026-05-11] feat(customs): intensificar alerta de exito en creacion de suscriptor aduana con notificacion glassmorphism
