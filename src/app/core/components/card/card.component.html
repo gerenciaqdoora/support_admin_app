@@ -1,0 +1,25 @@
+<!-- Flippable card -->
+@if (flippable) {
+    <!-- Front -->
+    <div class="qdoora-card-front">
+        <ng-content select="[qdooraCardFront]"></ng-content>
+    </div>
+
+    <!-- Back -->
+    <div class="qdoora-card-back">
+        <ng-content select="[qdooraCardBack]"></ng-content>
+    </div>
+}
+
+<!-- Normal card -->
+@if (!flippable) {
+    <!-- Content -->
+    <ng-content></ng-content>
+
+    <!-- Expansion -->
+    @if (expanded) {
+        <div class="qdoora-card-expansion" [@expandCollapse]>
+            <ng-content select="[qdooraCardExpansion]"></ng-content>
+        </div>
+    }
+}

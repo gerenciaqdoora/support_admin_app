@@ -1,0 +1,74 @@
+<div [formGroup]="form" [class]="classes">
+
+    <mat-form-field
+        class="w-full"
+        [subscriptSizing]="compact ? 'dynamic' : 'fixed'"
+        [ngClass]="{
+            'compact-shared-input': compact,
+            'cursor-not-allowed': control?.disabled || readonly,
+            'is-readonly': readonly || control?.disabled,
+            'custom-margin-top-input': reduceMarginLabel
+        }"
+    >
+        <!-- Titulo -->
+        <mat-label *ngIf="label" [ngClass]="compact ? 'text-xs' : textSize">
+            {{ label }}
+        </mat-label>
+
+        <!-- Icono -->
+        <mat-icon
+            *ngIf="useIcon"
+            [svgIcon]="icon"
+            [ngClass]="compact ? 'icon-size-4' : 'icon-size-5'"
+            class="mr-2"
+        ></mat-icon>
+
+        <!-- Input -->
+        <input
+            #inputValue
+            matInput
+            [ngClass]="compact ? 'text-xs' : textSize"
+            [type]="type"
+            [formControlName]="controlName"
+            [appRutMask]="useRutMask"
+            [placeholder]="placeholder"
+            [readonly]="readonly"
+            [attr.maxlength]="maxLength"
+            [attr.autocomplete]="autocomplete"
+            [appOnlyNumbers]="useOnlyNumberMask"
+            (input)="onInputChange($event)"
+            (blur)="onBlur()"
+            [appToUppercase]="toUpperCase"
+            [readonly]="readonly"
+            [step]="step"
+            [tabIndex]="tabIndex !== 0 ? tabIndex : ((readonly || control?.disabled) ? -1 : 0)"
+        />
+
+
+        @if(useMatPrefix){
+            <span
+                matPrefix
+                class="mr-2"
+                [ngClass]="compact ? 'text-[10px]' : 'text-xs'"
+            >
+                {{ matPrefixLabel }}
+            </span>
+        }
+
+        @if(typeMatHint == 'label'){
+            <mat-hint align="end">Debe tener {{ maxLength }} dígitos </mat-hint>
+        }
+        @if(typeMatHint == 'current-max'){
+            <mat-hint align="end">{{ inputValue.value.length }} / {{ maxLength }} </mat-hint>
+        }
+        @if(hint){
+            <mat-hint align="start" class="text-[10px] text-slate-400 font-medium">{{ hint }}</mat-hint>
+        }
+
+        <!-- Mostrar errores de validación -->
+        <mat-error *ngIf="control?.invalid && (control?.touched || control?.dirty)">
+            {{ getErrorMessage() }}
+        </mat-error>
+
+    </mat-form-field>
+</div>

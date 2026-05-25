@@ -1,0 +1,36 @@
+<div [formGroup]="form" [class]="classes">
+    <div
+        class="flex-auto cursor-pointer"
+        (click)="MatToggle.toggle()"
+    >
+        <div class="flex flex-row items-center font-medium leading-6">
+            <!-- Icono -->
+            <mat-icon
+                *ngIf="useIcon"
+                [svgIcon]="icon"
+                class="mr-2 icon-size-4"
+            ></mat-icon>
+
+            <!-- Titulo -->
+            {{ title }}
+        </div>
+
+        <!-- Descripcion -->
+        <div class="text-secondary text-md" *ngIf="useDescription">
+            {{ description }}
+        </div>
+    </div>
+    <mat-slide-toggle
+        class="ml-4"
+        [color]="'primary'"
+        [formControlName]="controlName"
+        (change)="onToggleChange($event)"
+        #MatToggle
+    >
+        <span 
+            *ngIf="active_label && inactive_label"
+            class="text-sm font-medium ml-1">
+            {{ form.get(controlName)?.value ? active_label : inactive_label }}
+        </span>
+    </mat-slide-toggle>
+</div>

@@ -1,0 +1,21 @@
+<div #alertContainer tabindex="-1" class="relative rounded-xl my-2 focus:outline-none" *ngIf="alertMessage">
+    <qdoora-alert
+        class="m-0 overflow-hidden"
+        [appearance]="alertMessage.appearance"
+        [dismissible]="alertMessage.dismissible"
+        [dismissed]="alertMessage.dismissed"
+        [type]="alertMessage.type"
+        [name]="alertMessage.name"
+        [showActionButton]="alertMessage.button_required"
+        (close)="onDismissed($event)"
+        [actionText]="alertMessage.button_label"
+        (actionClicked)="goToAction()"
+    >
+        <div class="relative z-10" [innerHTML]="alertMessage?.message"></div>
+
+        <!-- Watermark Logo Proyectado -->
+        <img src="/images/qdoora/logo.png"
+             class="absolute -right-3 -bottom-3 w-32 opacity-20 pointer-events-none grayscale -rotate-12 z-0"
+             alt="Qdoora Watermark">
+    </qdoora-alert>
+</div>

@@ -1,0 +1,78 @@
+<div class="standard-dialog-container">
+
+    <!-- Header -->
+    <app-dialog-header
+        [title]="data.title"
+        [showCloseButton]="data.dismissible"
+        (close)="onClose()"
+    ></app-dialog-header>
+
+    <!-- Content -->
+    <div class="standard-dialog-content">
+        
+        <!-- Mensaje -->
+        <app-shared-alert [name]="'subTypeForm'"></app-shared-alert>
+
+        <!-- Formulario -->
+        <form class="w-full" [formGroup]="form">
+
+            <div class="flex-wrap items-center font-medium hidden md:flex pb-4">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">
+                        {{ tipo.name | uppercase }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center items-center gap-0 md:gap-8 w-full">
+                <!-- Codigo -->
+                <app-input-form
+                    class="flex flex-col md:flex-row items-baseline md:w-1/4 w-full"
+                    classes="w-full"
+                    [form]="form"
+                    controlName="code"
+                    label="Codigo"
+                    icon="heroicons_outline:identification"
+                    [useOnlyNumberMask]="true"
+                    [useIcon]="false"
+                    [typeMatHint]="'label'"
+                    [useMatPrefix]="data.is_new_record"
+                    [matPrefixLabel]="tipo.code"
+                    [maxLength]="largo_codigo"
+                ></app-input-form>
+
+                <!-- Nombre -->
+                <app-input-form
+                    class="flex flex-col md:flex-row items-baseline w-full"
+                    classes="w-full"
+                    [form]="form"
+                    controlName="name"
+                    label="Nombre"
+                    icon="heroicons_outline:user-circle"
+                    [useIcon]="true"
+                ></app-input-form>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- Footer -->
+    <app-dialog-footer>
+        <!-- Cancel -->
+        <app-dialog-button-cancel
+            [label]="data.actions.cancel.label"
+            [disabled]="isLoading"
+            (cancel)="onClose()"
+        ></app-dialog-button-cancel>
+
+        <!-- Confirm -->
+        <app-dialog-button-confirm
+            [label]="data.actions.confirm.label"
+            [color]="data.actions.confirm.color"
+            [isLoading]="isLoading"
+            [disabled]="form.invalid"
+            (confirm)="onSubmit()"
+        ></app-dialog-button-confirm>
+    </app-dialog-footer>
+
+</div>

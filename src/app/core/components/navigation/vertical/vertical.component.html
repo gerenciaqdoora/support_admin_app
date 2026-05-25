@@ -1,0 +1,127 @@
+<div class="qdoora-vertical-navigation-wrapper">
+    <!-- Header -->
+    <div class="qdoora-vertical-navigation-header">
+        <ng-content select="[qdooraVerticalNavigationHeader]"></ng-content>
+    </div>
+
+    <!-- Content -->
+    <div
+        class="qdoora-vertical-navigation-content"
+        qdooraScrollbar
+        [qdooraScrollbarOptions]="{
+            wheelPropagation: inner,
+            suppressScrollX: true,
+        }"
+        #navigationContent
+    >
+        <!-- Content header -->
+        <div class="qdoora-vertical-navigation-content-header">
+            <ng-content
+                select="[qdooraVerticalNavigationContentHeader]"
+            ></ng-content>
+        </div>
+
+        <!-- Items -->
+        @for (item of navigation; track trackByFn($index, item)) {
+            <!-- Skip the hidden items -->
+            @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+                <!-- Aside -->
+                @if (item.type === 'aside') {
+                    <qdoora-vertical-navigation-aside-item
+                        [item]="item"
+                        [name]="name"
+                        [activeItemId]="activeAsideItemId"
+                        [autoCollapse]="autoCollapse"
+                        [skipChildren]="true"
+                        (click)="toggleAside(item)"
+                    ></qdoora-vertical-navigation-aside-item>
+                }
+
+                <!-- Basic -->
+                @if (item.type === 'basic') {
+                    <qdoora-vertical-navigation-basic-item
+                        [item]="item"
+                        [name]="name"
+                    ></qdoora-vertical-navigation-basic-item>
+                }
+
+                <!-- Collapsable -->
+                @if (item.type === 'collapsable') {
+                    <qdoora-vertical-navigation-collapsable-item
+                        [item]="item"
+                        [name]="name"
+                        [autoCollapse]="autoCollapse"
+                    ></qdoora-vertical-navigation-collapsable-item>
+                }
+
+                <!-- Divider -->
+                @if (item.type === 'divider') {
+                    <qdoora-vertical-navigation-divider-item
+                        [item]="item"
+                        [name]="name"
+                    ></qdoora-vertical-navigation-divider-item>
+                }
+
+                <!-- Group -->
+                @if (item.type === 'group') {
+                    <qdoora-vertical-navigation-group-item
+                        [item]="item"
+                        [name]="name"
+                        [autoCollapse]="autoCollapse"
+                    ></qdoora-vertical-navigation-group-item>
+                }
+
+                <!-- Spacer -->
+                @if (item.type === 'spacer') {
+                    <qdoora-vertical-navigation-spacer-item
+                        [item]="item"
+                        [name]="name"
+                    ></qdoora-vertical-navigation-spacer-item>
+                }
+            }
+        }
+
+        <!-- Content footer -->
+        <div class="qdoora-vertical-navigation-content-footer">
+            <ng-content
+                select="[qdooraVerticalNavigationContentFooter]"
+            ></ng-content>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="qdoora-vertical-navigation-footer">
+        <ng-content select="[qdooraVerticalNavigationFooter]"></ng-content>
+    </div>
+</div>
+
+<!-- Aside -->
+@if (activeAsideItemId) {
+    <div
+        class="qdoora-vertical-navigation-aside-wrapper"
+        qdooraScrollbar
+        [qdooraScrollbarOptions]="{
+            wheelPropagation: false,
+            suppressScrollX: true,
+        }"
+        [@fadeInLeft]="position === 'left'"
+        [@fadeInRight]="position === 'right'"
+        [@fadeOutLeft]="position === 'left'"
+        [@fadeOutRight]="position === 'right'"
+    >
+        <!-- Items -->
+        @for (item of navigation; track trackByFn($index, item)) {
+            <!-- Skip the hidden items -->
+            @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+                <!-- Aside -->
+                @if (item.type === 'aside' && item.id === activeAsideItemId) {
+                    <qdoora-vertical-navigation-aside-item
+                        [item]="item"
+                        [name]="name"
+                        [autoCollapse]="autoCollapse"
+                    ></qdoora-vertical-navigation-aside-item>
+                }
+            }
+        }
+    </div>
+}

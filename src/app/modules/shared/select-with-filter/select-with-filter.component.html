@@ -1,0 +1,95 @@
+<div [formGroup]="parentForm" class="w-full">
+    <mat-form-field class="w-full" [subscriptSizing]="compact ? 'dynamic' : 'fixed'" [ngClass]="{
+            'compact-search': compact,
+            'cursor-not-allowed text-slate-500': ctrl?.disabled,
+            'custom-margin-top-select': reduceMarginLabel
+        }">
+        <!-- Titulo -->
+        <mat-label *ngIf="matLabel" [ngClass]="compact ? 'text-xs' : textSize">{{ matLabel }}</mat-label>
+
+        <mat-icon *ngIf="useIcon" [svgIcon]="icon" [ngClass]="compact ? 'icon-size-4' : 'icon-size-5'"
+            class="mr-2"></mat-icon>
+
+        <!-- Select -->
+        <mat-select #select [ngClass]="compact ? 'text-xs' : textSize" [formControlName]="controlName"
+            [required]="required" [compareWith]="compareWith" (closed)="onSelectPanelClosed()"
+            (opened)="onSelectOpened()" [panelWidth]="panelWidth" (selectionChange)="onChangeValue($event.value)"
+            [tabIndex]="tabIndex !== 0 ? tabIndex : (ctrl?.disabled ? -1 : 0)"
+            [placeholder]="placeholder || (showNoSelect ? (noSelectLabel | uppercase) : '')">
+
+            <!-- Custom Trigger: Vista Cerrada -->
+            <mat-select-trigger>
+                @if (getSelectedOption(); as option) {
+                <div class="flex items-center gap-2 truncate">
+                    @if (option.displayCode) {
+                    <span class="font-bold text-primary-600">{{ option.displayCode }}</span>
+                    <span class="text-secondary-400 opacity-40">|</span>
+                    }
+                    <span class="font-semibold">
+                        {{
+                        (
+                        (option.displayCode ?
+                        (option.name || option.social_reason || option.label || option.display_label) :
+                        (option[show_atribute_option] || option.name || option.social_reason || option.display_label)
+                        ) || (option.displayCode ? '' : option)
+                        ) | blankFormat | uppercase
+                        }}
+                    </span>
+                </div>
+                } @else if (showNoSelect) {
+                <div class="flex items-center gap-2 truncate">
+                    <span class="text-secondary font-bold italic">
+                        {{ noSelectLabel | uppercase }}
+                    </span>
+                </div>
+                }
+            </mat-select-trigger>
+
+            <!-- Buscador -->
+            <mat-option>
+                <ngx-mat-select-search [formControl]="searchCtrl" placeholderLabel="Buscar..."
+                    noEntriesFoundLabel="No se encontró ninguna coincidencia"
+                    [disableScrollToActiveOnOptionsChanged]="false" ngDefaultControl>
+                </ngx-mat-select-search>
+            </mat-option>
+
+            <!-- Opción: Sin Selección -->
+            @if (showNoSelect) {
+            <mat-option [value]="null" class="text-secondary font-bold italic" [ngClass]="textSize">
+                {{ noSelectLabel | uppercase }}
+            </mat-option>
+            }
+
+            <!-- Boton para agregar opcion -->
+            <div class="flex flex-row items-center justify-start p-2" *ngIf="needAddItem">
+                <button mat-raised-button class="pointer text-primary-500 h-7 flex flex-row items-center"
+                    (click)="onAddItem()">
+                    <mat-icon class="icon-size-4 mr-1">add</mat-icon>
+                    <span [ngClass]="textSize" class="font-semibold">{{ (labelAddItem || '') | uppercase }}</span>
+                </button>
+            </div>
+
+            <!-- Opciones -->
+            <mat-option *ngFor="let option of filteredData | async" [value]="option"
+                class="flex items-center text-default font-medium" [ngClass]="textSize">
+                <div class="flex items-center gap-2 truncate w-full">
+                    @if (option.displayCode) {
+                    <span class="font-bold text-primary-600">{{ option.displayCode }}</span>
+                    <span class="text-secondary-400 opacity-40">|</span>
+                    }
+                    <span class="truncate">
+                        {{ (
+                        (option.displayCode ?
+                        (option.name || option.social_reason || option.label || option.display_label) :
+                        (option[show_atribute_option] || option.name || option.social_reason || option.display_label ||
+                        option.code)
+                        ) || (option.displayCode ? '' : option)
+                        ) | blankFormat | uppercase
+                        }}
+                    </span>
+                </div>
+            </mat-option>
+
+        </mat-select>
+    </mat-form-field>
+</div>

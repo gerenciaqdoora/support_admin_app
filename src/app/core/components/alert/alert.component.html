@@ -1,0 +1,111 @@
+<!--
+
+    Si no puede cerrarlo ó
+    puede cerrarlo y esta visible
+
+-->
+@if (!dismissible || (dismissible && !dismissed)) {
+    <div
+        class="qdoora-alert-container"
+        [@fadeIn]="!dismissed"
+        [@fadeOut]="!dismissed"
+    >
+        <!-- Border -->
+        @if (appearance === 'border') {
+            <div class="qdoora-alert-border"></div>
+        }
+
+        <!-- Icon -->
+        @if (showIcon) {
+            <div class="qdoora-alert-icon">
+                <!-- Custom icon -->
+                <div class="qdoora-alert-custom-icon">
+                    <ng-content select="[qdooraAlertIcon]"></ng-content>
+                </div>
+
+                <!-- Default icons -->
+                <div class="qdoora-alert-default-icon">
+                    @if (type === 'primary') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'accent') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'warn') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:x-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'basic') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'info') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:information-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'success') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'warning') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:exclamation-triangle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'error') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:x-circle'"
+                        ></mat-icon>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Content -->
+        <div class="qdoora-alert-content">
+            <div class="qdoora-alert-title">
+                <ng-content select="[qdooraAlertTitle]"></ng-content>
+            </div>
+
+            <div class="qdoora-alert-message">
+                <ng-content></ng-content>
+            </div>
+
+            @if (showActionButton) {
+                <div class="qdoora-alert-actions">
+                    <button
+                        mat-flat-button
+                        (click)="onActionClick()"
+                    >
+                        {{ actionText }}
+                    </button>
+                </div>
+            }
+        </div>
+
+
+        <!-- Dismiss button -->
+        <button
+            class="qdoora-alert-dismiss-button"
+            mat-icon-button
+            (click)="dismiss()"
+        >
+            <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+        </button>
+    </div>
+}

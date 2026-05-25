@@ -252,6 +252,12 @@ export class ShellComponent implements OnInit {
               link: '/admin/nomina-features',
               icon: '⚙️',
             },
+            {
+              id: 'puc-manager',
+              title: 'Gestor Plan Único de Cuentas',
+              link: '/admin/puc-manager',
+              icon: '💼',
+            },
           ],
         },
       ];

@@ -102,7 +102,13 @@ export const routes: Routes = [
           import('@modules/admin/email-tester/email-tester.component').then(
             (m) => m.EmailTesterComponent,
           ),
-        data: { breadcrumb: 'Depurador de Emails' },
+        data: { breadcrumb: 'Pruebas de Email' },
+      },
+      {
+        path: 'admin/puc-manager',
+        loadChildren: () =>
+          import('./modules/admin/puc-manager/puc-manager.routes'),
+        data: { breadcrumb: 'Gestión PUC' },
       },
       {
         path: 'admin/nomina-features',
