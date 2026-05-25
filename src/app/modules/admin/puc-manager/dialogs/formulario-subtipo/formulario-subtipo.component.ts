@@ -23,12 +23,12 @@ import { finalize } from 'rxjs';
     styles: [
         `
             .dialog-panel {
-                @screen sm {
-                    @apply w-128; //32rem
+                @media (min-width: 640px) {
+                    width: 32rem; /* equivalent to w-128 */
                 }
 
-                @screen md {
-                    @apply w-200; //50rem
+                @media (min-width: 768px) {
+                    width: 50rem; /* equivalent to w-200 */
                 }
 
                 .mat-mdc-dialog-container {

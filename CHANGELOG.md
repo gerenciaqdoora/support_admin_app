@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-25] fix(admin-puc): corregir directivas de estilos obsoletas de tailwind v4 en los dialogos
+
 - [2026-05-25] feat(admin-puc): integrar gestor de plan único de cuentas (PUC) en el portal de soporte
 
 - [2026-05-24] feat[subscribers]: agregar funcionalidad de forzar cambio de contraseña para suscriptores desde portal de soporte
