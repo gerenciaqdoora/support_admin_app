@@ -1,5 +1,3 @@
-@reference "../../../../styles.css";
-
 /* Variables */
 :root {
     --qdoora-drawer-width: 320px;
@@ -15,7 +13,7 @@ qdoora-drawer {
     max-width: var(--qdoora-drawer-width);
     z-index: 300;
     box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.35);
-    @apply bg-card;
+    background-color: var(--qdoora-bg-card);
 
     /* Animations */
     &.qdoora-drawer-animations-enabled {
@@ -107,7 +105,7 @@ qdoora-drawer {
         width: 100%;
         height: 100%;
         overflow: hidden;
-        @apply bg-card;
+        background-color: var(--qdoora-bg-card);
     }
 }
 

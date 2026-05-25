@@ -26,8 +26,8 @@
   --bg-glass: rgba(255, 255, 255, 0.7);
 
   /* Theme color overrides */
-  --color-bg-card: var(--qdoora-bg-card);
-  --color-bg-hover: var(--qdoora-bg-hover);
+  --color-card: var(--qdoora-bg-card);
+  --color-hover: var(--qdoora-bg-hover);
   --color-primary-600: var(--qdoora-primary-600);
   --color-primary-400: var(--qdoora-primary-400);
   --color-accent-600: var(--qdoora-accent-600);
