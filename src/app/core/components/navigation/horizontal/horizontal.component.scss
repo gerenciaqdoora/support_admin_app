@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 /* Root navigation specific */
 qdoora-horizontal-navigation {
     .qdoora-horizontal-navigation-wrapper {
@@ -7,7 +9,7 @@ qdoora-horizontal-navigation {
         /* Basic, Branch */
         qdoora-horizontal-navigation-basic-item,
         qdoora-horizontal-navigation-branch-item {
-            @screen sm {
+            @media (min-width: 640px) {
                 &:hover {
                     .qdoora-horizontal-navigation-item-wrapper {
                         @apply bg-hover;
