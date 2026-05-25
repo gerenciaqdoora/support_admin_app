@@ -28,13 +28,30 @@
   /* Theme color overrides */
   --color-card: var(--qdoora-bg-card);
   --color-hover: var(--qdoora-bg-hover);
-  --color-primary-600: var(--qdoora-primary-600);
+  --color-primary-50: var(--qdoora-primary-50);
+  --color-primary-100: var(--qdoora-primary-100);
+  --color-primary-200: var(--qdoora-primary-200);
   --color-primary-400: var(--qdoora-primary-400);
-  --color-accent-600: var(--qdoora-accent-600);
+  --color-primary-600: var(--qdoora-primary-600);
+  --color-primary-700: var(--qdoora-primary-700);
+  --color-primary-800: var(--qdoora-primary-800);
+  --color-primary-900: var(--qdoora-primary-900);
+  --color-accent-100: var(--qdoora-accent-100);
+  --color-accent-200: var(--qdoora-accent-200);
   --color-accent-400: var(--qdoora-accent-400);
+  --color-accent-600: var(--qdoora-accent-600);
+  --color-accent-700: var(--qdoora-accent-700);
+  --color-accent-800: var(--qdoora-accent-800);
+  --color-accent-900: var(--qdoora-accent-900);
   --color-warn: var(--qdoora-warn);
-  --color-warn-600: var(--qdoora-warn-600);
+  --color-warn-50: var(--qdoora-warn-50);
+  --color-warn-100: var(--qdoora-warn-100);
+  --color-warn-200: var(--qdoora-warn-200);
   --color-warn-400: var(--qdoora-warn-400);
+  --color-warn-600: var(--qdoora-warn-600);
+  --color-warn-700: var(--qdoora-warn-700);
+  --color-warn-800: var(--qdoora-warn-800);
+  --color-warn-900: var(--qdoora-warn-900);
 }
 
 :root {
@@ -42,13 +59,30 @@
   --qdoora-text-secondary: #64748b; /* slate-500 */
   --qdoora-bg-card: #ffffff;
   --qdoora-bg-hover: #f1f5f9; /* slate-100 */
-  --qdoora-primary-600: #1a2b48;
+  --qdoora-primary-50: #f0f4fa;
+  --qdoora-primary-100: #dbe3f1;
+  --qdoora-primary-200: #bdcbe5;
   --qdoora-primary-400: #2d4a7c;
-  --qdoora-accent-600: #3b82f6;
+  --qdoora-primary-600: #1a2b48;
+  --qdoora-primary-700: #142239;
+  --qdoora-primary-800: #0f1a2c;
+  --qdoora-primary-900: #0b121e;
+  --qdoora-accent-100: #dbeafe;
+  --qdoora-accent-200: #bfdbfe;
   --qdoora-accent-400: #60a5fa;
+  --qdoora-accent-600: #3b82f6;
+  --qdoora-accent-700: #1d4ed8;
+  --qdoora-accent-800: #1e40af;
+  --qdoora-accent-900: #1e3a8a;
   --qdoora-warn: #ef4444;
-  --qdoora-warn-600: #dc2626;
+  --qdoora-warn-50: #fef2f2;
+  --qdoora-warn-100: #fee2e2;
+  --qdoora-warn-200: #fecaca;
   --qdoora-warn-400: #f87171;
+  --qdoora-warn-600: #dc2626;
+  --qdoora-warn-700: #b91c1c;
+  --qdoora-warn-800: #991b1b;
+  --qdoora-warn-900: #7f1d1d;
 }
 
 .dark {
@@ -56,13 +90,30 @@
   --qdoora-text-secondary: #94a3b8; /* slate-400 */
   --qdoora-bg-card: #1e293b; /* slate-800 */
   --qdoora-bg-hover: #334155; /* slate-700 */
-  --qdoora-primary-600: #2d4a7c;
+  --qdoora-primary-50: #0b121e;
+  --qdoora-primary-100: #0f1a2c;
+  --qdoora-primary-200: #142239;
   --qdoora-primary-400: #3b82f6;
-  --qdoora-accent-600: #2563eb;
+  --qdoora-primary-600: #2d4a7c;
+  --qdoora-primary-700: #bdcbe5;
+  --qdoora-primary-800: #dbe3f1;
+  --qdoora-primary-900: #f0f4fa;
+  --qdoora-accent-100: #1e3a8a;
+  --qdoora-accent-200: #1e40af;
   --qdoora-accent-400: #60a5fa;
+  --qdoora-accent-600: #2563eb;
+  --qdoora-accent-700: #bfdbfe;
+  --qdoora-accent-800: #dbeafe;
+  --qdoora-accent-900: #eff6ff;
   --qdoora-warn: #dc2626;
-  --qdoora-warn-600: #b91c1c;
+  --qdoora-warn-50: #7f1d1d;
+  --qdoora-warn-100: #991b1b;
+  --qdoora-warn-200: #b91c1c;
   --qdoora-warn-400: #f87171;
+  --qdoora-warn-600: #dc2626;
+  --qdoora-warn-700: #fecaca;
+  --qdoora-warn-800: #fee2e2;
+  --qdoora-warn-900: #fef2f2;
 }
 
 @layer base {

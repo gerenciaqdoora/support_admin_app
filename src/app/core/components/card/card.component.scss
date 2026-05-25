@@ -3,7 +3,8 @@ qdoora-card {
     display: flex;
     overflow: hidden;
     background-color: var(--qdoora-bg-card);
-    @apply rounded-2xl shadow;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 
     /* Flippable */
     &.qdoora-card-flippable {
@@ -13,7 +14,7 @@ qdoora-card {
         transition: transform 1s;
         perspective: 600px;
         background: transparent;
-        @apply shadow-none;
+        box-shadow: none;
 
         &.qdoora-card-face-back {
             .qdoora-card-front {
@@ -41,7 +42,8 @@ qdoora-card {
                 opacity 0s ease-in 0.2s;
             backface-visibility: hidden;
             background-color: var(--qdoora-bg-card);
-            @apply rounded-2xl shadow;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
         }
 
         .qdoora-card-front {
