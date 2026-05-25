@@ -483,7 +483,7 @@ qdoora-vertical-navigation-collapsable-item {
             &:not(.qdoora-vertical-navigation-item-disabled) {
                 &.qdoora-vertical-navigation-item-active,
                 &.qdoora-vertical-navigation-item-active-forced {
-                    @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+                    @apply bg-gray-800/5 dark:bg-white/12;
 
                     .qdoora-vertical-navigation-item-icon {
                         @apply opacity-100;
@@ -504,7 +504,7 @@ qdoora-vertical-navigation-collapsable-item {
                     .qdoora-vertical-navigation-item-active
                 ):not(.qdoora-vertical-navigation-item-disabled) {
                 &:hover {
-                    @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+                    @apply bg-gray-800/5 dark:bg-white/12;
 
                     .qdoora-vertical-navigation-item-icon {
                         @apply opacity-100;

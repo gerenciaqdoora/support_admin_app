@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-25] fix(navigation): migrar clases de opacidad de color a sintaxis de barra para tailwind v4
+
 - [2026-05-25] fix(styles): agregar referencias de tailwind v4 y corregir directivas de pantalla en componentes del nucleo
 
 - [2026-05-25] fix(navigation): agregar referencia de tailwind v4 en la apariencia de navegacion vertical
