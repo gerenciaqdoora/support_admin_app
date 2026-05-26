@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup,
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-
 import { DialogAccountPlan, SubTipo, Tipo } from '@core/models/data/accountPlan';
 import { JsonResponse } from '@core/models/response/JsonResponse';
 import { PucManagerService } from '@core/services/puc-manager.service';
@@ -15,7 +14,6 @@ import { DialogFooterComponent } from '../shared/footer/footer.component';
 import { DialogButtonCancelComponent } from '../shared/buttons/cancel-button.component';
 import { DialogButtonConfirmComponent } from '../shared/buttons/confirm-button.component';
 import { finalize } from 'rxjs';
-import { QdooraAlertService } from '@app/core/components/alert';
 
 @Component({
     selector: 'dialog-formulario-subtipo',
@@ -80,7 +78,6 @@ export class FormularioSubTipoDialogComponent
     alertName: string = 'subTypeForm';
 
     private _notificationService = inject(NotificationService);
-    private _alertService = inject(QdooraAlertService);
     private _accountPlanService = inject(PucManagerService);
 
     /**
@@ -109,12 +106,6 @@ export class FormularioSubTipoDialogComponent
         }
 
         this.initForm();
-        this._alertService.showAlert({
-            appearance: 'outline',
-            type: 'info',
-            message: 'probando alerta',
-            name: this.alertName
-        });
     }
 
     // -----------------------------------------------------------------------------------------------------
