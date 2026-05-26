@@ -104,7 +104,7 @@ export class FormularioSubCuentaDialogComponent
     get control_trabaja_con_auxiliar_con_rut(): AbstractControl { return this.form.get('trabaja_con_auxiliar_con_rut')! }
     // Método para obtener el control de auxiliar
     get control_trabaja_con_auxiliar(): AbstractControl { return this.form.get('trabaja_con_auxiliar')! }
-    private alertName: string = 'subTypeForm';
+    public alertName: string = 'subTypeForm';
     private _notificationService = inject(NotificationService);
     get resumenOperativa(): string {
         return this._accountPlanService.getResumenOperativa(this.form);

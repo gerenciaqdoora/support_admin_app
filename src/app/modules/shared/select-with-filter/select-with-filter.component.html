@@ -15,6 +15,7 @@
             [required]="required" [compareWith]="compareWith" (closed)="onSelectPanelClosed()"
             (opened)="onSelectOpened()" [panelWidth]="panelWidth" (selectionChange)="onChangeValue($event.value)"
             [tabIndex]="tabIndex !== 0 ? tabIndex : (ctrl?.disabled ? -1 : 0)"
+            panelClass="premium-dropdown-panel"
             [placeholder]="placeholder || (showNoSelect ? (noSelectLabel | uppercase) : '')">
 
             <!-- Custom Trigger: Vista Cerrada -->

@@ -251,4 +251,24 @@
   margin-left: 8px;
 }
 
+/* ==========================================================================
+   Modales Estandar (QdoorA)
+   ========================================================================== */
+.standard-dialog-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-height: 85vh;
+  width: 100%;
+}
 
+.standard-dialog-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* Redondeo de las esquinas y encapsulacion de contenido sin fugas */
+.mdc-dialog__surface {
+  border-radius: 13px !important;
+  overflow: hidden !important;
+}

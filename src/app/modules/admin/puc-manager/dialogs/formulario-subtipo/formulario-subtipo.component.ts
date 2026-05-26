@@ -9,7 +9,6 @@ import { DialogAccountPlan, SubTipo, Tipo } from '@core/models/data/accountPlan'
 import { JsonResponse } from '@core/models/response/JsonResponse';
 import { PucManagerService } from '@core/services/puc-manager.service';
 import { SharedAlertComponent } from '@app/modules/shared/alert/alert.component';
-import { SharedInputComponent } from '@app/modules/shared/input/input.component';
 import { NotificationService } from '@core/services/notification.service';
 import { DialogHeaderComponent } from '../shared/header/header.component';
 import { DialogFooterComponent } from '../shared/footer/footer.component';
@@ -32,8 +31,11 @@ import { finalize } from 'rxjs';
                 }
 
                 .mat-mdc-dialog-container {
+                    .mdc-dialog__surface,
                     .mat-mdc-dialog-surface {
                         padding: 0 !important;
+                        overflow: hidden !important;
+                        border-radius: 13px !important;
                     }
                 }
             }
@@ -45,7 +47,6 @@ import { finalize } from 'rxjs';
         MatButtonModule,
         MatDialogModule,
         MatIconModule,
-        SharedInputComponent,
         FormsModule,
         ReactiveFormsModule,
         SharedAlertComponent,
@@ -101,6 +102,11 @@ export class FormularioSubTipoDialogComponent
         this.tipo = this.data.tipo;
         this.largo_codigo = this.data.account_plan!.TIPO_large + this.data.account_plan!.SUB_TIPO_large;
         this.largo_nodo = this.data.account_plan!.SUB_TIPO_large;
+        
+        if (!this.data.title) {
+            this.data.title = this.data.is_new_record ? 'Crear Subtipo' : 'Editar Subtipo';
+        }
+        
         this.initForm();
     }
 

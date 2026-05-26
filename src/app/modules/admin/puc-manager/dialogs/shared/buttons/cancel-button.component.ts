@@ -9,7 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
     template: `
         <button
             type="button"
-            mat-stroked-button
+            mat-button
+            class="min-w-28 !rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-colors"
             (click)="onCancel()"
             [disabled]="disabled"
         >

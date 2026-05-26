@@ -94,7 +94,7 @@ export class FormularioCuentaDialogComponent
     // Cargador de contenido
     isLoading: boolean = false;
     // Avisos
-    
+
     // Servicios de Plan de cuenta
     private _accountPlanService = inject(PucManagerService);
     // Método para obtener el control de asignacion_cuenta_contable
@@ -107,7 +107,7 @@ export class FormularioCuentaDialogComponent
     get control_trabaja_con_auxiliar(): AbstractControl { return this.form.get('trabaja_con_auxiliar')! }
     // Maneja si cuenta tiene subcuentas asociadas
     get cuenta_tiene_hijos(): boolean { return this.cuenta?.is_expandable || false }
-    private alertName: string = 'subTypeForm';
+    public alertName: string = 'subTypeForm';
     private _notificationService = inject(NotificationService);
     get resumenOperativa(): string {
         return this._accountPlanService.getResumenOperativa(this.form);
@@ -336,6 +336,10 @@ export class FormularioCuentaDialogComponent
      * Manejamos cambios desde los toggle button
     */
     changeValueToggleButton(toggle: string, value: boolean) {
+
+        console.log('changeValueToggleButton', toggle, value);
+
+
         if (toggle == 'entidad' && value) {
             //Si trabaja con aux con rut NO puede trabajar con aux sin rut
             if (this.control_trabaja_con_auxiliar.value) {
@@ -434,6 +438,7 @@ export class FormularioCuentaDialogComponent
         type: 'success' | 'error' | 'warning' | 'info',
         message: string,
     ): void {
+
         if (type === 'success') {
             this._notificationService.success(message);
             this.onClose();
@@ -457,6 +462,8 @@ export class FormularioCuentaDialogComponent
                     }))
                     .subscribe({
                         next: (response: Cuenta) => {
+                            console.log('getDetalleCuenta', response);
+
                             // Procesa la respuesta normalmente
                             this.cuenta = response;
                             this.allow_master_account_assignation = !this.cuenta.is_expandable;

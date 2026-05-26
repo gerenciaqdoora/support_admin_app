@@ -33,53 +33,77 @@ export class PucManagerService {
     );
   }
 
-  createSubTipo(data: Partial<SubTipo>): Observable<any> {
-    return this._http.post<any>(`${this.API_URL}/subtype`, data);
+  createSubTipo(data: Partial<SubTipo>): Observable<SubTipo> {
+    return this._http.post<any>(`${this.API_URL}/subtype`, data).pipe(
+        map(response => response.data.newRecord)
+    );
   }
 
-  updateSubTipo(id: number, data: Partial<SubTipo>): Observable<any> {
-    return this._http.put<any>(`${this.API_URL}/subtype/${id}`, data);
+  updateSubTipo(id: number, data: Partial<SubTipo>): Observable<SubTipo> {
+    return this._http.put<any>(`${this.API_URL}/subtype/${id}`, data).pipe(
+        map(response => response.data.record)
+    );
   }
 
-  deleteSubTipo(id: number): Observable<any> {
-    return this._http.delete<any>(`${this.API_URL}/subtype/${id}`);
+  deleteSubTipo(id: number): Observable<SubTipo> {
+    return this._http.delete<any>(`${this.API_URL}/subtype/${id}`).pipe(
+        map(response => response.data.record)
+    );
   }
 
-  createCuenta(data: Partial<Cuenta>): Observable<any> {
-    return this._http.post<any>(`${this.API_URL}/account`, data);
+  createCuenta(data: Partial<Cuenta>): Observable<Cuenta> {
+    return this._http.post<any>(`${this.API_URL}/account`, data).pipe(
+        map(response => response.data.newRecord)
+    );
   }
 
-  updateCuenta(id: number, data: Partial<Cuenta>): Observable<any> {
-    return this._http.put<any>(`${this.API_URL}/account/${id}`, data);
+  updateCuenta(id: number, data: Partial<Cuenta>): Observable<Cuenta> {
+    return this._http.put<any>(`${this.API_URL}/account/${id}`, data).pipe(
+        map(response => response.data.record)
+    );
   }
 
-  deleteCuenta(id: number): Observable<any> {
-    return this._http.delete<any>(`${this.API_URL}/account/${id}`);
+  deleteCuenta(id: number): Observable<Cuenta> {
+    return this._http.delete<any>(`${this.API_URL}/account/${id}`).pipe(
+        map(response => response.data.record)
+    );
   }
 
-  createSubCuenta(data: Partial<SubCuenta>): Observable<any> {
-    return this._http.post<any>(`${this.API_URL}/subaccount`, data);
+  createSubCuenta(data: Partial<SubCuenta>): Observable<SubCuenta> {
+    return this._http.post<any>(`${this.API_URL}/subaccount`, data).pipe(
+        map(response => response.data.newRecord)
+    );
   }
 
-  updateSubCuenta(id: number, data: Partial<SubCuenta>): Observable<any> {
-    return this._http.put<any>(`${this.API_URL}/subaccount/${id}`, data);
+  updateSubCuenta(id: number, data: Partial<SubCuenta>): Observable<SubCuenta> {
+    return this._http.put<any>(`${this.API_URL}/subaccount/${id}`, data).pipe(
+        map(response => response.data.record)
+    );
   }
 
-  deleteSubCuenta(id: number): Observable<any> {
-    return this._http.delete<any>(`${this.API_URL}/subaccount/${id}`);
+  deleteSubCuenta(id: number): Observable<SubCuenta> {
+    return this._http.delete<any>(`${this.API_URL}/subaccount/${id}`).pipe(
+        map(response => response.data.record)
+    );
   }
 
   // Gets
   getCuenta(id: number): Observable<Cuenta> {
-      return this._http.get<Cuenta>(`${this.API_URL}/account/${id}`);
+      return this._http.get<any>(`${this.API_URL}/account/${id}`).pipe(
+          map(response => response.data.record)
+      );
   }
 
   getSubTipo(id: number): Observable<SubTipo> {
-      return this._http.get<SubTipo>(`${this.API_URL}/subtype/${id}`);
+      return this._http.get<any>(`${this.API_URL}/subtype/${id}`).pipe(
+          map(response => response.data.record)
+      );
   }
 
   getSubCuenta(id: number): Observable<SubCuenta> {
-      return this._http.get<SubCuenta>(`${this.API_URL}/subaccount/${id}`);
+      return this._http.get<any>(`${this.API_URL}/subaccount/${id}`).pipe(
+          map(response => response.data.record)
+      );
   }
 
   getSubTiposPorTipo(id: number): Observable<SubTipo[]> {

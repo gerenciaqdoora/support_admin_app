@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-        <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t bg-card dark:bg-transparent rounded-b-xl w-full">
+        <div class="flex items-center justify-end space-x-3 px-8 py-5 border-t border-slate-200 bg-slate-50/50 rounded-b-xl w-full">
             <ng-content></ng-content>
         </div>
     `,
@@ -19,4 +19,4 @@ import { CommonModule } from '@angular/common';
     `],
     encapsulation: ViewEncapsulation.None
 })
-export class DialogFooterComponent {}
+export class DialogFooterComponent { }

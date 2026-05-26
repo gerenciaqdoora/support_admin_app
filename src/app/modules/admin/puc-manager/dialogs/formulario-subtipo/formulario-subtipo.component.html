@@ -1,56 +1,86 @@
-<div class="standard-dialog-container">
+<div class="standard-dialog-container relative">
 
     <!-- Header -->
-    <app-dialog-header
-        [title]="data.title"
-        [showCloseButton]="data.dismissible"
-        (close)="onClose()"
-    ></app-dialog-header>
+    <app-dialog-header [title]="data.title" [showCloseButton]="data.dismissible"
+        (close)="onClose()"></app-dialog-header>
 
     <!-- Content -->
-    <div class="standard-dialog-content">
-        
+    <div class="standard-dialog-content p-6">
+
         <!-- Mensaje -->
-        <app-shared-alert [name]="'subTypeForm'"></app-shared-alert>
+        <app-shared-alert [name]="'subTypeForm'" class="mb-6 block"></app-shared-alert>
 
         <!-- Formulario -->
-        <form class="w-full" [formGroup]="form">
+        <form class="flex flex-col gap-6" [formGroup]="form">
 
-            <div class="flex-wrap items-center font-medium hidden md:flex pb-4">
-                <div>
-                    <a class="whitespace-nowrap text-primary-500">
-                        {{ tipo.name | uppercase }}
-                    </a>
-                </div>
+            <!-- Padre (Tipo) Info (Elegant card) -->
+            <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">
+                    JERARQUÍA
+                </p>
+                <p class="mt-1 text-lg font-bold text-gray-900">
+                    {{ tipo.name | uppercase }}
+                </p>
             </div>
 
-            <div class="flex flex-col md:flex-row justify-center items-center gap-0 md:gap-8 w-full">
+            <!-- Inputs Grid/Flex Wrapper -->
+            <div class="flex flex-col gap-5 sm:flex-row">
                 <!-- Codigo -->
-                <app-input-form
-                    class="flex flex-col md:flex-row items-baseline md:w-1/4 w-full"
-                    classes="w-full"
-                    [form]="form"
-                    controlName="code"
-                    label="Codigo"
-                    icon="heroicons_outline:identification"
-                    [useOnlyNumberMask]="true"
-                    [useIcon]="false"
-                    [typeMatHint]="'label'"
-                    [useMatPrefix]="data.is_new_record"
-                    [matPrefixLabel]="tipo.code"
-                    [maxLength]="largo_codigo"
-                ></app-input-form>
+                <div class="flex w-full flex-col sm:w-1/3">
+                    <label for="code" class="mb-1.5 text-sm font-medium text-gray-700">
+                        Código <span class="text-red-500">*</span>
+                    </label>
+                    <div
+                        class="flex h-11 w-full overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm transition-all focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
+                        @if (data.is_new_record) {
+                        <div
+                            class="flex h-full items-center justify-center border-r border-gray-300 bg-gray-50 px-3.5 font-medium text-gray-500 select-none">
+                            {{ tipo.code }}
+                        </div>
+                        }
+                        <input id="code" type="text" formControlName="code" [maxlength]="largo_codigo"
+                            class="h-full w-full bg-transparent px-3.5 text-gray-900 placeholder-gray-400 outline-none"
+                            placeholder="1" autocomplete="off">
+                    </div>
+                    @if (form.get('code')?.touched && form.get('code')?.invalid) {
+                    <div class="mt-1.5 text-xs font-medium text-red-500">
+                        @if (form.get('code')?.hasError('required')) {
+                        Campo requerido
+                        } @else if (form.get('code')?.hasError('minlength') || form.get('code')?.hasError('maxlength'))
+                        {
+                        Debe tener {{ largo_nodo }} dígitos
+                        }
+                    </div>
+                    } @else {
+                    <div class="mt-1.5 text-xs text-gray-500">
+                        Debe tener {{ largo_nodo }} dígitos
+                    </div>
+                    }
+                </div>
 
                 <!-- Nombre -->
-                <app-input-form
-                    class="flex flex-col md:flex-row items-baseline w-full"
-                    classes="w-full"
-                    [form]="form"
-                    controlName="name"
-                    label="Nombre"
-                    icon="heroicons_outline:user-circle"
-                    [useIcon]="true"
-                ></app-input-form>
+                <div class="flex w-full flex-col sm:w-2/3">
+                    <label for="name" class="mb-1.5 text-sm font-medium text-gray-700">
+                        Nombre del Subtipo <span class="text-red-500">*</span>
+                    </label>
+                    <div
+                        class="relative flex h-11 w-full items-center overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm transition-all focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
+                        <div
+                            class="pointer-events-none absolute left-0 flex h-full w-11 items-center justify-center text-gray-400">
+                            <mat-icon class="icon-size-5" svgIcon="heroicons_outline:tag"></mat-icon>
+                        </div>
+                        <input id="name" type="text" formControlName="name"
+                            class="h-full w-full bg-transparent pl-11 pr-4 text-gray-900 placeholder-gray-400 outline-none"
+                            placeholder="Ingrese un nombre..." autocomplete="off">
+                    </div>
+                    @if (form.get('name')?.touched && form.get('name')?.invalid) {
+                    <div class="mt-1.5 text-xs font-medium text-red-500">
+                        @if (form.get('name')?.hasError('required')) {
+                        Campo requerido
+                        }
+                    </div>
+                    }
+                </div>
             </div>
         </form>
 
@@ -59,20 +89,12 @@
     <!-- Footer -->
     <app-dialog-footer>
         <!-- Cancel -->
-        <app-dialog-button-cancel
-            [label]="data.actions.cancel.label"
-            [disabled]="isLoading"
-            (cancel)="onClose()"
-        ></app-dialog-button-cancel>
+        <app-dialog-button-cancel [label]="data.actions.cancel.label" [disabled]="isLoading"
+            (cancel)="onClose()"></app-dialog-button-cancel>
 
         <!-- Confirm -->
-        <app-dialog-button-confirm
-            [label]="data.actions.confirm.label"
-            [color]="data.actions.confirm.color"
-            [isLoading]="isLoading"
-            [disabled]="form.invalid"
-            (confirm)="onSubmit()"
-        ></app-dialog-button-confirm>
+        <app-dialog-button-confirm [label]="data.actions.confirm.label" [color]="data.actions.confirm.color"
+            [isLoading]="isLoading" [disabled]="form.invalid" (confirm)="onSubmit()"></app-dialog-button-confirm>
     </app-dialog-footer>
 
 </div>
