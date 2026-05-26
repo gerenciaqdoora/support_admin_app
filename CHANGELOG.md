@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-26] refactor: reubicar modulo de puc-manager y componentes shared a la raiz de modules
+
 - [2026-05-26] refactor(puc-manager): remover alerta de prueba y dependencias no utilizadas en formulario subtipo
 
 - [2026-05-26] fix(alert): corregir alineacion y centrado de boton de cierre y refactorizar a alerta atomica segura

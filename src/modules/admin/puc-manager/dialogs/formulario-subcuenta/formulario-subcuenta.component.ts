@@ -1,5 +1,5 @@
 import { CommonModule, UpperCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { AbstractControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,11 +9,11 @@ import { MatRadioModule } from '@angular/material/radio';
 import { CategoriaCuenta, Cuenta, DialogAccountPlan, IfrsAccount, SubCuenta, SubTipo, Tipo } from '@core/models/data/accountPlan';
 import { JsonResponse } from '@core/models/response/JsonResponse';
 import { PucManagerService } from '@core/services/puc-manager.service';
-import { SharedAlertComponent } from '@app/modules/shared/alert/alert.component';
-import { SharedConfigCardComponent } from '@app/modules/shared/config-card/config-card.component';
-import { SharedInputComponent } from '@app/modules/shared/input/input.component';
-import { SelectScrollAndFilterComponent } from '@app/modules/shared/select-with-filter/select-with-filter.component';
-import { ToggleButtonComponent } from '@app/modules/shared/toggle-button/toggle-button.component';
+import { SharedAlertComponent } from '@modules/shared/alert/alert.component';
+import { SharedConfigCardComponent } from '@modules/shared/config-card/config-card.component';
+import { SharedInputComponent } from '@modules/shared/input/input.component';
+import { SelectScrollAndFilterComponent } from '@modules/shared/select-with-filter/select-with-filter.component';
+import { ToggleButtonComponent } from '@modules/shared/toggle-button/toggle-button.component';
 import { NotificationService } from '@core/services/notification.service';
 import { DialogHeaderComponent } from '../shared/header/header.component';
 import { DialogFooterComponent } from '../shared/footer/footer.component';
@@ -22,8 +22,8 @@ import { DialogButtonConfirmComponent } from '../shared/buttons/confirm-button.c
 import { finalize } from 'rxjs';
 
 @Component({
-    selector: 'dialog-formulario-cuenta',
-    templateUrl: './formulario-cuenta.component.html',
+    selector: 'dialog-formulario-subcuenta',
+    templateUrl: './formulario-subcuenta.component.html',
     styles: [
         `
             .dialog-panel {
@@ -44,7 +44,6 @@ import { finalize } from 'rxjs';
         `,
     ],
     encapsulation: ViewEncapsulation.None,
-    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
         CommonModule,
@@ -66,7 +65,7 @@ import { finalize } from 'rxjs';
         DialogButtonConfirmComponent
     ],
 })
-export class FormularioCuentaDialogComponent
+export class FormularioSubCuentaDialogComponent
     implements OnInit {
 
     // Lista de categorias de cuenta
@@ -77,24 +76,24 @@ export class FormularioCuentaDialogComponent
     data: DialogAccountPlan = inject(MAT_DIALOG_DATA);
     // Tipo
     tipo!: Tipo;
-    // Padre
+    // SubTipo
     subtipo!: SubTipo;
-    // Cuenta Actualizado
+    // Padre
     cuenta!: Cuenta;
-    // Cuenta Actualizado
-    allow_master_account_assignation: boolean = true;
-    // Formulario ejecutado
-    formSubmitted: boolean = false;
+    // SubCuenta Actualizado
+    subcuenta!: SubCuenta;
     // Formulario
     form!: UntypedFormGroup;
-    // Estructura del codigo
-    largo_codigo: number = 4;
+    // Es creacion/edicion
+    is_new_record: boolean = true;
     // Estructura del codigo cuenta
     largo_nodo: number = 2;
+    // Estructura del codigo
+    largo_codigo: number = 6;
     // Cargador de contenido
     isLoading: boolean = false;
     // Avisos
-
+    
     // Servicios de Plan de cuenta
     private _accountPlanService = inject(PucManagerService);
     // Método para obtener el control de asignacion_cuenta_contable
@@ -105,8 +104,6 @@ export class FormularioCuentaDialogComponent
     get control_trabaja_con_auxiliar_con_rut(): AbstractControl { return this.form.get('trabaja_con_auxiliar_con_rut')! }
     // Método para obtener el control de auxiliar
     get control_trabaja_con_auxiliar(): AbstractControl { return this.form.get('trabaja_con_auxiliar')! }
-    // Maneja si cuenta tiene subcuentas asociadas
-    get cuenta_tiene_hijos(): boolean { return this.cuenta?.is_expandable || false }
     public alertName: string = 'subTypeForm';
     private _notificationService = inject(NotificationService);
     get resumenOperativa(): string {
@@ -124,19 +121,6 @@ export class FormularioCuentaDialogComponent
     get isEditMode(): boolean {
         return !this.data.is_new_record;
     }
-    get tieneHijos(): boolean {
-        return !this.cuenta_tiene_hijos;
-    }
-    get showOperativeBody(): boolean {
-        if (!this.isEditMode) return true;
-        if (!this.cuenta_tiene_hijos) return true;
-        return this.form.get('operation_inherited_configuration')?.value;
-    }
-    get showTreasuryBody(): boolean {
-        if (!this.isEditMode) return true;
-        if (!this.cuenta_tiene_hijos) return true;
-        return this.form.get('treasury_inherited_configuration')?.value;
-    }
 
     /**
      * Constructor
@@ -144,7 +128,7 @@ export class FormularioCuentaDialogComponent
     constructor(
         private _formBuilder: UntypedFormBuilder,
         private _changeDetectorRef: ChangeDetectorRef,
-        private dialogRef: MatDialogRef<FormularioCuentaDialogComponent>
+        private dialogRef: MatDialogRef<FormularioSubCuentaDialogComponent>
     ) { }
 
     // -----------------------------------------------------------------------------------------------------
@@ -157,8 +141,9 @@ export class FormularioCuentaDialogComponent
     ngOnInit(): void {
         this.tipo = this.data.tipo;
         this.subtipo = this.data.subtipo;
-        this.largo_codigo = this.data.account_plan!.TIPO_large + this.data.account_plan!.SUB_TIPO_large + this.data.account_plan!.CUENTA_large;
-        this.largo_nodo = this.data.account_plan!.CUENTA_large;
+        this.cuenta = this.data.cuenta;
+        this.largo_codigo = this.data.account_plan!.TIPO_large + this.data.account_plan!.SUB_TIPO_large + this.data.account_plan!.CUENTA_large + this.data.account_plan!.SUB_CUENTA_large;
+        this.largo_nodo = this.data.account_plan!.SUB_CUENTA_large;
         this.account_categories = this.data.account_categories || [];
         this.ifrs_accounts = this.data.ifrs_accounts || [];
         this.initForm();
@@ -185,7 +170,6 @@ export class FormularioCuentaDialogComponent
             trabaja_con_centro_costo: [false], // usara centro de costo
             trabaja_con_numero_operacion: [false], // usara numero de operacion
             trabaja_con_numero_despacho: [false], // usara numero de despacho
-            operation_inherited_configuration: [true], // Hereda operacion
 
             ifrs_account: [''], // Ifrs
 
@@ -194,53 +178,43 @@ export class FormularioCuentaDialogComponent
 
             show_in_treasury: [false], // Indica si usara tesoreria
             treasury_type: ['receivable_payable'], // Tipo de tesoreria: receivable_payable, bank, cash_box
-            treasury_inherited_configuration: [true], // Hereda tesoreria
         });
 
-        if (this.isEditMode && this.data.cuenta) {
+        if (this.isEditMode && this.data.subcuenta) {
             // Deshabilitar el campo code si es necesario
             this.form.get('id')?.setValidators(Validators.required);
             // Deshabilitar el campo code si es necesario
             this.form.get('code')?.disable();
             // Marca todos los controles del formulario como "touched" y "dirty" para que aparezcan los mensajes de error
             this.form.markAllAsTouched();
-
-            // Activamos suscribers
-            this.form.get('operation_inherited_configuration')
-                ?.valueChanges.subscribe(value => {
-                    this.toggleOperativeControls(value);
-                });
-
-            this.form.get('treasury_inherited_configuration')
-                ?.valueChanges.subscribe(value => {
-                    this.toggleTreasuryControls(value);
-                });
-
             // Obtenemos detalles de la cuenta
-            this.getDetalleCuenta(this.data.cuenta);
+            this.getDetalleSubCuenta(this.data.subcuenta);
         }
 
+        // Detalles de la cuenta
+        this.getDetalleCuenta(this.cuenta);
+
         // Escuchamos cambios de treasury type
-        this.form.get('treasury_type')?.valueChanges.subscribe(type => {
-            // Si es banco o caja, no puede tener cuenta maestra
-            if (type === 'bank' || type === 'cash_box') {
-                this.form.get('asignacion_cuenta_contable')?.setValue(false);
-                this.form.get('cuenta_maestra')?.setValue(null);
-                this.form.get('asignacion_cuenta_contable')?.disable();
-                this.form.get('cuenta_maestra')?.disable();
-            } else {
-                // habilitamos según corresponda
-                if (!this.cuenta_tiene_hijos) {
+        this.form.get('treasury_type')?.valueChanges
+            .subscribe(type => {
+                // Si es banco o caja, no puede tener cuenta maestra
+                if (type === 'bank' || type === 'cash_box') {
+                    this.form.get('asignacion_cuenta_contable')?.setValue(false);
+                    this.form.get('cuenta_maestra')?.setValue(null);
+                    this.form.get('asignacion_cuenta_contable')?.disable();
+                    this.form.get('cuenta_maestra')?.disable();
+                } else {
+                    // habilitamos según corresponda
                     this.form.get('asignacion_cuenta_contable')?.enable();
                     this.form.get('cuenta_maestra')?.enable();
                 }
-            }
-            this._changeDetectorRef.markForCheck();
-        });
+                this._changeDetectorRef.markForCheck();
+            });
     }
 
     /**
      * Realiza el request
+     *
     */
     onSubmit() {
         if (this.form.invalid) {
@@ -271,7 +245,7 @@ export class FormularioCuentaDialogComponent
         // Valida que si selecciona uso de cuenta maestra trabaje con auxiliar con rut
         if (inputData.account_category_id && !inputData.trabaja_con_auxiliar_con_rut) {
             // Mostrar error
-            this.showAlertMessage('warning', `Si selecciono una cuenta maestra la cuenta debe trabajar con auxiliar con rut.`);
+            this.showAlertMessage('warning', `Si selecciono una cuenta maestra la subcuenta debe trabajar con auxiliar con rut.`);
 
             // Mark for check
             this._changeDetectorRef.markForCheck();
@@ -286,45 +260,46 @@ export class FormularioCuentaDialogComponent
             return;
         }
 
-        if (!this.isEditMode) { //Creacion
+        if (!this.isEditMode) { // Creacion
 
             // Valida que no sean 00 en el codigo
-            let codigo_no_permitido = `${this.subtipo.code}${"0".repeat(this.largo_nodo)}`;
+            let codigo_no_permitido = `${this.cuenta.code}${"0".repeat(this.largo_nodo)}`;
             if (inputData.code == codigo_no_permitido) {
                 // Mostrar error
-                this.showAlertMessage('warning', `Código ${this.subtipo.code}${"0".repeat(this.largo_nodo)} no válido. Pruebe con número que no sea 0.`);
+                this.showAlertMessage('warning', `Código ${this.cuenta.code}${"0".repeat(this.largo_nodo)} no válido. Pruebe con número que no sea 0.`);
 
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
                 return;
             }
 
-            // Llamar el servicio
+            // Llamar al servicio
             this.isLoading = true;
-            this._accountPlanService.createCuenta(inputData)
+            this._accountPlanService.createSubCuenta(inputData)
                 .pipe(finalize(() => {
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 }))
                 .subscribe({
-                    next: (response: Cuenta) => {
-                        this.cuenta = response;
+                    next: (response: SubCuenta) => {
+                        // Mostrar mensaje
+                        this.subcuenta = response;
                         this.showAlertMessage('success', 'Creación exitosa.');
                     },
                     error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
                 });
         } else {
-
-            // Llamar el servicio
+            // Llamar al servicio
             this.isLoading = true;
-            this._accountPlanService.updateCuenta(this.cuenta!.id as number, inputData)
+            this._accountPlanService.updateSubCuenta(this.subcuenta!.id as number, inputData)
                 .pipe(finalize(() => {
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 }))
                 .subscribe({
-                    next: (response: Cuenta) => {
-                        this.cuenta = response;
+                    next: (response: SubCuenta) => {
+                        // Mostrar mensaje
+                        this.subcuenta = response;
                         this.showAlertMessage('success', 'Edición exitosa.');
                     },
                     error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
@@ -336,10 +311,6 @@ export class FormularioCuentaDialogComponent
      * Manejamos cambios desde los toggle button
     */
     changeValueToggleButton(toggle: string, value: boolean) {
-
-        console.log('changeValueToggleButton', toggle, value);
-
-
         if (toggle == 'entidad' && value) {
             //Si trabaja con aux con rut NO puede trabajar con aux sin rut
             if (this.control_trabaja_con_auxiliar.value) {
@@ -379,6 +350,7 @@ export class FormularioCuentaDialogComponent
                 this.form.get('cuenta_maestra')?.enable();
             }
         }
+
         // Marcamos auxiliar con rut si tiene cuenta maestra seleccionada
         if (this.cuenta_maestra || this.form.get('asignacion_cuenta_contable')?.value) {
             this.control_trabaja_con_auxiliar_con_rut.setValue(true);
@@ -402,18 +374,11 @@ export class FormularioCuentaDialogComponent
      *
     */
     onClose() {
-        if (!this.isEditMode && this.cuenta?.id) {
-            this.dialogRef.close({ record: this.cuenta });
+        if (!this.isEditMode && this.subcuenta?.id) {
+            this.dialogRef.close({ record: this.subcuenta });
         }
         else if (this.isEditMode) {
-            const formData = this.form.getRawValue();
-            // Si fue aplicado el formulario
-            // agregamos a la cuenta herencias
-            if (this.formSubmitted) {
-                this.cuenta.operation_inherited_configuration = formData.operation_inherited_configuration;
-                this.cuenta.treasury_inherited_configuration = formData.treasury_inherited_configuration;
-            }
-            this.dialogRef.close({ record: this.cuenta });
+            this.dialogRef.close({ record: this.subcuenta });
         }
         else {
             this.dialogRef.close(null);
@@ -421,24 +386,12 @@ export class FormularioCuentaDialogComponent
     }
 
     /**
-     * Se genero el cuenta y pasamos a edicion
-     */
-    private changeStatus() {
-        this.data.is_new_record = false;
-        this.data.title = 'Editar Cuenta';
-        this.form.get('id')?.setValue(this.cuenta.id);
-        this.form.get('code')?.setValue(this.cuenta.code);
-        this.form.get('code')?.disable();
-    }
-
-    /**
      * Mostrar mensaje
      */
     private showAlertMessage(
         type: 'success' | 'error' | 'warning' | 'info',
-        message: string,
+        message: string
     ): void {
-
         if (type === 'success') {
             this._notificationService.success(message);
             this.onClose();
@@ -462,62 +415,37 @@ export class FormularioCuentaDialogComponent
                     }))
                     .subscribe({
                         next: (response: Cuenta) => {
-                            console.log('getDetalleCuenta', response);
-
                             // Procesa la respuesta normalmente
                             this.cuenta = response;
-                            this.allow_master_account_assignation = !this.cuenta.is_expandable;
 
-                            // Siempre
-                            this.form.get('id')?.setValue(this.cuenta.id);
-                            this.form.get('code')?.setValue(this.cuenta.code);
-                            this.form.get('name')?.setValue(this.cuenta.name);
-
-                            // IFRS SIEMPRE se respeta
-                            if (this.cuenta.ifrs_code) {
-                                const ifrs = this.ifrs_accounts.find(r => r.code == this.cuenta?.ifrs_code);
-                                this.form.get('ifrs_account')?.setValue(ifrs);
-                            }
-
-                            // CASO: TIENE SUBCUENTAS
-                            if (this.cuenta_tiene_hijos) {
-
-                                // Operativa se inicia null
-                                this.form.patchValue({
-                                    trabaja_con_auxiliar_con_rut: null,
-                                    trabaja_con_auxiliar: null,
-                                    trabaja_con_centro_costo: null,
-                                    trabaja_con_numero_operacion: null,
-                                    trabaja_con_numero_despacho: null,
-                                    operation_inherited_configuration: false
-                                });
-
-                                // Tesorería null
-                                this.form.patchValue({
-                                    show_in_treasury: null,
-                                    treasury_type: null,
-                                    treasury_inherited_configuration: false
-                                });
-
-                                // Cuenta maestra NO se inicializa
-                                this.form.patchValue({
-                                    asignacion_cuenta_contable: null,
-                                    cuenta_maestra: null
-                                });
-
-                                this.toggleOperativeControls(false);
-                                this.toggleTreasuryControls(false);
-                            }
-
-                            // CASO: NO TIENE SUBCUENTAS
-                            else {
-
+                            // Para la creacion completamos formulario
+                            if (!this.isEditMode) {
+                                // Cambios en el formulario por defecto
                                 this.form.patchValue({
                                     trabaja_con_auxiliar_con_rut: this.cuenta.trabaja_con_auxiliar_con_rut,
-                                    trabaja_con_auxiliar: this.cuenta.trabaja_con_auxiliar || false,
-                                    trabaja_con_numero_operacion: this.cuenta.trabaja_con_numero_operacion || false,
-                                    trabaja_con_numero_despacho: this.cuenta.trabaja_con_numero_despacho || false,
+                                    trabaja_con_auxiliar: this.cuenta.trabaja_con_auxiliar,
+                                    trabaja_con_centro_costo: this.cuenta.trabaja_con_centro_costo,
+                                    trabaja_con_numero_operacion: this.cuenta.trabaja_con_numero_operacion,
+                                    trabaja_con_numero_despacho: this.cuenta.trabaja_con_numero_despacho,
                                 });
+
+                                // Ifrs
+                                if (this.cuenta.ifrs_code) {
+                                    this.form.patchValue({
+                                        ifrs_account: this.ifrs_accounts.find(r => r.code == this.cuenta.ifrs_code)
+                                    });
+                                }
+
+                                // Solo se cumple cuando es primera creacion de subcuenta
+                                if (this.cuenta.categoria?.id) {
+                                    this.form.patchValue({
+                                        asignacion_cuenta_contable: true,
+                                        cuenta_maestra: this.account_categories.find(r => r.id == this.cuenta?.categoria?.id),
+                                    });
+                                    this.form.get('asignacion_cuenta_contable')?.disable();
+                                    this.form.get('cuenta_maestra')?.disable();
+                                    this.showAlertMessage('warning', `Al crear la primera subcuenta los movimientos y la configuración de la cuenta maestra se heredaran a esta subcuenta.`)
+                                }
 
                                 // Tesoreria
                                 if (this.cuenta.show_in_bank) {
@@ -542,28 +470,102 @@ export class FormularioCuentaDialogComponent
                                     this.form.get('asignacion_cuenta_contable')?.disable();
                                     this.form.get('cuenta_maestra')?.disable();
                                 }
+                            }
 
-                                // Centro de costo si empresa tiene el flag activo (formulario empresa)
-                                if (this.data.company_allow_cost_center) {
-                                    this.form.patchValue({
-                                        trabaja_con_centro_costo: this.cuenta.trabaja_con_centro_costo
-                                    });
-                                }
+                            // Validaciones para formulario
+                            if (this.cuenta.trabaja_con_auxiliar_con_rut) {
+                                this.form.get('trabaja_con_auxiliar')?.setValue(false);
+                            }
+                            if (this.cuenta.trabaja_con_auxiliar) {
+                                this.form.get('trabaja_con_auxiliar_con_rut')?.setValue(false);
+                            }
 
-                                // Cuenta maestra
-                                if (this.cuenta.categoria?.id && (!this.cuenta.show_in_bank && !this.cuenta.show_in_cash_box)) {
-                                    this.form.get('asignacion_cuenta_contable')?.setValue(true);
-                                    this.form.get('cuenta_maestra')?.setValue(
-                                        this.account_categories.find(r => r.id == this.cuenta?.categoria?.id)
-                                    );
-                                    // Marcamos auxiliar con rut
-                                    this.control_trabaja_con_auxiliar_con_rut.setValue(true);
-                                    this.changeValueToggleButton('entidad', true);
-                                }
+                        }
+                    });
+            });
 
-                                this.toggleOperativeControls(true);
-                                this.toggleTreasuryControls(true);
+        }
+    }
 
+    /**
+     * Obtiene detalles de la subcuenta
+     */
+    private getDetalleSubCuenta(subcuenta: SubCuenta | null): void {
+        if (subcuenta?.id) {
+            setTimeout(() => {
+                this.isLoading = true;
+                this._accountPlanService.getSubCuenta(subcuenta.id as number)
+                    .pipe(finalize(() => {
+                        this.isLoading = false;
+                        this._changeDetectorRef.markForCheck();
+                    }))
+                    .subscribe({
+                        next: (response: SubCuenta) => {
+                            // Procesa la respuesta normalmente
+                            this.subcuenta = response;
+
+                            // Siempre
+                            this.form.patchValue({
+                                id: this.subcuenta.id,
+                                code: this.subcuenta.code,
+                                name: this.subcuenta.name,
+                            });
+
+                            // IFRS SIEMPRE se respeta
+                            if (this.subcuenta.ifrs_code) {
+                                this.form.patchValue({
+                                    ifrs_account: this.ifrs_accounts.find(r => r.code == this.subcuenta.ifrs_code)
+                                });
+                            }
+
+                            // Cambios en el doc
+                            this.form.patchValue({
+                                trabaja_con_auxiliar_con_rut: this.subcuenta.trabaja_con_auxiliar_con_rut,
+                                trabaja_con_auxiliar: this.subcuenta.trabaja_con_auxiliar || false,
+                                trabaja_con_numero_operacion: this.subcuenta.trabaja_con_numero_operacion || false,
+                                trabaja_con_numero_despacho: this.subcuenta.trabaja_con_numero_despacho || false,
+                            });
+
+                            // Tesoreria
+                            if (this.subcuenta.show_in_bank) {
+                                this.form.patchValue({
+                                    show_in_treasury: true,
+                                    treasury_type: 'bank',
+                                });
+                                // Deshabilitar cuenta maestra
+                                this.form.get('asignacion_cuenta_contable')?.disable();
+                                this.form.get('cuenta_maestra')?.disable();
+                            } else if (this.subcuenta.show_in_treasury) {
+                                this.form.patchValue({
+                                    show_in_treasury: true,
+                                    treasury_type: 'receivable_payable',
+                                });
+                            } else if (this.subcuenta.show_in_cash_box) {
+                                this.form.patchValue({
+                                    show_in_treasury: true,
+                                    treasury_type: 'cash_box',
+                                });
+                                // Deshabilitar cuenta maestra
+                                this.form.get('asignacion_cuenta_contable')?.disable();
+                                this.form.get('cuenta_maestra')?.disable();
+                            }
+
+                            // Centro de costo si empresa tiene el flag activo (formulario empresa)
+                            if (this.data.company_allow_cost_center) {
+                                this.form.patchValue({
+                                    trabaja_con_centro_costo: this.subcuenta.trabaja_con_centro_costo
+                                });
+                            }
+
+                            // Si tiene configurada una cuenta maestra
+                            if (this.subcuenta.account_category_id && (!this.cuenta.show_in_bank && !this.cuenta.show_in_cash_box)) {
+                                this.form.patchValue({
+                                    asignacion_cuenta_contable: true,
+                                    cuenta_maestra: this.account_categories.find(r => r.id == this.subcuenta.account_category_id)
+                                });
+                                // Marcamos auxiliar con rut
+                                this.control_trabaja_con_auxiliar_con_rut.setValue(true);
+                                this.changeValueToggleButton('entidad', true);
                             }
 
                         },
@@ -579,8 +581,12 @@ export class FormularioCuentaDialogComponent
      */
     private getAsociacionCategoriaCuenta(categoria: CategoriaCuenta): void {
         setTimeout(() => {
+            this.isLoading = true;
             this._accountPlanService.getAsociacionCategoriaCuenta(this.data.account_plan!.id, categoria.id)
-                .pipe(finalize(() => this._changeDetectorRef.markForCheck()))
+                .pipe(finalize(() => {
+                    this.isLoading = false;
+                    this._changeDetectorRef.markForCheck();
+                }))
                 .subscribe({
                     next: (response: { tipo: string, record: Cuenta | SubCuenta } | null) => {
                         // Procesa la respuesta normalmente
@@ -595,6 +601,7 @@ export class FormularioCuentaDialogComponent
                             this.control_trabaja_con_auxiliar_con_rut.setValue(true);
                             this.changeValueToggleButton('entidad', true);
                         }
+
                     },
                     error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
                 });
@@ -604,16 +611,16 @@ export class FormularioCuentaDialogComponent
     /**
      * Funcion para formatear el formulario a backend
      */
-    private getFormattedData(): Cuenta {
+    private getFormattedData(): SubCuenta {
         const formData = this.form.getRawValue();
 
-        const data = new Cuenta({
+        const data = new SubCuenta({
             id: this.isEditMode
                 ? formData.id
                 : null,
             code: this.isEditMode
                 ? formData.code
-                : `${this.subtipo.code}${formData.code}`,
+                : `${this.cuenta.code}${formData.code}`,
             name: formData.name,
             ifrs_code: formData.ifrs_account?.code || null,
             ifrs_account: formData.ifrs_account || null,
@@ -635,69 +642,14 @@ export class FormularioCuentaDialogComponent
                 : false,
             trabaja_con_numero_operacion: formData.trabaja_con_numero_operacion,
             trabaja_con_numero_despacho: formData.trabaja_con_numero_despacho,
-            account_category_id: (formData.asignacion_cuenta_contable && this.allow_master_account_assignation)
+            account_category_id: formData.asignacion_cuenta_contable
                 ? (formData.cuenta_maestra?.id || null)
                 : null,
-            sub_tipo_id: this.subtipo.id,
-            account_plan_id: this.data.account_plan!.id,
-            operation_inherited_configuration: (this.isEditMode && this.cuenta_tiene_hijos)
-                ? formData.operation_inherited_configuration
-                : false,
-            treasury_inherited_configuration: (this.isEditMode && this.cuenta_tiene_hijos)
-                ? formData.treasury_inherited_configuration
-                : false
+            account_id: this.cuenta.id,
+            account_plan_id: this.data.account_plan!.id
         });
 
         return data;
-    }
-
-    private toggleOperativeControls(enabled: boolean): void {
-
-        const controls = [
-            'trabaja_con_auxiliar_con_rut',
-            'trabaja_con_auxiliar',
-            'trabaja_con_centro_costo',
-            'trabaja_con_numero_operacion',
-            'trabaja_con_numero_despacho',
-        ];
-
-        controls.forEach(control => {
-
-            const ctrl = this.form.get(control);
-
-            if (!ctrl) return;
-
-            if (enabled) {
-                ctrl.enable();
-            } else {
-                ctrl.reset(null); // 🔹 importante
-                ctrl.disable();
-            }
-        });
-
-        this._changeDetectorRef.markForCheck();
-    }
-
-    private toggleTreasuryControls(enabled: boolean): void {
-
-        const showCtrl = this.form.get('show_in_treasury');
-        const typeCtrl = this.form.get('treasury_type');
-
-        if (!showCtrl || !typeCtrl) return;
-
-        if (enabled) {
-            showCtrl.enable();
-            typeCtrl.enable();
-        } else {
-
-            showCtrl.reset(null);
-            typeCtrl.reset(null);
-
-            showCtrl.disable();
-            typeCtrl.disable();
-        }
-
-        this._changeDetectorRef.markForCheck();
     }
 
 }

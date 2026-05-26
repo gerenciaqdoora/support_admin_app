@@ -107,7 +107,7 @@ export const routes: Routes = [
       {
         path: 'admin/puc-manager',
         loadChildren: () =>
-          import('./modules/admin/puc-manager/puc-manager.routes'),
+          import('@modules/admin/puc-manager/puc-manager.routes'),
         data: { breadcrumb: 'Gestión PUC' },
       },
       {

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { DialogAccountPlan, SubTipo, Tipo } from '@core/models/data/accountPlan';
 import { JsonResponse } from '@core/models/response/JsonResponse';
 import { PucManagerService } from '@core/services/puc-manager.service';
-import { SharedAlertComponent } from '@app/modules/shared/alert/alert.component';
+import { SharedAlertComponent } from '@modules/shared/alert/alert.component';
 import { NotificationService } from '@core/services/notification.service';
 import { DialogHeaderComponent } from '../shared/header/header.component';
 import { DialogFooterComponent } from '../shared/footer/footer.component';

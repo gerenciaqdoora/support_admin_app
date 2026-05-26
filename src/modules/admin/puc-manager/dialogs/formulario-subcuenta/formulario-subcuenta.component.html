@@ -1,7 +1,7 @@
 <div class="standard-dialog-container">
 
     <!-- Header -->
-    <app-dialog-header [title]="data.title" [showCloseButton]="data.dismissible"
+    <app-dialog-header *ngIf="data.title" [title]="data.title" [showCloseButton]="data.dismissible"
         (close)="onClose()"></app-dialog-header>
 
     <!-- Content -->
@@ -22,6 +22,8 @@
                     <span>{{ tipo.name | uppercase }}</span>
                     <mat-icon class="mx-2 w-5 h-5 text-gray-400" svgIcon="heroicons_mini:chevron-right"></mat-icon>
                     <span>{{ subtipo.name | uppercase }}</span>
+                    <mat-icon class="mx-2 w-5 h-5 text-gray-400" svgIcon="heroicons_mini:chevron-right"></mat-icon>
+                    <span>{{ cuenta.name | uppercase }}</span>
                 </div>
             </div>
 
@@ -87,50 +89,20 @@
             </div>
 
             <!-- Configuracion IFRS -->
-            @if(tieneHijos){
             <app-config-card [title]="'Configuracion cuenta IFRS'" [summary]="resumenIfrs">
                 <div class="space-y-4">
                     <div class="flex flex-col items-start w-full">
                         <app-select-with-filter class="w-full" [allOptions]="ifrs_accounts"
                             [matLabel]="'Plan de Cuenta IFRS según SII'" [needEmitChange]="false"
                             [show_atribute_option]="'code'" [primaryKey]="'code'" [controlName]="'ifrs_account'"
-                            [parentForm]="form" [useIcon]="false"></app-select-with-filter>
+                            [parentForm]="form" icon="feather:layers" [useIcon]="true"></app-select-with-filter>
                     </div>
                 </div>
             </app-config-card>
-            }
 
             <!-- Configuracion operativa -->
-            <app-config-card [title]="'Configuracion Operativa'" [summary]="resumenOperativa"
-                [showInheritToggle]="isEditMode && cuenta_tiene_hijos"
-                [inheritValue]="form.get('operation_inherited_configuration')?.value"
-                (inheritChange)="form.get('operation_inherited_configuration')?.setValue($event)">
+            <app-config-card [title]="'Configuracion Operativa'" [summary]="resumenOperativa">
 
-                <!-- Mensaje cuando no está heredando -->
-                @if(cuenta_tiene_hijos && !showOperativeBody){
-                <div class="flex items-center gap-2 text-sm text-gray-500 italic">
-                    <mat-icon class="text-gray-400 text-base">info</mat-icon>
-                    <span>
-                        Los cambios pueden heredarse a todas las subcuentas activando <b>Heredar</b>.
-                    </span>
-                </div>
-                }
-                @if(showOperativeBody){
-                @if(cuenta_tiene_hijos){
-                <div
-                    class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 my-2">
-
-                    <mat-icon class="w-5 h-5 text-amber-500">
-                        warning_amber
-                    </mat-icon>
-
-                    <div>
-                        Esta configuración se aplicará a todas las <b>subcuentas</b> existentes.
-                        Las subcuentas podrán modificarse posteriormente de forma individual.
-                    </div>
-
-                </div>
-                }
                 <!-- Contenido interno cuando abre -->
                 <div class="space-y-4">
 
@@ -182,41 +154,12 @@
                             [useIcon]="true"></app-toggle-button>
                     </div>
                 </div>
-                }
 
             </app-config-card>
 
             <!-- Configuracion Tesoreria -->
-            <app-config-card [title]="'Configuracion Tesoreria'" [summary]="resumenTesoreria"
-                [showInheritToggle]="isEditMode && cuenta_tiene_hijos"
-                [inheritValue]="form.get('treasury_inherited_configuration')?.value"
-                (inheritChange)="form.get('treasury_inherited_configuration')?.setValue($event)">
+            <app-config-card [title]="'Configuracion Tesoreria'" [summary]="resumenTesoreria">
 
-                <!-- Contenido interno cuando abre -->
-                @if(cuenta_tiene_hijos && !showTreasuryBody){
-                <div class="flex items-center gap-2 text-sm text-gray-500 italic">
-                    <mat-icon class="text-gray-400 text-base">info</mat-icon>
-                    <span>
-                        Los cambios pueden heredarse a todas las subcuentas activando <b>Heredar</b>.
-                    </span>
-                </div>
-                }
-                @if(showTreasuryBody){
-                @if(cuenta_tiene_hijos){
-                <div
-                    class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 my-2">
-
-                    <mat-icon class="w-5 h-5 text-amber-500">
-                        warning_amber
-                    </mat-icon>
-
-                    <div>
-                        Esta configuración se aplicará a todas las <b>subcuentas</b> existentes.
-                        Las subcuentas podrán modificarse posteriormente de forma individual.
-                    </div>
-
-                </div>
-                }
                 <div class="space-y-4">
 
                     <div class="flex flex-col items-start w-full">
@@ -252,22 +195,18 @@
                     </div>
 
                 </div>
-                }
 
             </app-config-card>
 
             <!-- Configuracion Cuenta Maestra -->
-            @if(tieneHijos){
-            <app-config-card [title]="'Cuenta Maestra'" [summary]="resumenCuentaMaestra" [showInheritToggle]="false">
+            <app-config-card [title]="'Cuenta Maestra'" [summary]="resumenCuentaMaestra">
 
                 <!-- Contenido interno cuando abre -->
                 @if (asignacion_cuenta_contable){
                 <div
                     class="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 my-2">
 
-                    <mat-icon class="w-5 h-5 text-amber-500">
-                        warning_amber
-                    </mat-icon>
+                    <mat-icon class="w-5 h-5 text-amber-500" svgIcon="heroicons_solid:exclamation-triangle"></mat-icon>
 
                     <div>
                         La asignación de <b>cuenta maestra</b> obliga que la operatividad
@@ -276,6 +215,7 @@
 
                 </div>
                 }
+
                 <div class="space-y-4">
 
                     <div class="flex flex-row items-start w-full">
@@ -283,7 +223,7 @@
                             [form]="form" title="Configuración de Cuenta Maestra"
                             controlName="asignacion_cuenta_contable"
                             description="Las cuentas maestras, son asignaciones especiales de caracter unicos para generar proceso específicos y automáticos dentro del sistema."
-                            [useDescription]="true" icon="mat_solid:stars" [useIcon]="true"
+                            [useDescription]="true" icon="mat_solid:stars" [useIcon]="false"
                             (valueChange)="changeValueToggleButton('cuenta_maestra', $event)"></app-toggle-button>
                     </div>
 
@@ -293,7 +233,7 @@
                         <app-select-with-filter class="w-full" [allOptions]="account_categories"
                             [matLabel]="'Cuenta Maestra'" [needEmitChange]="true" [show_atribute_option]="'name'"
                             [controlName]="'cuenta_maestra'" [parentForm]="form" icon="heroicons_solid:star"
-                            [useIcon]="true" (changeValue)="onMasterAccountChange($event)"></app-select-with-filter>
+                            [useIcon]="false" (changeValue)="onMasterAccountChange($event)"></app-select-with-filter>
                         @if(cuenta_maestra){
                         <span class="text-sm font-bold text-sky-700">
                             Descripción: {{ cuenta_maestra.description }}
@@ -305,9 +245,9 @@
                 </div>
 
             </app-config-card>
-            }
 
         </form>
+
     </div>
 
     <!-- Footer -->
