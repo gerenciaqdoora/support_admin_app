@@ -18,18 +18,18 @@ import { Subject, filter, takeUntil } from 'rxjs';
         QdooraAlertComponent,
     ],
     host: {
-        '[class.hidden]': '!alertMessage || alertMessage.dismissed'
+        '[class.hidden]': '!alertMessage || isDismissed'
     }
 })
 export class SharedAlertComponent
     implements OnInit, AfterViewInit, OnDestroy {
 
     @Input() name!: string;
-    @Output() readonly actionClicked: EventEmitter<string> = new EventEmitter<string>();
 
     @ViewChild('alertContainer') alertContainer?: ElementRef;
 
     alertMessage: AlertMessage | null = null;
+    isDismissed: boolean = false;
     private _qdooraAlertService = inject(QdooraAlertService);
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -45,30 +45,20 @@ export class SharedAlertComponent
                 takeUntil(this._unsubscribeAll)
             )
             .subscribe(() => this.onDismissed());
-    }
 
-    ngAfterViewInit(): void {
-        // Suscribirse a los eventos de alerta
-        this._qdooraAlertService.onAlert()
+        // Suscribirse a los eventos de alerta de esta alerta específica
+        this._qdooraAlertService.onAlert(this.name)
             .pipe(
-                filter((alert: AlertMessage) => this.name === alert.name),
                 takeUntil(this._unsubscribeAll)
             )
             .subscribe((alert: AlertMessage) => {
-
                 // Cambio de alerta
                 this.alertMessage = alert;
+                this.isDismissed = false;
                 this._cd.markForCheck();
 
                 // Avisamos
                 this._qdooraAlertService.show(alert.name);
-
-                if (alert.timeout) {
-                    setTimeout(() => {
-                        this._qdooraAlertService.dismiss(alert.name);
-                        this._cd.markForCheck();
-                    }, alert.timeout);
-                }
 
                 // Focus automático
                 setTimeout(() => {
@@ -79,22 +69,21 @@ export class SharedAlertComponent
             });
     }
 
-    onDismissed() {
-        // Obligamos a desaparecer la alerta
-        if (this.alertMessage) {
-            this.alertMessage.dismissible = true;
-            this.alertMessage.dismissed = true;
-            this._cd.markForCheck();
-        }
+    ngAfterViewInit(): void {
+        // Reservado por si se requiere manipular el DOM tras la inicialización
     }
 
-    goToAction(): void {
-        if (this.alertMessage?.action_clicked) {
-            this.actionClicked.emit(this.alertMessage.action_clicked);
-        }
+    onDismissed() {
+        setTimeout(() => {
+            this.isDismissed = true;
+            this._cd.markForCheck();
+        }, 250); // Dar tiempo a la animación interna de la alerta
     }
 
     ngOnDestroy(): void {
+        // Limpiamos la alerta de la memoria de la sesión global (atomicidad)
+        this._qdooraAlertService.clearAlert(this.name);
+        
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
     }

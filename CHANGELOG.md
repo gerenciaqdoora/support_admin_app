@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-05-26] fix(alert): corregir alineacion y centrado de boton de cierre y refactorizar a alerta atomica segura
+
 - [2026-05-25] style[puc]: ajustar estilos de dialogos, comportamiento de toggle y estructura responsiva
 
 - [2026-05-25] feat(puc): implementar panel grid de plan de cuentas y corregir visualizacion de filtros con scroll

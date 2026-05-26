@@ -4,7 +4,7 @@
     puede cerrarlo y esta visible
 
 -->
-@if (!dismissible || (dismissible && !dismissed)) {
+@if (!dismissed) {
     <div
         class="qdoora-alert-container"
         [@fadeIn]="!dismissed"
@@ -86,16 +86,7 @@
                 <ng-content></ng-content>
             </div>
 
-            @if (showActionButton) {
-                <div class="qdoora-alert-actions">
-                    <button
-                        mat-flat-button
-                        (click)="onActionClick()"
-                    >
-                        {{ actionText }}
-                    </button>
-                </div>
-            }
+
         </div>
 
 

@@ -1,6 +1,6 @@
-export type FuseAlertAppearance = 'border' | 'fill' | 'outline' | 'soft';
+export type AlertAppearance = 'border' | 'fill' | 'outline' | 'soft';
 
-export type FuseAlertType =
+export type AlertType =
     | 'primary'
     | 'accent'
     | 'warn'
@@ -11,14 +11,8 @@ export type FuseAlertType =
     | 'error';
 
 export interface AlertMessage {
-    appearance: FuseAlertAppearance;
-    type: FuseAlertType;
+    appearance: AlertAppearance;
+    type: AlertType;
     message: string;
-    dismissed: boolean;
-    dismissible: boolean;
     name: string;
-    timeout: number;
-    button_label?: string;
-    button_required?: boolean;
-    action_clicked?: string;
 }

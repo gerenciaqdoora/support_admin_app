@@ -40,8 +40,6 @@ import { Subject, filter, takeUntil } from 'rxjs';
 })
 export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
     /* eslint-disable @typescript-eslint/naming-convention */
-    static ngAcceptInputType_dismissible: BooleanInput;
-    static ngAcceptInputType_dismissed: BooleanInput;
     static ngAcceptInputType_showIcon: BooleanInput;
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -50,16 +48,14 @@ export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
     private _qdooraUtilsService = inject(QdooraUtilsService);
 
     @Input() appearance: QdooraAlertAppearance = 'soft';
-    @Input() dismissed: boolean = false;
-    @Input() dismissible: boolean = false;
     @Input() name: string = this._qdooraUtilsService.randomId();
     @Input() showIcon: boolean = true;
     @Input() type: QdooraAlertType = 'primary';
-    @Input() actionText: string = 'Acción';
-    @Input() showActionButton: boolean = false;
     @Output() readonly dismissedChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-    @Output() readonly actionClicked: EventEmitter<void> = new EventEmitter<void>();
     @Output() readonly close: EventEmitter<string> = new EventEmitter<string>();
+
+    dismissed: boolean = false;
+
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -78,8 +74,8 @@ export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
             'qdoora-alert-appearance-outline': this.appearance === 'outline',
             'qdoora-alert-appearance-soft': this.appearance === 'soft',
             'qdoora-alert-dismissed': this.dismissed,
-            'qdoora-alert-dismissible': this.dismissible,
             'qdoora-alert-show-icon': this.showIcon,
+            'qdoora-alert-dismissible': true,
             'qdoora-alert-type-primary': this.type === 'primary',
             'qdoora-alert-type-accent': this.type === 'accent',
             'qdoora-alert-type-warn': this.type === 'warn',
@@ -102,24 +98,7 @@ export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
      * @param changes
      */
     ngOnChanges(changes: SimpleChanges): void {
-        // Dismissed
-        if ('dismissed' in changes) {
-            // Coerce the value to a boolean
-            this.dismissed = coerceBooleanProperty(
-                changes.dismissed.currentValue
-            );
 
-            // Dismiss/show the alert
-            this._toggleDismiss(this.dismissed);
-        }
-
-        // Dismissible
-        if ('dismissible' in changes) {
-            // Coerce the value to a boolean
-            this.dismissible = coerceBooleanProperty(
-                changes.dismissible.currentValue
-            );
-        }
 
         // Show icon
         if ('showIcon' in changes) {
@@ -198,12 +177,7 @@ export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
         this._toggleDismiss(false);
     }
 
-    /**
-     * Emit event to make actions
-     */
-    onActionClick(): void {
-        this.actionClicked.emit();
-    }
+
 
     // -----------------------------------------------------------------------------------------------------
     // @ Private methods
@@ -216,10 +190,7 @@ export class QdooraAlertComponent implements OnChanges, OnInit, OnDestroy {
      * @private
      */
     private _toggleDismiss(dismissed: boolean): void {
-        // Return if the alert is not dismissible
-        if (!this.dismissible) {
-            return;
-        }
+
 
         // Set the dismissed
         this.dismissed = dismissed;

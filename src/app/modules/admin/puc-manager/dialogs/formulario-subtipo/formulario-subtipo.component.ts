@@ -15,6 +15,7 @@ import { DialogFooterComponent } from '../shared/footer/footer.component';
 import { DialogButtonCancelComponent } from '../shared/buttons/cancel-button.component';
 import { DialogButtonConfirmComponent } from '../shared/buttons/confirm-button.component';
 import { finalize } from 'rxjs';
+import { QdooraAlertService } from '@app/core/components/alert';
 
 @Component({
     selector: 'dialog-formulario-subtipo',
@@ -76,11 +77,11 @@ export class FormularioSubTipoDialogComponent
     largo_codigo: number = 2;
     // Estructura del codigo cuenta
     largo_nodo: number = 1;
+    alertName: string = 'subTypeForm';
 
-    
     private _notificationService = inject(NotificationService);
+    private _alertService = inject(QdooraAlertService);
     private _accountPlanService = inject(PucManagerService);
-    private alertName: string = 'subTypeForm';
 
     /**
      * Constructor
@@ -102,12 +103,18 @@ export class FormularioSubTipoDialogComponent
         this.tipo = this.data.tipo;
         this.largo_codigo = this.data.account_plan!.TIPO_large + this.data.account_plan!.SUB_TIPO_large;
         this.largo_nodo = this.data.account_plan!.SUB_TIPO_large;
-        
+
         if (!this.data.title) {
             this.data.title = this.data.is_new_record ? 'Crear Subtipo' : 'Editar Subtipo';
         }
-        
+
         this.initForm();
+        this._alertService.showAlert({
+            appearance: 'outline',
+            type: 'info',
+            message: 'probando alerta',
+            name: this.alertName
+        });
     }
 
     // -----------------------------------------------------------------------------------------------------
