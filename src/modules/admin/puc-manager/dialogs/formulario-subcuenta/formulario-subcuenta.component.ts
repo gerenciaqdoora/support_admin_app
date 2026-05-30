@@ -50,7 +50,6 @@ import { finalize } from 'rxjs';
         MatButtonModule,
         MatDialogModule,
         MatIconModule,
-        SharedInputComponent,
         FormsModule,
         ReactiveFormsModule,
         SharedAlertComponent,

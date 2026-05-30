@@ -1,0 +1,119 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header title="Alta de Cliente (Suscriptor)"
+    subtitle="Provisionamiento de nuevo suscriptor y asignación de módulos" [showCloseButton]="true"
+    (closeDialog)="close()">
+  </app-dialog-header>
+
+  <div class="standard-dialog-content p-6" [formGroup]="form">
+    <!-- Alerta Compartida en la parte superior -->
+    <app-shared-alert [name]="alertName" class="mb-6 block"></app-shared-alert>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- Columna Izquierda: Datos del Administrador -->
+      <div class="lg:col-span-5 flex flex-col">
+        <div class="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">
+          Datos del Administrador
+        </div>
+
+        <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-6 flex flex-col gap-6 shadow-sm">
+          <app-input-form [form]="form" controlName="first_name" label="Nombre" placeholder="Ej: Juan" [required]="true"
+            [compact]="true">
+          </app-input-form>
+
+          <app-input-form [form]="form" controlName="last_name" label="Apellidos" placeholder="Ej: Pérez"
+            [required]="true" [compact]="true">
+          </app-input-form>
+
+          <app-input-form [form]="form" controlName="dni" label="DNI / RUT" placeholder="Ej: 12345678-9"
+            [required]="true" [useRutMask]="true" [compact]="true">
+          </app-input-form>
+
+          <app-input-form [form]="form" controlName="email" label="Correo Electrónico" placeholder="correo@empresa.com"
+            [required]="true" type="email" [compact]="true">
+          </app-input-form>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Selección de Módulos Bento Style -->
+      <div class="lg:col-span-7 flex flex-col">
+        <div class="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">
+          Módulos Contratados (Demo)
+        </div>
+
+        @if (isLoadingModules()) {
+        <div
+          class="flex items-center gap-3 p-6 text-sm text-slate-500 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+          <span class="animate-spin h-5 w-5 rounded-full border-2 border-slate-300 border-t-blue-600"></span>
+          Cargando módulos disponibles...
+        </div>
+        } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (module of availableModules(); track module.code) {
+          <label
+            class="group relative flex items-start p-5 bg-white border rounded-2xl hover:shadow-md hover:-translate-y-0.5 cursor-pointer transition-all duration-300"
+            [class.border-slate-200]="!isModuleSelected(module.code)"
+            [class.border-blue-500]="isModuleSelected(module.code)" [class.bg-blue-50]="isModuleSelected(module.code)"
+            [class.ring-1]="isModuleSelected(module.code)" [class.ring-blue-500]="isModuleSelected(module.code)">
+
+            <div class="flex-1 flex flex-col min-w-0 pr-4">
+              <div class="flex items-center gap-3 mb-2">
+                <!-- Icon Container -->
+                <div class="flex-shrink-0 p-2.5 rounded-xl transition-colors duration-300"
+                  [class.bg-slate-100]="!isModuleSelected(module.code)"
+                  [class.text-slate-500]="!isModuleSelected(module.code)"
+                  [class.bg-blue-100]="isModuleSelected(module.code)"
+                  [class.text-blue-700]="isModuleSelected(module.code)">
+                  <mat-icon [svgIcon]="getModuleIcon(module.code)" class="w-5 h-5"></mat-icon>
+                </div>
+                <span class="text-sm font-bold text-slate-800 truncate">{{ module.name }}</span>
+              </div>
+
+              <span class="text-[13px] text-slate-500 leading-relaxed line-clamp-3">{{ getModuleDescription(module.code)
+                }}</span>
+
+              @if (module.es_demo) {
+              <div class="mt-3">
+                <span
+                  class="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-full">
+                  SOPORTA DEMO
+                </span>
+              </div>
+              }
+            </div>
+
+            <!-- Switch Toggle (Fijado a la derecha superior) -->
+            <div class="relative flex-shrink-0 mt-1">
+              <input type="checkbox" [value]="module.code" [checked]="isModuleSelected(module.code)"
+                (change)="onModuleToggle(module.code, $event)" class="sr-only peer">
+              <div
+                class="w-10 h-5 bg-slate-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-500/30 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600">
+              </div>
+            </div>
+          </label>
+          }
+        </div>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <app-dialog-footer>
+    <button type="button"
+      class="px-5 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 uppercase tracking-wider transition-all"
+      (click)="close()">
+      Cancelar
+    </button>
+    <button type="button"
+      class="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:shadow-none flex items-center gap-2 uppercase tracking-wider transition-all"
+      [disabled]="form.invalid || isLoading() || modulesFormArray.length === 0" (click)="submit()">
+      @if (isLoading()) {
+      <span class="animate-spin h-4 w-4 rounded-full border-2 border-white/80 border-t-transparent"></span>
+      Procesando...
+      } @else {
+      Provisionar Cliente
+      }
+    </button>
+  </app-dialog-footer>
+</div>

@@ -1,9 +1,7 @@
 import { CommonModule, NgClass } from '@angular/common';
 import { Component, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, ElementRef } from '@angular/core';
 import { AbstractControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { OnlyNumbersDirective } from '@app/core/directives/onlyNumber/only-numbers.directive';
 import { RutMaskDirective } from '@app/core/directives/rutMask/rut-mask.directive';
 import { ToUppercaseDirective } from '@app/core/directives/uppercase/to-uppercase.directive';
@@ -15,114 +13,11 @@ import { qdooraAnimations } from '@core/animations';
     encapsulation: ViewEncapsulation.None,
     animations: qdooraAnimations,
     standalone: true,
-    styles: [`
-        .custom-margin-top-input .mat-mdc-text-field-wrapper:not(.mdc-text-field--no-label) {
-            margin-top: 10px !important;
-        }
-        .custom-margin-top-input.mat-mdc-form-field.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-form-field-infix .mat-mdc-floating-label {
-            top: -20px !important;
-        }
-        .custom-margin-top-input.mat-mdc-form-field.mat-form-field-appearance-fill .mat-mdc-form-field-subscript-wrapper{
-            font-size: 10px !important;
-        }
-        .custom-margin-top-input.mat-mdc-form-field-hint-wrapper, .mat-mdc-form-field-error-wrapper{
-            top: -4px !important;
-        }
-        .custom-margin-top-input.mat-mdc-form-field.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper .mat-mdc-form-field-flex {
-            height: 40px !important;
-            align-items: center !important;
-        }
-
-        .compact-shared-input {
-            /* Contenedor: Volvemos a la altura de tu diseño original */
-            .mat-mdc-text-field-wrapper {
-                height: 38px !important;
-                min-height: 38px !important;
-                background-color: white !important;
-                border: 1px solid #dbeafe !important; /* blue-100 */
-                border-radius: 8px !important;
-                padding: 0 !important;
-                display: flex;
-                align-items: center;
-                transition: border-color 0.2s, box-shadow 0.2s;
-            }
-
-            /* El Infix: Sin paddings excesivos para que el texto no "baile" */
-            .mat-mdc-form-field-infix {
-                padding: 0 !important;
-                min-height: 38px !important;
-                display: flex !important;
-                align-items: center !important;
-            }
-
-            /* Prefijo: Alineado perfectamente con el texto */
-            [matPrefix] {
-                color: #60a5fa !important; /* blue-400 */
-                font-weight: 700;
-                font-size: 9px;
-                margin-right: 6px;
-                display: flex;
-                align-items: center;
-            }
-
-            /* Input: Recuperamos el font-style */
-            input.mat-mdc-input-element {
-                font-size: 11px !important;
-                font-weight: 600 !important;
-                color: #334155 !important; /* slate-700 */
-                &::placeholder {
-                    color: #94a3b8 !important; /* slate-400 */
-                    font-weight: 500;
-                }
-            }
-
-            /* Label: Para que no choque, lo hacemos discreto o lo ocultamos si hay placeholder */
-            .mat-mdc-floating-label {
-                top: 20px !important; /* Centrado inicial */
-            }
-
-            &.mat-form-field-can-float.mat-mdc-form-field-should-float .mat-mdc-floating-label {
-                /* Lo movemos lo justo para que se vea como un mini-titulo superior */
-                transform: translateY(-24px) scale(0.75) !important;
-                color: #3b82f6 !important;
-                font-weight: 700;
-            }
-
-            /* Quitar decoraciones innecesarias de Material */
-            .mdc-line-ripple,
-            .mat-mdc-form-field-subscript-wrapper {
-                display: none !important;
-            }
-        }
-
-        /* Efecto Focus para que se sienta nativo */
-        .compact-shared-input.mat-form-field-focused .mat-mdc-text-field-wrapper {
-            border-color: #60a5fa !important;
-            box-shadow: 0 0 0 1px #60a5fa33;
-        }
-
-        /* Estados Deshabilitado y Readonly - Sobrescritura final */
-        .mat-mdc-form-field.mat-form-field-disabled .mat-mdc-text-field-wrapper,
-        .mat-mdc-form-field.is-readonly .mat-mdc-text-field-wrapper {
-            background-color: #f1f5f9 !important; /* slate-100 */
-            border-color: #e2e8f0 !important; /* slate-200 */
-            box-shadow: none !important;
-        }
-
-        .mat-mdc-form-field.mat-form-field-disabled input,
-        .mat-mdc-form-field.is-readonly input {
-            cursor: not-allowed !important;
-            color: #64748b !important; /* slate-500 */
-            background: transparent !important;
-        }
-    `],
     imports: [
         CommonModule,
         MatIconModule,
         FormsModule,
         ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
         RutMaskDirective,
         NgClass,
         OnlyNumbersDirective,

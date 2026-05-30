@@ -10,6 +10,8 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { ClientRegistrationComponent } from '../../../modules/admin/clients/components/client-registration/client-registration.component';
 
 interface Breadcrumb {
   label: string;
@@ -136,6 +138,17 @@ interface Breadcrumb {
           </div>
 
           <div class="flex items-center gap-6">
+            @if (auth.isAdminRole()) {
+              <button
+                (click)="openClientRegistration()"
+                class="group flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-blue-900/20 active:scale-95 cursor-pointer"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Nuevo Cliente</span>
+              </button>
+            }
             <div class="h-8 w-px bg-slate-200"></div>
             <button
               (click)="auth.logout()"
@@ -202,6 +215,16 @@ export class ShellComponent implements OnInit {
   auth = inject(AuthService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+  private dialog = inject(MatDialog);
+
+  openClientRegistration() {
+    this.dialog.open(ClientRegistrationComponent, {
+      panelClass: 'dialog-panel',
+      disableClose: true,
+      width: '1000px',
+      maxWidth: '95vw'
+    });
+  }
 
   breadcrumbs = signal<Breadcrumb[]>([]);
   navigation = signal<any[]>([]);
