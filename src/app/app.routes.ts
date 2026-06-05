@@ -116,6 +116,12 @@ export const routes: Routes = [
           import('@modules/admin/nomina-features/nomina-features.component').then((m) => m.default),
         data: { breadcrumb: 'Configuraciones Empleador de Nómina' },
       },
+      {
+        path: 'admin/plan-manager',
+        loadComponent: () =>
+          import('@modules/admin/plan-manager/plan-manager.component').then((m) => m.PlanManagerComponent),
+        data: { breadcrumb: 'Gestión de Planes' },
+      },
     ],
   },
   {

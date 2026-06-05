@@ -1,0 +1,83 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header [title]="isEditMode ? 'Editar Plan' : 'Crear Nuevo Plan'" [showCloseButton]="true"
+    (closeDialog)="dialogRef.close()">
+  </app-dialog-header>
+
+  <div class="standard-dialog-content">
+    <form [formGroup]="form" class="flex flex-col gap-4 p-6">
+
+      <div class="grid grid-cols-2 gap-4">
+        <app-input-form [form]="form" controlName="name" label="Nombre del Plan" class="col-span-2">
+        </app-input-form>
+
+        <app-input-form [form]="form" controlName="slug" label="Código Unico" [readonly]="isEditMode">
+        </app-input-form>
+
+        <!-- Precio Base Custom Input -->
+        <qdoora-currency-input formControlName="base_price" [label]="'Precio Base'" [required]="true">
+        </qdoora-currency-input>
+
+        <!-- Nivel (Tier) Custom Dropdown -->
+        <qdoora-select formControlName="tier" [label]="'Nivel (Tier)*'" [items]="tierOptions" bindValue="val"
+          bindLabel="label" [placeholder]="'Seleccione el Nivel'">
+        </qdoora-select>
+
+        <!-- Target Custom Dropdown -->
+        <qdoora-select formControlName="target" [label]="'Target*'" [items]="targetOptions" bindValue="val"
+          bindLabel="label" [placeholder]="'Seleccione el Target'">
+        </qdoora-select>
+
+        <!-- Usuarios Base Custom Input -->
+        <qdoora-number-stepper formControlName="base_user_quantity" [label]="'Usuarios Base'" [step]="1" [min]="1"
+          [required]="true">
+        </qdoora-number-stepper>
+
+        <!-- Empresas Base Custom Input -->
+        <qdoora-number-stepper formControlName="base_company_quantity" [label]="'Empresas Base'" [step]="1" [min]="1"
+          [required]="true">
+        </qdoora-number-stepper>
+      </div>
+
+      <div class="flex gap-4 mb-4">
+        <!-- Plan Público Custom Checkbox -->
+        <qdoora-checkbox formControlName="is_public" [title]="'Plan Público'">
+        </qdoora-checkbox>
+
+        <!-- Plan Activo Custom Checkbox -->
+        <qdoora-checkbox formControlName="active" [title]="'Plan Activo'">
+        </qdoora-checkbox>
+      </div>
+
+      <!-- Notas Internas Custom Textarea -->
+      <qdoora-textarea formControlName="notes" [title]="'Notas Internas'" [maxLength]="255" [rows]="3">
+      </qdoora-textarea>
+
+      @if (!isEditMode && availableModules.length > 0) {
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-md font-medium mb-3">Módulos del Plan</h3>
+        <div formArrayName="modules" class="flex flex-col gap-3">
+          @for (modCtrl of modulesArray.controls; track i; let i = $index) {
+          <div [formGroupName]="i" class="flex items-center gap-4 bg-slate-50 p-3 rounded-lg">
+            <div class="w-1/3 font-medium">{{ availableModules[i].name }}</div>
+            <div class="w-1/3">
+              <qdoora-checkbox formControlName="included" [title]="'Incluido'"></qdoora-checkbox>
+            </div>
+            @if (!modCtrl.value.included) {
+            <div class="w-1/3">
+              <qdoora-currency-input formControlName="addon_price" [label]="'Precio Adicional'"></qdoora-currency-input>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+
+    </form>
+  </div>
+
+  <app-dialog-footer>
+    <button mat-button (click)="dialogRef.close()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Guardar Plan</button>
+  </app-dialog-footer>
+</div>

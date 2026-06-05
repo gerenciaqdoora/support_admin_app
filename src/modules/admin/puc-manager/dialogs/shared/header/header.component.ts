@@ -11,14 +11,14 @@ import { MatIconModule } from '@angular/material/icon';
         <div class="flex flex-col items-center p-4 sm:flex-row sm:items-start modal_header w-full relative min-h-[64px]">
             <div class="flex flex-col items-center space-y-1 text-center sm:items-start sm:pr-8 sm:text-left">
                 <!-- Title -->
-                <div class="text-xl font-medium leading-6 decoration-none" [innerHTML]="title"></div>
+                <div class="text-xl font-medium leading-6 decoration-none">{{ title }}</div>
                 <!-- Subtitle (Optional) -->
-                <div *ngIf="subtitle" class="text-white/80 text-md" [innerHTML]="subtitle"></div>
+                <div *ngIf="subtitle" class="text-white/80 text-md">{{ subtitle }}</div>
             </div>
 
             <!-- Dismiss button -->
             <div *ngIf="showCloseButton" class="absolute right-0 top-0 pr-4 pt-2">
-                <button mat-icon-button (click)="close.emit()" aria-label="Cerrar diálogo">
+                <button mat-icon-button (click)="onCloseClick()" aria-label="Cerrar diálogo" class="cursor-pointer">
                     <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                 </button>
             </div>
@@ -43,4 +43,10 @@ export class DialogHeaderComponent {
     @Input() subtitle: string = '';
     @Input() showCloseButton: boolean = true;
     @Output() close = new EventEmitter<void>();
+    @Output() closeDialog = new EventEmitter<void>();
+
+    onCloseClick(): void {
+        this.close.emit();
+        this.closeDialog.emit();
+    }
 }

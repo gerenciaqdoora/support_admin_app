@@ -1,0 +1,100 @@
+<div class="relative flex flex-col gap-1.5 w-full justify-end">
+  @if (label()) {
+    <label class="text-[11px] font-black tracking-widest uppercase select-none flex items-center ml-0.5 text-slate-600">{{ label() }}</label>
+  }
+
+  <!-- Dropdown Trigger -->
+  <div
+    (click)="toggleDropdown($event)"
+    class="flex items-center justify-between w-full h-11 px-3.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 transition-all duration-300 shadow-sm"
+    [ngClass]="{
+      'border-blue-500 ring-2 ring-blue-100 shadow-sm': isOpen(),
+      'opacity-50 cursor-not-allowed': isDisabled()
+    }"
+  >
+    <span
+      class="text-sm font-bold truncate"
+      [ngClass]="selectedItem() ? 'text-slate-800' : 'text-slate-400/70'"
+    >
+      {{ selectedItem() ? selectedItem()[bindLabel()] : placeholder() }}
+    </span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 text-slate-500 transition-transform duration-200 shrink-0"
+      [ngClass]="{ 'rotate-180': isOpen() }"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+
+  <!-- Dropdown Panel -->
+  @if (isOpen()) {
+    <div
+      class="absolute left-0 right-0 top-[calc(100%+4px)] z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 animate-in fade-in zoom-in duration-200"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Search Input inside Dropdown -->
+      @if (searchable()) {
+        <div class="p-3 bg-slate-50 border-b border-slate-100">
+          <div class="relative flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute left-3 h-4 w-4 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              [value]="searchTerm()"
+              (input)="updateSearch($event)"
+              [placeholder]="searchPlaceholder()"
+              class="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+      }
+
+      <!-- Options List -->
+      <div class="max-h-60 overflow-y-auto py-1">
+        @for (item of filteredItems(); track item[bindValue()]) {
+          <div
+            (click)="selectItem(item, $event)"
+            class="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group"
+          >
+            <div class="flex flex-col truncate">
+              <span
+                class="text-sm font-bold text-slate-700 truncate"
+                [class.text-blue-600]="value() === item[bindValue()]"
+              >
+                {{ item[bindLabel()] }}
+              </span>
+              @if (bindSubLabel() && item[bindSubLabel()]) {
+                <span class="text-[10px] text-slate-400 truncate group-hover:text-blue-400">
+                  {{ item[bindSubLabel()] }}
+                </span>
+              }
+            </div>
+            
+            <div class="flex items-center shrink-0 ml-3">
+              @if (value() === item[bindValue()]) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="px-4 py-6 text-center text-slate-400 italic text-xs">
+            No se encontraron resultados.
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

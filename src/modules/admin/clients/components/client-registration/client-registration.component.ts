@@ -12,6 +12,8 @@ import { DialogHeaderComponent } from '../../../puc-manager/dialogs/shared/heade
 import { DialogFooterComponent } from '../../../puc-manager/dialogs/shared/footer/footer.component';
 import { SharedInputComponent } from '@modules/shared/input/input.component';
 import { SharedAlertComponent } from '@modules/shared/alert/alert.component';
+import { PlanManagerService, Plan } from '../../../plan-manager/services/plan-manager.service';
+import { QdooraSelectComponent } from '@modules/shared/qdoora-select/qdoora-select.component';
 
 @Component({
   selector: 'app-client-registration',
@@ -23,7 +25,8 @@ import { SharedAlertComponent } from '@modules/shared/alert/alert.component';
     DialogFooterComponent,
     SharedInputComponent,
     SharedAlertComponent,
-    MatIconModule
+    MatIconModule,
+    QdooraSelectComponent
   ],
   templateUrl: './client-registration.component.html',
   styles: [
@@ -82,28 +85,31 @@ export class ClientRegistrationComponent implements OnInit, OnDestroy {
   }
   private fb = inject(FormBuilder);
   private clientService = inject(ClientManagementService);
+  private planService = inject(PlanManagerService);
   private alertService = inject(QdooraAlertService);
   private notificationService = inject(NotificationService);
   private dialogRef = inject(MatDialogRef<ClientRegistrationComponent>);
 
   readonly isLoading = signal(false);
-  readonly isLoadingModules = signal(false);
-  readonly availableModules = signal<any[]>([]);
+  readonly isLoadingPlans = signal(false);
+  readonly availablePlans = signal<Plan[]>([]);
+  readonly selectedPlan = signal<Plan | null>(null);
 
   readonly form: FormGroup = this.fb.group({
     first_name: ['', [Validators.required, Validators.maxLength(255)]],
     last_name: ['', [Validators.required, Validators.maxLength(255)]],
     dni: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    modules: this.fb.array([], Validators.required)
+    plan_id: [null, Validators.required]
   });
 
-  get modulesFormArray(): FormArray {
-    return this.form.get('modules') as FormArray;
-  }
-
   ngOnInit() {
-    this.loadModules();
+    this.loadPlans();
+
+    this.form.get('plan_id')?.valueChanges.subscribe(planId => {
+      const plan = this.availablePlans().find(p => p.id === planId);
+      this.selectedPlan.set(plan || null);
+    });
   }
 
   ngOnDestroy() {
@@ -115,54 +121,28 @@ export class ClientRegistrationComponent implements OnInit, OnDestroy {
     this.dialogRef.close();
   }
 
-  private loadModules() {
-    this.isLoadingModules.set(true);
-    this.clientService.getAvailableModules()
-      .pipe(finalize(() => this.isLoadingModules.set(false)))
+  private loadPlans() {
+    this.isLoadingPlans.set(true);
+    this.planService.getPlans()
+      .pipe(finalize(() => this.isLoadingPlans.set(false)))
       .subscribe({
         next: (response) => {
-          this.availableModules.set(response.data || []);
+          this.availablePlans.set(response.data.plans || []);
         },
         error: (err) => {
           this.alertService.showAlert({
             appearance: 'outline',
             type: 'error',
             name: 'ClientRegistrationAlert',
-            message: 'No se pudieron cargar los módulos disponibles.'
+            message: 'No se pudieron cargar los planes disponibles.'
           });
         }
       });
   }
 
-  onModuleToggle(moduleCode: string, event: Event) {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    if (isChecked) {
-      this.modulesFormArray.push(this.fb.group({ code: [moduleCode] }));
-    } else {
-      const index = this.modulesFormArray.controls.findIndex(c => c.value.code === moduleCode);
-      if (index !== -1) {
-        this.modulesFormArray.removeAt(index);
-      }
-    }
-  }
-
-  isModuleSelected(moduleCode: string): boolean {
-    return this.modulesFormArray.controls.some(c => c.value.code === moduleCode);
-  }
-
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
-    }
-
-    if (this.modulesFormArray.length === 0) {
-      this.alertService.showAlert({
-        appearance: 'outline',
-        type: 'warning',
-        name: 'ClientRegistrationAlert',
-        message: 'Debe seleccionar al menos un módulo para el cliente.'
-      });
       return;
     }
 

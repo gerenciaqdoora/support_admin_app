@@ -1,0 +1,50 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header 
+    [title]="'Crear Código de Descuento'" 
+    [showCloseButton]="true"
+    (closeDialog)="dialogRef.close()">
+  </app-dialog-header>
+
+  <div class="standard-dialog-content">
+    <form [formGroup]="form" class="flex flex-col gap-4 p-6">
+      
+      <mat-form-field>
+        <mat-label>Código</mat-label>
+        <input matInput formControlName="code" style="text-transform: uppercase;">
+      </mat-form-field>
+
+      <div class="grid grid-cols-2 gap-4">
+        <mat-form-field>
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="PERCENTAGE">Porcentaje</mat-option>
+            <mat-option value="FIXED">Monto Fijo</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Valor</mat-label>
+          <input matInput type="number" formControlName="value">
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Usos Máximos (Vacío = Infinito)</mat-label>
+          <input matInput type="number" formControlName="max_uses">
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Fecha de Expiración</mat-label>
+          <input matInput type="date" formControlName="expires_at">
+        </mat-form-field>
+      </div>
+
+      <mat-checkbox formControlName="active">Código Activo</mat-checkbox>
+
+    </form>
+  </div>
+
+  <app-dialog-footer>
+    <button mat-button (click)="dialogRef.close()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Crear Código</button>
+  </app-dialog-footer>
+</div>

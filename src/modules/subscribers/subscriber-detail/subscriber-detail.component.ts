@@ -5,6 +5,7 @@ import { SubscriberService } from '@core/services/subscriber.service';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
+import { NotificationService } from '@core/services/notification.service';
 
 @Component({
   selector: 'app-subscriber-detail',
@@ -660,6 +661,7 @@ export class SubscriberDetailComponent {
   private _router = inject(Router);
   private _subscriberService = inject(SubscriberService);
   public authService = inject(AuthService);
+  private _notificationService = inject(NotificationService);
 
   // Estados reactivos para la baja y reactivación
   isConfirmingDelete = signal(false);
@@ -746,7 +748,7 @@ export class SubscriberDetailComponent {
           console.error('Error al reactivar:', err);
           const errorMsg = err.error?.message || 'No se pudo reactivar la cuenta.';
           // Alerta visual de plan vencido o colisión de correo
-          alert(errorMsg);
+          this._notificationService.warning(errorMsg);
           this.isConfirmingReactivate.set(false);
         },
       });
@@ -778,12 +780,12 @@ export class SubscriberDetailComponent {
         next: () => {
           this.isConfirmingForcePwd.set(false);
           this.selectedUserIdForPwd.set(null);
-          alert('Se ha forzado el cambio de contraseña exitosamente.');
+          this._notificationService.success('Se ha forzado el cambio de contraseña exitosamente.');
         },
         error: (err) => {
           console.error('Error al forzar cambio de contraseña:', err);
           const errorMsg = err.error?.message || 'No se pudo forzar el cambio de contraseña.';
-          alert(errorMsg);
+          this._notificationService.error(errorMsg);
           this.isConfirmingForcePwd.set(false);
           this.selectedUserIdForPwd.set(null);
         },

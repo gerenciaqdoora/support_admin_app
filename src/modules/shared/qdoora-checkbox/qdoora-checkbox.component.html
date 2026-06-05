@@ -1,0 +1,38 @@
+<label 
+  class="flex items-start gap-3 w-full transition-all duration-200 select-none"
+  [ngClass]="{
+    'cursor-pointer group': !isDisabled(),
+    'opacity-60 cursor-not-allowed': isDisabled()
+  }"
+>
+  <div class="relative flex items-center justify-center mt-0.5">
+    <input 
+      type="checkbox" 
+      class="peer sr-only"
+      [checked]="checked()"
+      [disabled]="isDisabled()"
+      (change)="toggle($event)"
+    />
+    <div 
+      class="w-5 h-5 border-[1.5px] rounded transition-all duration-200 flex items-center justify-center"
+      [ngClass]="{
+        'border-blue-500 bg-blue-500 text-white': checked(),
+        'border-slate-300 bg-white group-hover:border-blue-400 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-100': !checked() && !isDisabled(),
+        'border-slate-200 bg-slate-50': isDisabled() && !checked()
+      }">
+      @if (checked()) {
+        <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+      }
+    </div>
+  </div>
+  
+  <div class="flex flex-col">
+    <span class="text-sm font-semibold transition-colors duration-200"
+      [ngClass]="isDisabled() ? 'text-slate-500' : 'text-slate-800'">
+      {{ title() }}
+    </span>
+    @if (description()) {
+      <span class="text-xs text-slate-500 mt-0.5">{{ description() }}</span>
+    }
+  </div>
+</label>

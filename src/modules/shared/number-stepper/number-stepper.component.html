@@ -1,0 +1,51 @@
+<div class="flex flex-col gap-1.5 w-full">
+  <!-- Label -->
+  @if (label()) {
+      <label [ngClass]="isDisabled() ? 'text-slate-400' : 'text-slate-600'" class="text-[11px] font-black tracking-widest uppercase select-none flex items-center ml-0.5">
+          {{ label() }}
+          @if (required()) {
+              <span class="text-rose-500 ml-1 text-[13px] font-black leading-none">*</span>
+          }
+      </label>
+  }
+
+  <!-- Input Wrapper -->
+  <div 
+    class="relative flex items-center w-full h-11 px-1 bg-white border rounded-xl transition-all duration-300 shadow-sm"
+    [ngClass]="{
+      'border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 hover:border-slate-300': !isDisabled(),
+      'bg-slate-50 border-slate-200 cursor-not-allowed shadow-none': isDisabled()
+    }"
+  >
+      <!-- Botón Menos -->
+      <button 
+        type="button" 
+        (click)="decrease()"
+        [disabled]="isDecreaseDisabled()"
+        class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent cursor-pointer"
+      >
+        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:minus'"></mat-icon>
+      </button>
+
+      <!-- Input -->
+      <input
+          #inputElement
+          type="text"
+          [placeholder]="placeholder()"
+          [disabled]="isDisabled()"
+          (input)="onInput($event)"
+          (blur)="onBlur($event)"
+          class="flex-1 w-full text-center bg-transparent text-slate-800 text-sm font-semibold focus:outline-none placeholder:text-slate-400/70 disabled:text-slate-500 disabled:cursor-not-allowed"
+      />
+
+      <!-- Botón Más -->
+      <button 
+        type="button" 
+        (click)="increase()"
+        [disabled]="isIncreaseDisabled()"
+        class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 transition-colors hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent cursor-pointer"
+      >
+        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+      </button>
+  </div>
+</div>

@@ -3,5 +3,5 @@ export interface CreateClientPayload {
     last_name: string;
     dni: string;
     email: string;
-    modules: { code: string }[];
+    plan_id: number;
 }

@@ -277,9 +277,15 @@ export class ShellComponent implements OnInit {
             },
             {
               id: 'puc-manager',
-              title: 'Gestor Plan Único de Cuentas',
+              title: 'Plan Único de Cuentas',
               link: '/admin/puc-manager',
               icon: '💼',
+            },
+            {
+              id: 'plan-manager',
+              title: 'Planes',
+              link: '/admin/plan-manager',
+              icon: '💳',
             },
           ],
         },
@@ -301,7 +307,7 @@ export class ShellComponent implements OnInit {
         }));
         this.navigation.set(translatedNav);
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
