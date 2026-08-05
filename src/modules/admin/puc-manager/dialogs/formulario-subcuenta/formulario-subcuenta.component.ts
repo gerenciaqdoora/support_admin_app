@@ -92,7 +92,7 @@ export class FormularioSubCuentaDialogComponent
     // Cargador de contenido
     isLoading: boolean = false;
     // Avisos
-    
+
     // Servicios de Plan de cuenta
     private _accountPlanService = inject(PucManagerService);
     // Método para obtener el control de asignacion_cuenta_contable
@@ -102,7 +102,7 @@ export class FormularioSubCuentaDialogComponent
     // Método para obtener el control de entidad
     get control_trabaja_con_auxiliar_con_rut(): AbstractControl { return this.form.get('trabaja_con_auxiliar_con_rut')! }
     // Método para obtener el control de auxiliar
-    get control_trabaja_con_auxiliar(): AbstractControl { return this.form.get('trabaja_con_auxiliar')! }
+    get control_trabaja_con_auxiliar_sin_rut(): AbstractControl { return this.form.get('trabaja_con_auxiliar_sin_rut')! }
     public alertName: string = 'subTypeForm';
     private _notificationService = inject(NotificationService);
     get resumenOperativa(): string {
@@ -165,7 +165,7 @@ export class FormularioSubCuentaDialogComponent
             name: ['', [Validators.required, Validators.maxLength(255)]],
 
             trabaja_con_auxiliar_con_rut: [false], // usara auxiliar con rut
-            trabaja_con_auxiliar: [false], // usara auxiliar con rut
+            trabaja_con_auxiliar_sin_rut: [false], // usara auxiliar con rut
             trabaja_con_centro_costo: [false], // usara centro de costo
             trabaja_con_numero_operacion: [false], // usara numero de operacion
             trabaja_con_numero_despacho: [false], // usara numero de despacho
@@ -312,8 +312,8 @@ export class FormularioSubCuentaDialogComponent
     changeValueToggleButton(toggle: string, value: boolean) {
         if (toggle == 'entidad' && value) {
             //Si trabaja con aux con rut NO puede trabajar con aux sin rut
-            if (this.control_trabaja_con_auxiliar.value) {
-                this.control_trabaja_con_auxiliar.setValue(false);
+            if (this.control_trabaja_con_auxiliar_sin_rut.value) {
+                this.control_trabaja_con_auxiliar_sin_rut.setValue(false);
             }
         }
         else if (toggle == 'auxiliar' && value) {
@@ -338,11 +338,11 @@ export class FormularioSubCuentaDialogComponent
             // Si tiene asignacion de cuenta maestra, solo trabaja con aux con rut
             if (value) {
                 this.control_trabaja_con_auxiliar_con_rut.setValue(true);
-                this.control_trabaja_con_auxiliar.setValue(false);
-                this.control_trabaja_con_auxiliar.disable();
+                this.control_trabaja_con_auxiliar_sin_rut.setValue(false);
+                this.control_trabaja_con_auxiliar_sin_rut.disable();
             }
             else {
-                this.control_trabaja_con_auxiliar.enable();
+                this.control_trabaja_con_auxiliar_sin_rut.enable();
                 this.form.get('asignacion_cuenta_contable')?.setValue(false);
                 this.form.get('cuenta_maestra')?.setValue(null);
                 this.form.get('asignacion_cuenta_contable')?.enable();
@@ -353,7 +353,7 @@ export class FormularioSubCuentaDialogComponent
         // Marcamos auxiliar con rut si tiene cuenta maestra seleccionada
         if (this.cuenta_maestra || this.form.get('asignacion_cuenta_contable')?.value) {
             this.control_trabaja_con_auxiliar_con_rut.setValue(true);
-            this.control_trabaja_con_auxiliar.setValue(false);
+            this.control_trabaja_con_auxiliar_sin_rut.setValue(false);
         }
     }
 
@@ -422,7 +422,7 @@ export class FormularioSubCuentaDialogComponent
                                 // Cambios en el formulario por defecto
                                 this.form.patchValue({
                                     trabaja_con_auxiliar_con_rut: this.cuenta.trabaja_con_auxiliar_con_rut,
-                                    trabaja_con_auxiliar: this.cuenta.trabaja_con_auxiliar,
+                                    trabaja_con_auxiliar_sin_rut: this.cuenta.trabaja_con_auxiliar_sin_rut,
                                     trabaja_con_centro_costo: this.cuenta.trabaja_con_centro_costo,
                                     trabaja_con_numero_operacion: this.cuenta.trabaja_con_numero_operacion,
                                     trabaja_con_numero_despacho: this.cuenta.trabaja_con_numero_despacho,
@@ -473,9 +473,9 @@ export class FormularioSubCuentaDialogComponent
 
                             // Validaciones para formulario
                             if (this.cuenta.trabaja_con_auxiliar_con_rut) {
-                                this.form.get('trabaja_con_auxiliar')?.setValue(false);
+                                this.form.get('trabaja_con_auxiliar_sin_rut')?.setValue(false);
                             }
-                            if (this.cuenta.trabaja_con_auxiliar) {
+                            if (this.cuenta.trabaja_con_auxiliar_sin_rut) {
                                 this.form.get('trabaja_con_auxiliar_con_rut')?.setValue(false);
                             }
 
@@ -520,7 +520,7 @@ export class FormularioSubCuentaDialogComponent
                             // Cambios en el doc
                             this.form.patchValue({
                                 trabaja_con_auxiliar_con_rut: this.subcuenta.trabaja_con_auxiliar_con_rut,
-                                trabaja_con_auxiliar: this.subcuenta.trabaja_con_auxiliar || false,
+                                trabaja_con_auxiliar_sin_rut: this.subcuenta.trabaja_con_auxiliar_sin_rut || false,
                                 trabaja_con_numero_operacion: this.subcuenta.trabaja_con_numero_operacion || false,
                                 trabaja_con_numero_despacho: this.subcuenta.trabaja_con_numero_despacho || false,
                             });
@@ -623,8 +623,6 @@ export class FormularioSubCuentaDialogComponent
             name: formData.name,
             ifrs_code: formData.ifrs_account?.code || null,
             ifrs_account: formData.ifrs_account || null,
-            show_in_products: false,
-            show_in_afp: false,
             show_in_treasury: (formData.show_in_treasury && formData.treasury_type == 'receivable_payable')
                 ? true
                 : false,
@@ -635,7 +633,7 @@ export class FormularioSubCuentaDialogComponent
                 ? true
                 : false,
             trabaja_con_auxiliar_con_rut: formData.trabaja_con_auxiliar_con_rut,
-            trabaja_con_auxiliar: formData.trabaja_con_auxiliar,
+            trabaja_con_auxiliar_sin_rut: formData.trabaja_con_auxiliar_sin_rut,
             trabaja_con_centro_costo: this.data.company_allow_cost_center
                 ? formData.trabaja_con_centro_costo
                 : false,

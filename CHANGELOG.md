@@ -4,6 +4,9 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-08-05] feat(puc-sii): refactorizar auxiliar sin RUT en PUC y agregar módulo de gestión SII
+
+
 - [2026-05-29] feat(clients): implementar registro de clientes con bento grid y refactorizar inputs a diseño premium tailwind
 
 - [2026-05-26] refactor: reubicar modulo de puc-manager y componentes shared a la raiz de modules

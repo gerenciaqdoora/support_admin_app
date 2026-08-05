@@ -128,7 +128,7 @@ export class PucManagerService {
       const activos: string[] = [];
 
       if (form.get('trabaja_con_auxiliar_con_rut')?.value) activos.push('Aux con RUT');
-      if (form.get('trabaja_con_auxiliar')?.value) activos.push('Aux sin RUT');
+      if (form.get('trabaja_con_auxiliar_sin_rut')?.value) activos.push('Aux sin RUT');
       if (form.get('trabaja_con_centro_costo')?.value) activos.push('Centro Costos');
       if (form.get('trabaja_con_numero_operacion')?.value) activos.push('N° Operación');
       if (form.get('trabaja_con_numero_despacho')?.value) activos.push('N° Despacho');

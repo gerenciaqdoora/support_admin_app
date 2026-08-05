@@ -99,7 +99,7 @@ export class AccountPlanTreeGridComponent
         flatNode.ifrs_code = node.ifrs_code;
         flatNode.level = level;
         flatNode.trabaja_con_auxiliar_con_rut = node.trabaja_con_auxiliar_con_rut;
-        flatNode.trabaja_con_auxiliar = node.trabaja_con_auxiliar;
+        flatNode.trabaja_con_auxiliar_sin_rut = node.trabaja_con_auxiliar_sin_rut;
         flatNode.trabaja_con_centro_costo = node.trabaja_con_centro_costo;
         flatNode.account_category_id = node.account_category_id;
         flatNode.operation_inherited_configuration = node.operation_inherited_configuration;
@@ -757,7 +757,7 @@ export class AccountPlanTreeGridComponent
                     matchesAuxiliar = node.trabaja_con_auxiliar_con_rut === true;
                 }
                 else if (searchAuxiliarControl == 'SIN RUT') {
-                    matchesAuxiliar = node.trabaja_con_auxiliar === true;
+                    matchesAuxiliar = node.trabaja_con_auxiliar_sin_rut === true;
                 }
             }
 

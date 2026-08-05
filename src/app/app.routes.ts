@@ -122,6 +122,20 @@ export const routes: Routes = [
           import('@modules/admin/plan-manager/plan-manager.component').then((m) => m.PlanManagerComponent),
         data: { breadcrumb: 'Gestión de Planes' },
       },
+      {
+        path: 'admin/sii-manager/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/sii-manager/sii-manager.component').then((m) => m.SiiManagerComponent),
+        data: { breadcrumb: 'Gestión SII' },
+      },
+      {
+        path: 'admin/sii-enablement-queue',
+        loadComponent: () =>
+          import('@modules/admin/sii-enablement-queue/sii-enablement-queue.component').then(
+            (m) => m.SiiEnablementQueueComponent,
+          ),
+        data: { breadcrumb: 'Habilitación de Producción SII' },
+      },
     ],
   },
   {

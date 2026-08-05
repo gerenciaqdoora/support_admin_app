@@ -81,9 +81,9 @@ export class ChecklistDatabase {
             if(child.trabaja_con_auxiliar_con_rut){
                 (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_con_rut = true;
             }
-            // Si trabaja_con_auxiliar padre tambien
-            if(child.trabaja_con_auxiliar){
-                (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar = true;
+            // Si trabaja_con_auxiliar_sin_rut padre tambien
+            if(child.trabaja_con_auxiliar_sin_rut){
+                (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_sin_rut = true;
             }
             // Si trabaja_con_centro_costo padre tambien
             if(child.trabaja_con_centro_costo){
@@ -122,7 +122,7 @@ export class ChecklistDatabase {
             if(Node.operation_inherited_configuration){
                 (this.initData as any)[index0].children[index1].children[index2].children.map((r: any) => {
                     r.trabaja_con_auxiliar_con_rut = Node.trabaja_con_auxiliar_con_rut;
-                    r.trabaja_con_auxiliar = Node.trabaja_con_auxiliar;
+                    r.trabaja_con_auxiliar_sin_rut = Node.trabaja_con_auxiliar_sin_rut;
                     r.trabaja_con_centro_costo = Node.trabaja_con_centro_costo;
                 });
             }
@@ -136,7 +136,7 @@ export class ChecklistDatabase {
 
             (this.initData as any)[index0].children[index1].children[index2].name = Node.name;
             (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_con_rut = Node.trabaja_con_auxiliar_con_rut;
-            (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar = Node.trabaja_con_auxiliar;
+            (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_sin_rut = Node.trabaja_con_auxiliar_sin_rut;
             (this.initData as any)[index0].children[index1].children[index2].trabaja_con_centro_costo = Node.trabaja_con_centro_costo;
             (this.initData as any)[index0].children[index1].children[index2].ifrs_code = Node.ifrs_code;
             (this.initData as any)[index0].children[index1].children[index2].account_category_id = Node.account_category_id;
@@ -162,9 +162,9 @@ export class ChecklistDatabase {
             if(Node.trabaja_con_auxiliar_con_rut){
                 (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_con_rut = true;
             }
-            // Si trabaja_con_auxiliar padre tambien
-            if(Node.trabaja_con_auxiliar){
-                (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar = true;
+            // Si trabaja_con_auxiliar_sin_rut padre tambien
+            if(Node.trabaja_con_auxiliar_sin_rut){
+                (this.initData as any)[index0].children[index1].children[index2].trabaja_con_auxiliar_sin_rut = true;
             }
             // Si trabaja_con_centro_costo padre tambien
             if(Node.trabaja_con_centro_costo){
@@ -172,7 +172,7 @@ export class ChecklistDatabase {
             }
             (this.initData as any)[index0].children[index1].children[index2].children[index3].name = Node.name;
             (this.initData as any)[index0].children[index1].children[index2].children[index3].trabaja_con_auxiliar_con_rut = Node.trabaja_con_auxiliar_con_rut;
-            (this.initData as any)[index0].children[index1].children[index2].children[index3].trabaja_con_auxiliar = Node.trabaja_con_auxiliar;
+            (this.initData as any)[index0].children[index1].children[index2].children[index3].trabaja_con_auxiliar_sin_rut = Node.trabaja_con_auxiliar_sin_rut;
             (this.initData as any)[index0].children[index1].children[index2].children[index3].trabaja_con_centro_costo = Node.trabaja_con_centro_costo;
             (this.initData as any)[index0].children[index1].children[index2].children[index3].ifrs_code = Node.ifrs_code;
             (this.initData as any)[index0].children[index1].children[index2].children[index3].account_category_id = Node.account_category_id;

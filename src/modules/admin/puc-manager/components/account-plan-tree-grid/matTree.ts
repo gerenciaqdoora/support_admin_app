@@ -7,7 +7,7 @@ export class FoodNode {
     ifrs_code?: string;
     account_category_id?: number;
     trabaja_con_auxiliar_con_rut?: boolean;
-    trabaja_con_auxiliar?: boolean;
+    trabaja_con_auxiliar_sin_rut?: boolean;
     trabaja_con_centro_costo?: boolean;
     children?: FoodNode[];
     is_expandable?: boolean;
@@ -30,7 +30,7 @@ export class FlatNode {
     ifrs_code?: string;
     account_category_id?: number;
     trabaja_con_auxiliar_con_rut?: boolean;
-    trabaja_con_auxiliar?: boolean;
+    trabaja_con_auxiliar_sin_rut?: boolean;
     trabaja_con_centro_costo?: boolean;
     expandable!: boolean;
     operation_inherited_configuration?: boolean = false;
