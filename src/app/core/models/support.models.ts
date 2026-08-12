@@ -96,8 +96,6 @@ export interface Ticket {
         name: string;
     }[];
     delivery_date?: string;
-    official_solution?: string;
-    chat_status?: 'NONE' | 'REQUESTED' | 'ACTIVE' | 'CLOSED';
 }
 
 export interface ForensicLog {

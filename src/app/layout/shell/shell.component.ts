@@ -255,8 +255,6 @@ export class ShellComponent implements OnInit {
           title: 'Control y Auditoría TI',
           children: [
             { id: 'logs-ti', title: 'Logs TI', link: '/logs-ti', icon: '📜' },
-            { id: 'reports', title: 'Reportes', link: '/reports', icon: '📊' },
-            { id: 'help-center', title: 'Centro de Ayuda', link: '/help-center', icon: '📚' },
             {
               id: 'customs-create',
               title: 'Nuevo Cliente | Plan Aduana',

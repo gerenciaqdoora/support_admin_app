@@ -231,12 +231,6 @@ import { filter } from 'rxjs';
                     {{ getStatusLabel(ticket.status) }}
                   </span>
 
-                  @if (ticket.chat_status === 'REQUESTED' || ticket.chat_status === 'ACTIVE') {
-                    <span class="px-2 py-0.5 bg-green-50 text-green-600 rounded-full text-[8px] font-black flex items-center gap-1 border border-green-200 animate-pulse">
-                      <span class="w-1 h-1 rounded-full bg-green-500"></span> CHAT
-                    </span>
-                  }
-
                   <!-- Assigned Agent (Move to top) -->
                   <div class="group/tooltip relative flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[8px] font-black uppercase tracking-tight cursor-help">
                     <span class="text-[7px] text-slate-400">AGENTE:</span>

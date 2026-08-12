@@ -27,25 +27,6 @@ import { AuthService } from '@app/core/services/auth.service';
         </div>
       }
 
-      <!-- Alerta de Chat Pulsante (Enterprise Alert) -->
-      @if (chatSessionStatus() === 'REQUESTED') {
-        <div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-8 duration-700">
-          <div (click)="activeTab.set('chat')" class="flex items-center gap-6 bg-green-600 px-10 py-5 rounded-[2rem] shadow-[0_20px_50px_rgba(22,163,74,0.4)] border border-green-400 cursor-pointer group active:scale-95 transition-all">
-            <div class="relative">
-              <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-lg animate-bounce">💬</div>
-              <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full animate-ping"></div>
-            </div>
-            <div>
-              <p class="text-[12px] font-black text-white uppercase tracking-widest leading-none mb-1">Solicitud de Chat en Vivo</p>
-              <p class="text-[10px] text-green-100 font-bold uppercase tracking-tight">El cliente está esperando una respuesta inmediata...</p>
-            </div>
-            <button (click)="startChat(); $event.stopPropagation()" class="ml-4 h-11 px-6 bg-white text-green-700 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-green-50 transition-all shadow-md cursor-pointer">
-              ACEPTAR AHORA
-            </button>
-          </div>
-        </div>
-      }
-
       <!-- 1. Enterprise Header (Misión Crítica) -->
       <header class="bg-slate-50 border-b border-slate-200 px-8 py-6 flex items-center justify-between shrink-0 z-30">
         <div class="flex items-center gap-8">
@@ -101,13 +82,6 @@ import { AuthService } from '@app/core/services/auth.service';
                    ticket()?.status === 'RESOLVED' ? 'RESUELTO' : 'CERRADO' }}
               </span>
 
-              @if (chatSessionStatus() === 'REQUESTED' || chatSessionStatus() === 'ACTIVE') {
-                <span class="px-3 py-0.5 bg-green-50 text-green-600 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-green-100 animate-pulse">
-                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                  • CHAT {{ chatSessionStatus() === 'REQUESTED' ? 'SOLICITADO' : 'ACTIVO' }}
-                </span>
-              }
-
               @if (ticket()?.status === 'CLOSED') {
                 <span class="px-3 py-0.5 bg-slate-900 text-white rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-slate-900/20">
                   <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
@@ -143,11 +117,6 @@ import { AuthService } from '@app/core/services/auth.service';
         </div>
 
         <div class="flex items-center gap-3">
-          <button (click)="simulateChatRequest()" 
-                  class="h-11 px-6 bg-slate-900 text-white rounded-xl text-[12px] font-bold hover:bg-blue-600 transition-all flex items-center gap-3 shadow-md active:scale-95 cursor-pointer group">
-             <span class="text-sm">💬</span>
-             <span>Simular Chat</span>
-          </button>
           <button (click)="saveChanges()" [disabled]="ticket()?.status === 'CLOSED'"
                   class="h-11 px-6 bg-white border border-slate-200 rounded-xl text-[12px] font-bold text-slate-800 hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm active:scale-95 cursor-pointer group disabled:opacity-30 disabled:cursor-not-allowed">
              <svg class="w-4 h-4 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,9 +167,7 @@ import { AuthService } from '@app/core/services/auth.service';
       </nav>
 
       <!-- 3. Scrollable Content Area -->
-      <main [class.overflow-hidden]="activeTab() === 'chat'" 
-            [class.overflow-y-auto]="activeTab() !== 'chat'"
-            class="flex-1 p-6 custom-scrollbar space-y-4 bg-slate-50/30 relative">
+      <main class="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-4 bg-slate-50/30 relative">
         
         @if (activeTab() === 'details') {
           <div class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 py-4">
@@ -374,21 +341,10 @@ import { AuthService } from '@app/core/services/auth.service';
 
                   <div class="flex items-center justify-between">
                      <div class="flex items-center gap-3">
-                        <div class="flex bg-slate-100 p-1 rounded-xl">
-                          <button (click)="isInternal = false"
-                            [class.bg-slate-900]="!isInternal" [class.text-white]="!isInternal"
-                            [class.text-slate-500]="isInternal"
-                            class="px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all cursor-pointer">
-                            PÚBLICA
-                          </button>
-                          <button (click)="isInternal = true"
-                            [class.bg-slate-900]="isInternal" [class.text-white]="isInternal"
-                            [class.text-slate-500]="!isInternal"
-                            class="px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all cursor-pointer">
-                            INTERNA
-                          </button>
-                        </div>
-                        
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-[8px] font-black uppercase tracking-widest border border-blue-100">
+                          🔒 NOTA INTERNA — NO VISIBLE PARA EL CLIENTE
+                        </span>
+
                         <div class="flex items-center gap-2 ml-2 bg-slate-50 px-3 py-1 rounded-xl border border-slate-100">
                            <span class="text-[7px] font-black text-slate-400 uppercase tracking-widest">DEJAR EN:</span>
                            <select [ngModel]="replyStatus()" (ngModelChange)="replyStatus.set($event)" 
@@ -507,7 +463,7 @@ import { AuthService } from '@app/core/services/auth.service';
                           <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                        </div>
 
-                       @if (log.action === 'solution_added' || (log.action === 'updated_status' && log.new_value?.status === 'CLOSED')) {
+                       @if (log.action === 'updated_status' && log.new_value?.status === 'CLOSED') {
                           <!-- COMPACT CLOSURE HIGHLIGHT -->
                           <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden group">
                              <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-[60px] -mr-16 -mt-16"></div>
@@ -525,7 +481,7 @@ import { AuthService } from '@app/core/services/auth.service';
 
                              <div class="bg-white/5 rounded-xl p-4 border border-white/5 mb-4">
                                 <p class="text-[11px] text-slate-200 font-bold uppercase leading-relaxed italic">
-                                   "{{ ticket()?.official_solution || 'GESTIÓN FINALIZADA' }}"
+                                   "{{ ticket()?.solution || 'GESTIÓN FINALIZADA' }}"
                                 </p>
                              </div>
 
@@ -589,130 +545,6 @@ import { AuthService } from '@app/core/services/auth.service';
               </div>
            </div>
         }
-
-        @if (activeTab() === 'chat') {
-          <div class="h-full animate-in fade-in duration-500">
-            <div class="bg-white rounded-3xl border border-slate-200 shadow-xl h-full flex flex-col overflow-hidden relative mx-auto max-w-5xl">
-              
-              <!-- Chat Header (Sticky via flex shrink-0) -->
-              <header class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white/80 backdrop-blur-md z-10">
-                <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-green-100 text-white relative">
-                    👥
-                    <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h3 class="text-[12px] font-black uppercase tracking-widest text-slate-900">Chat en Vivo</h3>
-                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tight flex items-center gap-1.5 mt-0.5">
-                       <span class="w-1 h-1 rounded-full bg-green-500 animate-pulse"></span>
-                       Canal Seguro con: {{ ticket()?.reporter?.name }}
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button (click)="viewClientDetails()" class="h-8 px-4 bg-white border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm cursor-pointer">
-                    Detalles
-                  </button>
-                  @if (chatSessionStatus() === 'ACTIVE') {
-                    <button (click)="closeChatSession()" class="h-8 px-4 bg-red-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-md shadow-red-100 cursor-pointer animate-in fade-in zoom-in-95 duration-300">
-                      Finalizar
-                    </button>
-                  }
-                </div>
-              </header>
-
-              <!-- Chat Body (Scrollable) -->
-              <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4 bg-slate-50/20 custom-scrollbar" #chatContainer>
-                @if (chatSessionStatus() === 'NONE' || chatSessionStatus() === 'REQUESTED') {
-                  <div class="h-full flex flex-col items-center justify-center text-center space-y-4">
-                    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl grayscale opacity-50">💬</div>
-                    <div class="space-y-1">
-                      <p class="text-[14px] font-black text-slate-800 uppercase tracking-widest">Esperando al Cliente</p>
-                      <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest max-w-[220px]">El canal se activará cuando el cliente inicie la sesión.</p>
-                    </div>
-                    <button (click)="simulateChatRequest()" class="px-6 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-blue-600 transition-all shadow-lg cursor-pointer">
-                       SIMULAR SOLICITUD
-                    </button>
-                  </div>
-                } @else {
-                  @for (msg of chatTranscript(); track $index) {
-                    <div class="flex" [class.justify-end]="msg.user === 'SOPORTE'" [class.justify-start]="msg.user !== 'SOPORTE'">
-                       <div class="max-w-[85%] space-y-1">
-                          <div class="flex items-center gap-2 mb-0.5 px-1" [class.flex-row-reverse]="msg.user === 'SOPORTE'">
-                             <span class="text-[7px] font-black uppercase tracking-widest text-slate-400">{{ msg.user }}</span>
-                             <span class="text-[7px] font-bold text-slate-300 uppercase tracking-tighter">{{ msg.time }}</span>
-                          </div>
-                          <div [class]="msg.user === 'SOPORTE' ? 'bg-slate-900 text-white rounded-tr-none shadow-md' : 'bg-white text-slate-700 rounded-tl-none border border-slate-100 shadow-sm'"
-                               class="px-4 py-3 rounded-2xl text-[11px] font-bold uppercase leading-relaxed break-words overflow-wrap-anywhere">
-                             {{ msg.message }}
-                          </div>
-                       </div>
-                    </div>
-                  }
-                }
-              </div>
-
-              <!-- Chat Footer (Sticky via flex shrink-0) -->
-              @if (chatSessionStatus() === 'ACTIVE') {
-                <footer class="px-6 py-4 border-t border-slate-100 shrink-0 bg-white">
-                  <div class="relative">
-                    <input type="text" #chatInput (keyup.enter)="sendMessage(chatInput.value); chatInput.value = ''"
-                      placeholder="ESCRIBE AQUÍ..." 
-                      class="w-full bg-slate-50 border-none rounded-xl px-6 py-3 text-[11px] font-bold text-slate-700 outline-none focus:ring-2 ring-blue-500/5 transition-all shadow-inner uppercase">
-                    <button (click)="sendMessage(chatInput.value); chatInput.value = ''"
-                      class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-900 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all flex items-center justify-center">➤</button>
-                  </div>
-                </footer>
-              }
-            </div>
-          </div>
-        }
-
-          <!-- Modal de Detalles del Cliente (Slide-over) -->
-          @if (isClientDetailsVisible()) {
-            <div class="fixed inset-0 z-[110] flex items-center justify-end animate-in fade-in duration-300">
-              <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="isClientDetailsVisible.set(false)"></div>
-              <div class="relative bg-white w-[400px] h-full shadow-[-20px_0_60px_rgba(0,0,0,0.1)] border-l border-slate-100 flex flex-col animate-in slide-in-from-right duration-500">
-                <header class="p-8 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                  <h3 class="text-[12px] font-black uppercase tracking-widest text-slate-900">Perfil del Cliente</h3>
-                  <button (click)="isClientDetailsVisible.set(false)" class="text-slate-400 hover:text-slate-900 transition-all text-xl cursor-pointer">✕</button>
-                </header>
-                <div class="p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
-                  <div class="flex flex-col items-center text-center space-y-4">
-                    <div class="w-24 h-24 bg-blue-100 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-xl text-blue-600">👤</div>
-                    <div>
-                      <p class="text-xl font-black text-slate-900 uppercase tracking-tight">{{ ticket()?.reporter?.name }}</p>
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{{ ticket()?.reporter?.email }}</p>
-                    </div>
-                  </div>
-                  
-                  <div class="space-y-6">
-                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                       <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Empresa Vinculada</p>
-                       <p class="text-[11px] font-black text-slate-800 uppercase">QDOORA CHILE SPA</p>
-                    </div>
-                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                       <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Rol del Usuario</p>
-                       <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-[8px] font-black uppercase">ADMINISTRADOR</span>
-                    </div>
-                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                       <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Última Actividad</p>
-                       <p class="text-[11px] font-black text-slate-800 uppercase italic">Hace 15 minutos (Módulo Facturación)</p>
-                    </div>
-                    
-                    @if (ticket()?.reporter?.id) {
-                      <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                         <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Teléfono de Contacto</p>
-                         <p class="text-[11px] font-black text-slate-800 uppercase flex items-center gap-2">
-                           <span class="text-xs">📞</span> +56 9 8877 6655
-                         </p>
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
 
       </main>
 
@@ -786,7 +618,6 @@ export class TicketManagementComponent implements OnInit {
   activeTab = signal('details');
   officialSolution = '';
   replyMessage: string = '';
-  isInternal: boolean = false;
   replyStatus = signal<string>('IN_PROGRESS');
   previewUrl = signal<string | null>(null);
   notification = signal<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
@@ -796,11 +627,6 @@ export class TicketManagementComponent implements OnInit {
   isReplyVisible = signal(false);
   previewingFile = signal<File | null>(null);
 
-  // Live Chat Signals
-  chatSessionStatus = signal<'NONE' | 'REQUESTED' | 'ACTIVE' | 'CLOSED'>('NONE');
-  chatTranscript = signal<{ user: string, message: string, time: string }[]>([]);
-  isClientDetailsVisible = signal(false);
-
   tabs = computed(() => {
     const baseTabs = [
       { id: 'details', label: 'DETALLES', icon: '📄' },
@@ -809,10 +635,6 @@ export class TicketManagementComponent implements OnInit {
 
     if (this._authService.hasPortalAccess()) {
       baseTabs.push({ id: 'forensic', label: 'TRAZABILIDAD TÉCNICA', icon: '🛡️' });
-
-      if (this.chatSessionStatus() === 'REQUESTED' || this.chatSessionStatus() === 'ACTIVE') {
-        baseTabs.push({ id: 'chat', label: 'CHAT EN VIVO', icon: '👥' });
-      }
     }
 
     return baseTabs;
@@ -837,10 +659,7 @@ export class TicketManagementComponent implements OnInit {
       'created': 'TICKET CREADO INICIALMENTE',
       'updated_status': 'CAMBIO DE ESTADO OPERATIVO',
       'assigned': 'ASIGNACIÓN DE RESPONSABLE',
-      'evidence_added': 'NUEVA EVIDENCIA ADJUNTA',
-      'solution_added': 'REGISTRO DE SOLUCIÓN OFICIAL',
-      'chat_started': 'SESIÓN DE CHAT INICIADA',
-      'chat_ended': 'SESIÓN DE CHAT FINALIZADA'
+      'evidence_added': 'NUEVA EVIDENCIA ADJUNTA'
     };
     if (!action) return 'EVENTO';
     return labels[action] || action.toUpperCase();
@@ -906,7 +725,7 @@ export class TicketManagementComponent implements OnInit {
   loadTicket(id: number) {
     this._ticketService.getTicketById(id).subscribe(t => {
       this.ticket.set(t);
-      this.officialSolution = t.official_solution || '';
+      this.officialSolution = t.solution || '';
     });
   }
 
@@ -944,27 +763,8 @@ export class TicketManagementComponent implements OnInit {
     const solutionToArchive = this.officialSolution;
     this._ticketService.updateStatus(this.ticket()!.id, TicketStatus.CLOSED, 'Cierre de incidencia', solutionToArchive)
       .subscribe(() => {
-        // Actualizar estado localmente para reflejar el cierre
-        if (this.ticket()) {
-          this.ticket.set({
-            ...this.ticket()!,
-            status: TicketStatus.CLOSED,
-            official_solution: solutionToArchive
-          });
-        }
-
-        // Archivar la solución como comentario final para el cliente
-        this.addLocalInteraction(`--- SOLUCIÓN OFICIAL DEL TICKET ---\n\n${solutionToArchive}`, false);
-
-        // Registrar en trazabilidad técnica el cierre
-        this.addLocalForensicLog(
-          'solution_added',
-          'REGISTRO DE SOLUCIÓN OFICIAL',
-          'EL AGENTE HA FINALIZADO LA GESTIÓN DEL TICKET.'
-        );
-
         this.showNotification('Incidencia cerrada e indexada correctamente.');
-        // Evitamos loadTicket() para no sobreescribir la interacción inyectada localmente en el mock
+        this.loadTicket(this.ticket()!.id);
       });
   }
 
@@ -1013,7 +813,6 @@ export class TicketManagementComponent implements OnInit {
     this._ticketService.addInteraction(
       this.ticket()!.id,
       this.replyMessage,
-      this.isInternal,
       this.replyStatus()
     ).subscribe(() => {
       this.replyMessage = '';
@@ -1046,129 +845,5 @@ export class TicketManagementComponent implements OnInit {
   showNotification(message: string, type: 'success' | 'error' | 'info' = 'success') {
     this.notification.set({ message, type });
     setTimeout(() => this.notification.set(null), 4000);
-  }
-
-  // Live Chat Methods
-  simulateChatRequest() {
-    this.chatSessionStatus.set('REQUESTED');
-    this.showNotification('¡NUEVA SOLICITUD DE CHAT EN VIVO!', 'info');
-  }
-
-  startChat() {
-    this.chatSessionStatus.set('ACTIVE');
-    this.activeTab.set('chat');
-    this.chatTranscript.set([
-      { user: 'SISTEMA', message: 'EL AGENTE SE HA UNIDO AL CHAT.', time: new Date().toLocaleTimeString() },
-      { user: 'CLIENTE', message: 'HOLA, NECESITO AYUDA CON LA FACTURA F-00892.', time: new Date().toLocaleTimeString() }
-    ]);
-
-    // Registrar en trazabilidad técnica (Simulación local)
-    this.addLocalForensicLog(
-      'chat_started',
-      'SESIÓN DE CHAT INICIADA',
-      'EL AGENTE HA ABIERTO EL CANAL DE COMUNICACIÓN EN VIVO CON EL CLIENTE.'
-    );
-
-    this._ticketService.addForensicLog(
-      this.ticket()!.id,
-      'chat_started',
-      'SESIÓN DE CHAT INICIADA',
-      'EL AGENTE HA ABIERTO EL CANAL DE COMUNICACIÓN EN VIVO CON EL CLIENTE.'
-    ).subscribe();
-  }
-
-  sendMessage(msg: string) {
-    if (!msg.trim()) return;
-    this.chatTranscript.update(t => [...t, { user: 'SOPORTE', message: msg, time: new Date().toLocaleTimeString() }]);
-  }
-
-  viewClientDetails() {
-    this.isClientDetailsVisible.set(true);
-  }
-
-  closeChatSession() {
-    if (!this.ticket()) return;
-
-    // Generar resumen del chat para la trazabilidad
-    const transcript = this.chatTranscript().map(m => `[${m.time}] ${m.user}: ${m.message}`).join('\n');
-
-    // Agregar como interacción (Simulación local)
-    this.addLocalInteraction(
-      `--- RESUMEN DE CHAT FINALIZADO ---\n\n${transcript}`,
-      true
-    );
-
-    // Agregar como interacción (archivado)
-    this._ticketService.addInteraction(
-      this.ticket()!.id,
-      `--- RESUMEN DE CHAT FINALIZADO ---\n\n${transcript}`,
-      true // Interna
-    ).subscribe(() => {
-      this.chatSessionStatus.set('CLOSED');
-
-      // Registrar en trazabilidad técnica el fin del chat (Simulación local)
-      this.addLocalForensicLog(
-        'chat_ended',
-        'SESIÓN DE CHAT FINALIZADA',
-        'SE HA CERRADO EL CANAL DE CHAT Y SE HA ARCHIVADO LA TRANSCRIPCIÓN EN LAS INTERACCIONES.'
-      );
-
-      this._ticketService.addForensicLog(
-        this.ticket()!.id,
-        'chat_ended',
-        'SESIÓN DE CHAT FINALIZADA',
-        'SE HA CERRADO EL CANAL DE CHAT Y SE HA ARCHIVADO LA TRANSCRIPCIÓN EN LAS INTERACCIONES.'
-      ).subscribe(() => {
-        this.showNotification('CHAT FINALIZADO Y ARCHIVADO EN TRAZABILIDAD.');
-        this.activeTab.set('comments');
-      });
-    });
-  }
-
-  private addLocalForensicLog(action: string, event_label: string, description: string) {
-    const currentTicket = this.ticket();
-    if (!currentTicket) return;
-
-    const newLog: any = {
-      id: Math.floor(Math.random() * 10000),
-      action,
-      description,
-      user: { id: 1, name: 'SOPORTE NIVEL 1', email: '', role: 'agent' },
-      created_at: new Date().toISOString(),
-      metadata: { ip: '192.168.65.1', event_label }
-    };
-
-    const updatedTraceability = [newLog, ...(currentTicket.traceability || [])];
-
-    // Persistir en el servicio para que sobreviva a recargas del componente
-    this._ticketService.addSimulatedTraceability(currentTicket.id, newLog);
-
-    this.ticket.set({
-      ...currentTicket,
-      traceability: updatedTraceability
-    });
-  }
-
-  private addLocalInteraction(message: string, isInternal: boolean) {
-    const currentTicket = this.ticket();
-    if (!currentTicket) return;
-
-    const newInteraction: any = {
-      id: Math.floor(Math.random() * 10000),
-      message,
-      is_internal: isInternal,
-      created_at: new Date().toISOString(),
-      user: { id: 1, name: 'SOPORTE NIVEL 1', email: '', role: 'agent' }
-    };
-
-    const updatedInteractions = [newInteraction, ...(currentTicket.interactions || [])];
-
-    // Persistir en el servicio para que sobreviva a recargas del componente
-    this._ticketService.addSimulatedInteraction(currentTicket.id, newInteraction);
-
-    this.ticket.set({
-      ...currentTicket,
-      interactions: updatedInteractions
-    });
   }
 }

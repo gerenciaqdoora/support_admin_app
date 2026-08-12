@@ -14,10 +14,6 @@ export class TicketService {
   tickets = signal<Ticket[]>([]);
   isLoading = signal<boolean>(false);
 
-  // Almacenamiento temporal para simulación (Persiste durante la sesión del navegador)
-  private simulatedInteractions = new Map<number, any[]>();
-  private simulatedTraceability = new Map<number, any[]>();
-
   getTickets(): Observable<any> {
     this.isLoading.set(true);
     return this._http.get<any>(`${this.API_URL}/tickets`).pipe(
@@ -29,18 +25,7 @@ export class TicketService {
   }
 
   getTicketById(id: number): Observable<Ticket> {
-    return this._http.get<Ticket>(`${this.API_URL}/tickets/${id}`).pipe(
-      map(ticket => {
-        const extraInteractions = this.simulatedInteractions.get(id) || [];
-        const extraTraceability = this.simulatedTraceability.get(id) || [];
-        
-        return {
-          ...ticket,
-          interactions: [...extraInteractions, ...(ticket.interactions || [])],
-          traceability: [...extraTraceability, ...(ticket.traceability || [])]
-        };
-      })
-    );
+    return this._http.get<Ticket>(`${this.API_URL}/tickets/${id}`);
   }
 
   createTicket(ticket: Partial<Ticket>): Observable<Ticket> {
@@ -50,7 +35,7 @@ export class TicketService {
         this.getTickets().subscribe();
       }),
       // Transformamos la respuesta para retornar solo el objeto ticket
-      map(res => res.ticket) 
+      map(res => res.ticket)
     );
   }
 
@@ -66,45 +51,12 @@ export class TicketService {
     );
   }
 
-  addInteraction(id: number, message: string, isInternal: boolean = false, newStatus?: string): Observable<TicketInteraction> {
-    return this._http.post<any>(`${this.API_URL}/tickets/${id}/interactions`, { 
-      message, 
-      is_internal: isInternal,
-      status: newStatus 
+  addInteraction(id: number, message: string, newStatus?: string): Observable<TicketInteraction> {
+    return this._http.post<any>(`${this.API_URL}/tickets/${id}/interactions`, {
+      message,
+      status: newStatus
     }).pipe(
       map(res => res.interaction)
     );
-  }
-
-  // MOCK CHAT METHODS
-  getChatStatus(ticketId: number): Observable<{status: string}> {
-    // Simulating API call
-    return new Observable(observer => {
-      observer.next({ status: 'REQUESTED' });
-      observer.complete();
-    });
-  }
-
-  updateChatStatus(ticketId: number, status: string): Observable<any> {
-    return this._http.patch<any>(`${this.API_URL}/tickets/${ticketId}/chat-status`, { status });
-  }
-
-  addForensicLog(ticketId: number, event: string, label: string, description: string): Observable<any> {
-    // Mocking forensic log addition
-    return new Observable(observer => {
-      observer.next({ success: true });
-      observer.complete();
-    });
-  }
-
-  // Helpers para persistencia de simulación
-  addSimulatedInteraction(ticketId: number, interaction: any) {
-    const current = this.simulatedInteractions.get(ticketId) || [];
-    this.simulatedInteractions.set(ticketId, [interaction, ...current]);
-  }
-
-  addSimulatedTraceability(ticketId: number, log: any) {
-    const current = this.simulatedTraceability.get(ticketId) || [];
-    this.simulatedTraceability.set(ticketId, [log, ...current]);
   }
 }

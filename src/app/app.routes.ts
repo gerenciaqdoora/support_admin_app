@@ -71,18 +71,6 @@ export const routes: Routes = [
         data: { breadcrumb: 'Detalle de Suscriptor' },
       },
       {
-        path: 'reports',
-        loadComponent: () =>
-          import('@modules/reports/reports.component').then((m) => m.ReportsComponent),
-        data: { breadcrumb: 'Reportes' },
-      },
-      {
-        path: 'help-center',
-        loadComponent: () =>
-          import('@modules/help-center/help-center.component').then((m) => m.HelpCenterComponent),
-        data: { breadcrumb: 'Centro de Ayuda' },
-      },
-      {
         path: 'logs-ti',
         loadComponent: () =>
           import('@modules/logs-ti/logs-ti.component').then((m) => m.LogsTiComponent),

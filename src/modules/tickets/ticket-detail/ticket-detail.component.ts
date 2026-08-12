@@ -175,15 +175,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
         <footer class="p-6 border-t border-slate-100 bg-white">
           <div class="bg-slate-50 rounded-2xl p-4 ring-inset focus-within:ring-2 ring-blue-500/20 transition-all">
             <textarea [(ngModel)]="replyMessage" 
-              placeholder="Escribe una respuesta para el suscriptor o una nota interna..." 
+              placeholder="Escribe una nota de seguimiento interna..."
               class="w-full bg-transparent border-none outline-none resize-none text-xs font-bold text-slate-700 placeholder:text-slate-300 min-h-[80px]"></textarea>
             
             <div class="flex items-center justify-between mt-4">
               <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" [(ngModel)]="isInternal" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                  <span class="text-[10px] font-black text-slate-400 group-hover:text-slate-600 uppercase tracking-widest transition-all">Nota Interna</span>
-                </label>
+                <span class="inline-flex items-center gap-1.5 text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                  🔒 Nota interna — no visible para el cliente
+                </span>
                 <button class="text-lg opacity-40 hover:opacity-100 transition-opacity">📎</button>
               </div>
               
@@ -217,7 +216,6 @@ export class TicketDetailComponent implements OnInit {
   status = TicketStatus;
   
   replyMessage = '';
-  isInternal = false;
 
   // Reactividad ante cambios de ID en la URL
   constructor() {
@@ -257,9 +255,8 @@ export class TicketDetailComponent implements OnInit {
   sendReply() {
     if (!this.replyMessage.trim() || !this.ticket()) return;
 
-    this._ticketService.addInteraction(this.ticket()!.id, this.replyMessage, this.isInternal).subscribe(() => {
+    this._ticketService.addInteraction(this.ticket()!.id, this.replyMessage).subscribe(() => {
       this.replyMessage = '';
-      this.isInternal = false;
       this.loadTicket(this.ticket()!.id);
     });
   }
