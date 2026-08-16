@@ -6,16 +6,20 @@ import { AduanaSubscriberData, AduanaAgent } from '../../../app/core/models/adua
 import { RutFormatPipe } from '../../../app/core/pipes/rut-format.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { OnInit } from '@angular/core';
+import { finalize } from 'rxjs/operators';
+import { PlanManagerService, Plan } from '@modules/admin/plan-manager/services/plan-manager.service';
+import { QdooraSelectComponent } from '@modules/shared/qdoora-select/qdoora-select.component';
 
 @Component({
   selector: 'app-create-customs-subscriber',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, QdooraSelectComponent],
   templateUrl: './create-customs-subscriber.component.html',
 })
 export class CreateCustomsSubscriberComponent {
   private _fb = inject(FormBuilder);
   private _adminService = inject(AdminCustomsService);
+  private _planService = inject(PlanManagerService);
   private _router = inject(Router);
 
   @ViewChild('alertContainer') alertContainer!: ElementRef;
@@ -25,6 +29,11 @@ export class CreateCustomsSubscriberComponent {
   notification = signal<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
   validationErrors = signal<string[]>([]);
   aduanaAgents = signal<AduanaAgent[]>([]);
+
+  // Planes vigentes que incluyen el módulo Aduana (única vía de habilitación)
+  isLoadingPlans = signal(false);
+  customsPlans = signal<Plan[]>([]);
+  selectedPlan = signal<Plan | null>(null);
 
   // Dropdown Management
   activeDropdown = signal<string | null>(null);
@@ -47,6 +56,9 @@ export class CreateCustomsSubscriberComponent {
   }
 
   form: FormGroup = this._fb.group({
+    // Plan Data
+    plan_id: [null, Validators.required],
+
     // User Data
     first_name: ['', Validators.required],
     last_name: ['', Validators.required],
@@ -65,6 +77,11 @@ export class CreateCustomsSubscriberComponent {
 
   ngOnInit() {
     this.loadAgents();
+    this.loadCustomsPlans();
+
+    this.form.get('plan_id')?.valueChanges.subscribe((planId) => {
+      this.selectedPlan.set(this.customsPlans().find((plan) => plan.id === planId) ?? null);
+    });
   }
 
   loadAgents() {
@@ -72,6 +89,22 @@ export class CreateCustomsSubscriberComponent {
       next: (agents) => this.aduanaAgents.set(agents),
       error: () => this.errorMessage.set('Error al cargar catálogo de agentes.')
     });
+  }
+
+  /** Sólo planes vigentes con módulo Aduana incluido: el backend rechaza cualquier otro */
+  loadCustomsPlans() {
+    this.isLoadingPlans.set(true);
+    this._planService.getCustomsPlans()
+      .pipe(finalize(() => this.isLoadingPlans.set(false)))
+      .subscribe({
+        next: (response) => this.customsPlans.set(response.data.plans || []),
+        error: () => this.errorMessage.set('Error al cargar los planes con módulo Aduana.')
+      });
+  }
+
+  /** Módulos que el plan seleccionado trae incluidos */
+  includedModules(plan: Plan) {
+    return (plan.modules ?? []).filter((module) => module.pivot?.included);
   }
 
   toggleDropdown(name: string, event: MouseEvent) {

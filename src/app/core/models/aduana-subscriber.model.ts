@@ -7,6 +7,9 @@ export interface AduanaSubscriberData {
   dni: string;
   password?: string;
 
+  // Plan Data (obligatorio: sólo planes con módulo Aduana incluido)
+  plan_id: number;
+
   // Company Data
   social_reason: string;
   rut: string;

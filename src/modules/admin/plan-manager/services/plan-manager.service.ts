@@ -98,6 +98,14 @@ export class PlanManagerService {
     return this.http.get<{ data: { plans: Plan[] } }>(this.apiUrl);
   }
 
+  /**
+   * Planes vigentes que incluyen el módulo Aduana.
+   * Sólo el alta de Suscriptores Aduana puede contratarlos.
+   */
+  getCustomsPlans(): Observable<{ data: { plans: Plan[] } }> {
+    return this.http.get<{ data: { plans: Plan[] } }>(`${this.apiUrl}/customs`);
+  }
+
   getModules(): Observable<{ data: { code: string; name: string; is_core: boolean }[] }> {
     return this.http.get<{ data: { code: string; name: string; is_core: boolean }[] }>(this.modulesUrl);
   }

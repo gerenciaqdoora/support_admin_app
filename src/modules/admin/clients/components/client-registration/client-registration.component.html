@@ -54,6 +54,26 @@
           bindValue="id" bindLabel="name" [searchable]="true" placeholder="Busca o selecciona un plan...">
         </qdoora-select>
 
+        <!-- Bloqueo: el módulo Aduana sólo se habilita en su alta dedicada -->
+        @if (hasCustomsModule()) {
+        <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex gap-3 items-start">
+          <div class="flex-shrink-0 p-2 bg-amber-100 text-amber-700 rounded-lg">
+            <mat-icon [svgIcon]="'heroicons_outline:exclamation-triangle'" class="w-5 h-5"></mat-icon>
+          </div>
+          <div class="flex flex-col gap-2 min-w-0">
+            <span class="text-xs font-black text-amber-900 uppercase tracking-wider">Plan con módulo Aduana</span>
+            <span class="text-xs text-amber-800 leading-relaxed">
+              Este plan no puede provisionarse desde aquí: una agencia requiere agente del Anexo 51, empresa y Plan de
+              Cuentas de agencia. Debe darse de alta en el flujo de Suscriptores Aduana.
+            </span>
+            <button type="button" (click)="goToCustomsRegistration()"
+              class="self-start mt-1 px-4 py-2 text-[10px] font-black text-white bg-amber-600 hover:bg-amber-700 rounded-xl uppercase tracking-wider transition-all shadow-sm">
+              Ir al alta de Suscriptores Aduana
+            </button>
+          </div>
+        </div>
+        }
+
         @if (selectedPlan(); as plan) {
         <div class="mt-6 flex flex-col gap-4">
           <!-- Bento KPIs: Atributos del Plan -->
@@ -132,7 +152,7 @@
     </button>
     <button type="button"
       class="px-5 py-2.5 text-xs font-bold !text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:shadow-none flex items-center gap-2 uppercase tracking-wider transition-all"
-      [disabled]="form.invalid || isLoading()" (click)="submit()">
+      [disabled]="form.invalid || isLoading() || hasCustomsModule()" (click)="submit()">
       @if (isLoading()) {
       <span class="animate-spin h-4 w-4 rounded-full border-2 border-white/80 border-t-transparent"></span>
       Procesando...

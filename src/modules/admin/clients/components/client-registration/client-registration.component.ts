@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { ClientManagementService } from '../../services/client-management.service';
 import { QdooraAlertService } from '../../../../../app/core/components/alert/alert.service';
@@ -89,17 +90,31 @@ export class ClientRegistrationComponent implements OnInit, OnDestroy {
   private alertService = inject(QdooraAlertService);
   private notificationService = inject(NotificationService);
   private dialogRef = inject(MatDialogRef<ClientRegistrationComponent>);
+  private router = inject(Router);
+
+  /** Ruta única habilitada para dar de alta suscriptores con módulo Aduana */
+  readonly customsRegistrationRoute = '/admin/customs-subscriber/create';
 
   readonly isLoading = signal(false);
   readonly isLoadingPlans = signal(false);
   readonly availablePlans = signal<Plan[]>([]);
   readonly selectedPlan = signal<Plan | null>(null);
 
+  /**
+   * Un plan que incluye el módulo Aduana no puede provisionarse desde aquí: la
+   * agencia requiere agente del Anexo 51, empresa y PUC de agencia, que sólo el
+   * alta de Suscriptores Aduana sabe construir. Si Aduana figura sólo como
+   * addon, el alta no la activa y el plan sí puede contratarse por esta vía.
+   */
+  readonly hasCustomsModule = computed(() =>
+    (this.selectedPlan()?.modules ?? []).some(module => module.code === 'ADUANA' && module.pivot?.included)
+  );
+
   readonly form: FormGroup = this.fb.group({
     first_name: ['', [Validators.required, Validators.maxLength(255)]],
     last_name: ['', [Validators.required, Validators.maxLength(255)]],
     dni: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
     plan_id: [null, Validators.required]
   });
 
@@ -119,6 +134,12 @@ export class ClientRegistrationComponent implements OnInit, OnDestroy {
 
   close() {
     this.dialogRef.close();
+  }
+
+  /** Deriva al único flujo habilitado para planes con módulo Aduana */
+  goToCustomsRegistration() {
+    this.dialogRef.close();
+    this.router.navigate([this.customsRegistrationRoute]);
   }
 
   private loadPlans() {
@@ -143,6 +164,17 @@ export class ClientRegistrationComponent implements OnInit, OnDestroy {
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return;
+    }
+
+    // Bloqueo Aduana: el backend también lo rechaza, esto evita el viaje inútil
+    if (this.hasCustomsModule()) {
+      this.alertService.showAlert({
+        appearance: 'outline',
+        type: 'error',
+        name: this.alertName,
+        message: 'Los planes con módulo Aduana no se habilitan por esta vía. Use el alta de Suscriptores Aduana.'
+      });
       return;
     }
 

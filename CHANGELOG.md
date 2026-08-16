@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-08-16] feat(admin): incorporar selección de plan en alta de aduana y restringir planes con módulo aduana en alta general
+
 - [2026-08-12] refactor(tickets): limpiar simulaciones y conectar servicio de tickets a endpoints reales de api
 
 - [2026-08-05] feat(puc-sii): refactorizar auxiliar sin RUT en PUC y agregar módulo de gestión SII
