@@ -1,6 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+
+/** Envoltorio uniforme de la API (helper jsonResponse de Laravel). */
+interface ApiEnvelope<T> {
+  data: T;
+  status: number;
+  message: string;
+  errors: unknown[];
+}
 
 /**
  * Estado del certificado digital de una empresa (espejo de CertificateResource).
@@ -22,6 +30,8 @@ export interface SiiCertificate {
 export interface SiiCaf {
   id: number;
   doc_tributary_code: string | number;
+  /** Ambiente del rango: un CAF solo sirve para emitir en su propio ambiente. */
+  environment: 'certificacion' | 'produccion';
   folio_from: number;
   folio_to: number;
   next_folio: number;
@@ -35,22 +45,110 @@ export interface SiiCaf {
 }
 
 /**
- * Solicitud de habilitación de producción SII (espejo de
- * EnablementRequestResource). Cola cross-tenant revisada por Soporte.
+ * Acta de habilitación de producción emitida por Soporte (espejo de
+ * EnablementRequestResource). Registro histórico: no se modifica ni se borra.
  */
-export interface SiiEnablementRequest {
+export interface SiiEnablementActa {
   id: number;
   company_id: number;
-  company_name: string | null;
   status: 'pending' | 'approved' | 'rejected';
   requested_by: number;
   requested_at: string | null;
   reviewed_by: number | null;
   reviewed_at: string | null;
-  rejection_reason: string | null;
   resolution_num: string | null;
   resolution_date: string | null;
   notes: string | null;
+}
+
+export type CertificationProcessType = 'documentos' | 'boleta';
+export type CertificationStepStatus = 'pending' | 'in_progress' | 'done';
+export type SiiOnboardingPath = 'certificacion' | 'emisor_existente';
+
+/**
+ * Paso del checklist. Los `computed` se derivan de datos reales (certificado
+ * vigente, CAF activo, casos aceptados) y no se pueden marcar a mano.
+ */
+export interface CertificationStep {
+  step_key: string;
+  kind: 'manual' | 'computed';
+  status: CertificationStepStatus;
+  completed_at?: string | null;
+  notes?: string | null;
+  cases_total?: number;
+  cases_accepted?: number;
+  /** Solo en el ensayo de la vía emisor_existente. */
+  expected_codes?: string[];
+  missing_codes?: string[];
+}
+
+/** Documento tributario vinculado a un caso (venta o compra). */
+export interface CertificationLinkedDocument {
+  id: number | null;
+  folio: number | null;
+  track_id: string | null;
+  sii_status: string | null;
+}
+
+/**
+ * Caso del Set de Pruebas / ensayo. Factura de Compra (46) se vincula por
+ * `purchase`; el resto de los DTE por `sale`.
+ */
+export interface CertificationCase {
+  id: number;
+  process_type: CertificationProcessType;
+  attention_number: string | null;
+  case_number: string | null;
+  dte_type_code: string;
+  description: string;
+  notes: string | null;
+  sale: CertificationLinkedDocument | null;
+  purchase: CertificationLinkedDocument | null;
+}
+
+export interface CertificationProcess {
+  steps: CertificationStep[];
+  cases: CertificationCase[];
+  /** false ⇒ el proceso no aplica a la empresa y no bloquea producción. */
+  applicable: boolean;
+}
+
+export interface CertificationOverview {
+  processes: Record<CertificationProcessType, CertificationProcess>;
+  read_only: boolean;
+  onboarding_path: SiiOnboardingPath;
+  certification_scope: CertificationProcessType[];
+}
+
+export interface StoreCertificationCasePayload {
+  process_type: CertificationProcessType;
+  attention_number?: string | null;
+  case_number?: string | null;
+  dte_type_code: string;
+  description: string;
+  notes?: string | null;
+}
+
+export interface EmitCertificationCaseItem {
+  name: string;
+  quantity: number;
+  vr_unitary: number;
+  is_exempt?: boolean;
+  discount_pct?: number;
+  unit_measure?: string;
+}
+
+export interface EmitCertificationCasePayload {
+  items: EmitCertificationCaseItem[];
+  date?: string;
+  payment_form?: number;
+  description?: string;
+}
+
+export interface PromoteToProductionPayload {
+  resolution_num: string;
+  resolution_date: string;
+  notes?: string;
 }
 
 /**
@@ -71,8 +169,15 @@ export class SiiAdminService {
     return this._http.get<any>(`${this.prefix(companyId)}/environment`);
   }
 
-  updateEnvironment(companyId: number, environment: string): Observable<any> {
-    return this._http.patch<any>(`${this.prefix(companyId)}/environment`, { sii_environment: environment });
+  /**
+   * Rollback de ambiente. La API rechaza con 422 el salto a producción: ese
+   * camino es exclusivo de promoteToProduction().
+   */
+  rollbackToCertification(companyId: number, reason: string): Observable<unknown> {
+    return this._http.patch(`${this.prefix(companyId)}/environment`, {
+      sii_environment: 'certificacion',
+      reason,
+    });
   }
 
   getCertificate(companyId: number): Observable<any> {
@@ -106,17 +211,54 @@ export class SiiAdminService {
     return this._http.post<any>(`${this.prefix(companyId)}/caf`, form);
   }
 
-  // --------------------------------------------------------- Habilitación (cross-tenant)
+  // --------------------------------------------------------- Certificación (cross-tenant)
 
-  listEnablementRequests(status: string = 'pending'): Observable<any> {
-    return this._http.get<any>(`/api/v1/support/sii/enablement-requests`, { params: { status } });
+  getCertification(companyId: number): Observable<CertificationOverview> {
+    return this._http
+      .get<ApiEnvelope<CertificationOverview>>(`${this.prefix(companyId)}/certification`)
+      .pipe(map((res) => res.data));
   }
 
-  approveEnablement(id: number): Observable<any> {
-    return this._http.post<any>(`/api/v1/support/sii/enablement-requests/${id}/approve`, {});
+  updateStep(
+    companyId: number,
+    payload: { process_type: CertificationProcessType; step_key: string; status: CertificationStepStatus; notes?: string | null },
+  ): Observable<unknown> {
+    return this._http.patch(`${this.prefix(companyId)}/certification/steps`, payload);
   }
 
-  rejectEnablement(id: number, reason: string): Observable<any> {
-    return this._http.post<any>(`/api/v1/support/sii/enablement-requests/${id}/reject`, { reason });
+  storeCase(companyId: number, payload: StoreCertificationCasePayload): Observable<CertificationCase> {
+    return this._http
+      .post<ApiEnvelope<CertificationCase>>(`${this.prefix(companyId)}/certification/cases`, payload)
+      .pipe(map((res) => res.data));
+  }
+
+  updateCase(companyId: number, caseId: number, payload: Partial<StoreCertificationCasePayload> & { doc_sale_id?: number | null; doc_purchase_id?: number | null }): Observable<CertificationCase> {
+    return this._http
+      .patch<ApiEnvelope<CertificationCase>>(`${this.prefix(companyId)}/certification/cases/${caseId}`, payload)
+      .pipe(map((res) => res.data));
+  }
+
+  deleteCase(companyId: number, caseId: number): Observable<unknown> {
+    return this._http.delete(`${this.prefix(companyId)}/certification/cases/${caseId}`);
+  }
+
+  /** 202: el documento se crea y el envío al SII queda encolado. */
+  emitCase(companyId: number, caseId: number, payload: EmitCertificationCasePayload): Observable<unknown> {
+    return this._http.post(`${this.prefix(companyId)}/certification/cases/${caseId}/emit`, payload);
+  }
+
+  /** Único camino al salto certificación → producción. */
+  promoteToProduction(companyId: number, payload: PromoteToProductionPayload): Observable<SiiEnablementActa> {
+    return this._http
+      .post<ApiEnvelope<SiiEnablementActa>>(`${this.prefix(companyId)}/production`, payload)
+      .pipe(map((res) => res.data));
+  }
+
+  updateOnboardingPath(companyId: number, path: SiiOnboardingPath): Observable<unknown> {
+    return this._http.patch(`${this.prefix(companyId)}/onboarding-path`, { sii_onboarding_path: path });
+  }
+
+  updateCertificationScope(companyId: number, emitsBoleta: boolean): Observable<unknown> {
+    return this._http.patch(`${this.prefix(companyId)}/certification-scope`, { sii_emits_boleta: emitsBoleta });
   }
 }

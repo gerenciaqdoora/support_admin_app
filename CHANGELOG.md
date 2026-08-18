@@ -4,6 +4,10 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-08-18] feat(sii): implementar módulo de certificación asistida para soporte y reemplazar cola de habilitación
+
+- [2026-08-18] feat(sii): asistente de certificación operado por soporte, baja de la cola de habilitación y toggle de ambiente acotado a rollback
+
 - [2026-08-16] feat(admin): incorporar selección de plan en alta de aduana y restringir planes con módulo aduana en alta general
 
 - [2026-08-12] refactor(tickets): limpiar simulaciones y conectar servicio de tickets a endpoints reales de api

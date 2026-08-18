@@ -117,12 +117,12 @@ export const routes: Routes = [
         data: { breadcrumb: 'Gestión SII' },
       },
       {
-        path: 'admin/sii-enablement-queue',
+        path: 'admin/sii-certification/:companyId',
         loadComponent: () =>
-          import('@modules/admin/sii-enablement-queue/sii-enablement-queue.component').then(
-            (m) => m.SiiEnablementQueueComponent,
+          import('@modules/admin/sii-certification/sii-certification.component').then(
+            (m) => m.SiiCertificationComponent,
           ),
-        data: { breadcrumb: 'Habilitación de Producción SII' },
+        data: { breadcrumb: 'Certificación SII' },
       },
     ],
   },

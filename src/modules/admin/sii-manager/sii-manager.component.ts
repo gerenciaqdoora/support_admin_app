@@ -59,32 +59,47 @@ import { AuthService } from '@core/services/auth.service';
           <!-- Columna Izquierda: Ambiente y Certificado -->
           <div class="col-span-12 lg:col-span-5 space-y-6">
             
-            <!-- Configuración General (Ambiente) -->
+            <!-- Ambiente SII (rollback) -->
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                 <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Ambiente SII</h3>
-                @if (loadingEnv()) {
-                  <span class="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
-                }
+                <span
+                  class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                  [class]="inProduction() ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'"
+                >
+                  {{ inProduction() ? 'Producción' : 'Certificación' }}
+                </span>
               </div>
               <div class="p-8">
-                <p class="text-[11px] text-slate-500 mb-6 font-medium leading-relaxed">
-                  Control manual del entorno donde opera esta empresa. Afecta hacia dónde apuntan los conectores SOAP y REST del SII.
-                </p>
-                <div class="flex bg-slate-100 p-1 rounded-xl">
-                  <label class="flex-1 text-center relative cursor-pointer group">
-                    <input type="radio" [formControl]="siiEnvironmentCtrl" value="certificacion" class="peer sr-only">
-                    <div class="py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">
-                      Certificación
-                    </div>
-                  </label>
-                  <label class="flex-1 text-center relative cursor-pointer group">
-                    <input type="radio" [formControl]="siiEnvironmentCtrl" value="produccion" class="peer sr-only">
-                    <div class="py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all">
-                      Producción
-                    </div>
-                  </label>
-                </div>
+                @if (inProduction()) {
+                  <p class="text-[11px] text-slate-500 mb-6 font-medium leading-relaxed">
+                    Devolver la empresa a certificación detiene la emisión de documentos reales. Queda registrado con el motivo indicado.
+                  </p>
+                  <form (ngSubmit)="rollbackToCertification()" class="space-y-4">
+                    <label class="block">
+                      <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                        Motivo del rollback
+                      </span>
+                      <input
+                        type="text"
+                        [formControl]="rollbackReasonCtrl"
+                        placeholder="Por qué vuelve a certificación"
+                        class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-amber-400 focus:outline-none"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      [disabled]="loadingEnv() || rollbackReasonCtrl.invalid"
+                      class="w-full py-3 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Volver a certificación
+                    </button>
+                  </form>
+                } @else {
+                  <p class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                    La empresa opera contra el ambiente de certificación del SII. El paso a producción se otorga desde el asistente de certificación, con el checklist cerrado y la resolución del SII declarada.
+                  </p>
+                }
               </div>
             </div>
 
@@ -196,28 +211,26 @@ import { AuthService } from '@core/services/auth.service';
           <!-- Columna Derecha: Asistente y CAF -->
           <div class="col-span-12 lg:col-span-7 space-y-6">
             
-            <!-- Asistente de Certificación (Placeholder) -->
-            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden opacity-75">
-              <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                  <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Asistente de Certificación SII</h3>
+            <!-- Asistente de Certificación -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </div>
-                <span class="px-2.5 py-1 bg-slate-200 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest">
-                  Próximamente
-                </span>
+                <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Asistente de Certificación SII</h3>
               </div>
-              <div class="p-8 text-center py-12">
-                <p class="text-xs text-slate-500 font-medium mb-4">
-                  El control guiado del set de pruebas para el proceso de certificación (Boletas y Documentos) estará disponible aquí próximamente.
+              <div class="p-8">
+                <p class="text-xs text-slate-500 font-medium mb-6 leading-relaxed">
+                  Checklist del proceso ante el SII, Set de Pruebas y habilitación de producción de esta empresa.
                 </p>
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-not-allowed">
-                  Simulación deshabilitada
-                </div>
+                <a
+                  [routerLink]="['/admin/sii-certification', companyId()]"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 cursor-pointer"
+                >
+                  Abrir asistente
+                </a>
               </div>
             </div>
 
@@ -249,6 +262,10 @@ import { AuthService } from '@core/services/auth.service';
                         <tr class="hover:bg-slate-50 transition-colors">
                           <td class="px-4 py-4">
                             <span class="text-[10px] font-black text-slate-800 px-2 py-0.5 bg-slate-100 rounded">{{ caf.doc_tributary_code }}</span>
+                            <span
+                              class="block mt-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded w-fit border"
+                              [class]="caf.environment === 'produccion' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'"
+                            >{{ caf.environment === 'produccion' ? 'Producción' : 'Certificación' }}</span>
                           </td>
                           <td class="px-4 py-4 text-[10px] font-bold text-slate-600">{{ caf.folio_from }}–{{ caf.folio_to }}</td>
                           <td class="px-4 py-4 text-right text-xs font-black text-slate-800">{{ caf.next_folio }}</td>
@@ -275,7 +292,12 @@ import { AuthService } from '@core/services/auth.service';
 
                 @if (isAdmin()) {
                   <div class="mt-6 pt-6 border-t border-slate-100 px-4 pb-2">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Cargar nuevo CAF (XML)</p>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Cargar nuevo CAF (XML)</p>
+                    <p class="text-[11px] text-slate-500 font-medium mb-4 leading-relaxed">
+                      Se registrará como folio de
+                      <span class="font-black" [class]="inProduction() ? 'text-emerald-600' : 'text-amber-600'">{{ inProduction() ? 'producción' : 'certificación' }}</span>,
+                      según el ambiente actual de la empresa. El ambiente no se elige aquí.
+                    </p>
                     <div class="flex items-center gap-3">
                       <input
                         type="file"
@@ -344,11 +366,15 @@ export class SiiManagerComponent {
   certFile = signal<File | null>(null);
   cafFile = signal<File | null>(null);
   passwordCtrl = new FormControl('', { nonNullable: true, validators: [Validators.required] });
-  siiEnvironmentCtrl = new FormControl<string>('certificacion', { nonNullable: true });
+  siiEnvironment = signal<string>('certificacion');
+  inProduction = computed(() => this.siiEnvironment() === 'produccion');
+  rollbackReasonCtrl = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.minLength(10)],
+  });
 
   constructor() {
     this.reload();
-    this.setupEnvironmentListener();
   }
 
   reload(): void {
@@ -357,23 +383,25 @@ export class SiiManagerComponent {
     this.loadCafs();
   }
 
-  private setupEnvironmentListener(): void {
-    this.siiEnvironmentCtrl.valueChanges.subscribe((val) => {
-      this.loadingEnv.set(true);
-      this._service
-        .updateEnvironment(this.companyId(), val)
-        .pipe(finalize(() => this.loadingEnv.set(false)))
-        .subscribe({
-          next: (res) => {
-            this._notification.success('Ambiente SII actualizado correctamente.');
-          },
-          error: (err) => {
-            this._notification.error(err?.error?.message ?? 'No se pudo actualizar el ambiente.');
-            // Revert on error
-            this.loadEnvironment();
-          },
-        });
-    });
+  /**
+   * La API rechaza con 422 el salto a producción desde aquí: ese camino es
+   * exclusivo del asistente de certificación, que exige el checklist cerrado.
+   */
+  rollbackToCertification(): void {
+    if (this.rollbackReasonCtrl.invalid) return;
+
+    this.loadingEnv.set(true);
+    this._service
+      .rollbackToCertification(this.companyId(), this.rollbackReasonCtrl.value)
+      .pipe(finalize(() => this.loadingEnv.set(false)))
+      .subscribe({
+        next: () => {
+          this._notification.success('Empresa devuelta al ambiente de certificación.');
+          this.rollbackReasonCtrl.reset('');
+          this.loadEnvironment();
+        },
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo cambiar el ambiente.'),
+      });
   }
 
   private loadEnvironment(): void {
@@ -383,7 +411,7 @@ export class SiiManagerComponent {
       .pipe(finalize(() => this.loadingEnv.set(false)))
       .subscribe({
         next: (res) => {
-          this.siiEnvironmentCtrl.setValue(res?.data?.sii_environment ?? 'certificacion', { emitEvent: false });
+          this.siiEnvironment.set(res?.data?.sii_environment ?? 'certificacion');
         },
         error: () => this._notification.error('No se pudo cargar el ambiente actual.'),
       });

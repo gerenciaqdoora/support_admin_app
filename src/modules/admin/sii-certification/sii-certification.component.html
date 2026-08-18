@@ -1,0 +1,573 @@
+<div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
+  <!-- Cabecera -->
+  <div class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shrink-0 shadow-sm">
+    <div class="flex items-center gap-5">
+      <a
+        [routerLink]="['/admin/sii-manager', companyId()]"
+        class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all border border-slate-100"
+        aria-label="Volver a Gestión SII"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 19l-7-7 7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">
+            Asistente de Certificación SII
+          </h1>
+          <span class="text-[10px] font-black px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-widest">
+            Empresa #{{ companyId() }}
+          </span>
+          <span
+            class="text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest"
+            [class]="inProduction() ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'"
+          >
+            {{ inProduction() ? 'Producción' : 'Certificación' }}
+          </span>
+          <span class="text-[10px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-widest">
+            {{ isEnsayo() ? 'Ya es emisor electrónico' : 'Certificación completa' }}
+          </span>
+        </div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">
+          Operado por Soporte · Los documentos emitidos aquí son de prueba
+        </p>
+      </div>
+    </div>
+    <button
+      type="button"
+      (click)="reload()"
+      class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-sm cursor-pointer"
+    >
+      Actualizar
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-auto custom-scrollbar">
+    <div class="max-w-[1280px] mx-auto p-8 space-y-6">
+      @if (readOnly()) {
+        <div class="bg-emerald-50 border border-emerald-100 rounded-2xl px-6 py-4 flex items-start gap-3">
+          <span class="text-lg" aria-hidden="true">✅</span>
+          <div>
+            <p class="text-xs font-black text-emerald-700 uppercase tracking-widest">Empresa habilitada en producción</p>
+            <p class="text-[11px] text-emerald-600 font-medium mt-1">
+              El asistente queda en solo lectura. Para volver a operarlo, primero hay que devolver la empresa al ambiente de certificación.
+            </p>
+          </div>
+        </div>
+      }
+
+      @if (loading() && !overview()) {
+        <div class="py-20 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">
+          Cargando certificación…
+        </div>
+      } @else if (overview()) {
+        <!-- Alcance y vía -->
+        <div class="grid grid-cols-12 gap-6">
+          <div class="col-span-12 lg:col-span-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-8 py-5 bg-slate-50 border-b border-slate-200">
+              <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Vía de onboarding</h2>
+            </div>
+            <div class="p-8">
+              <p class="text-[11px] text-slate-500 mb-6 font-medium leading-relaxed">
+                Define el checklist. El discriminador no es si ya usa QdoorA, sino si el contribuyente ya es emisor electrónico autorizado por el SII.
+              </p>
+              <div class="flex bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  (click)="changePath('certificacion')"
+                  [disabled]="readOnly()"
+                  class="flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed"
+                  [class]="!isEnsayo() ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'"
+                >
+                  Certificación completa
+                </button>
+                <button
+                  type="button"
+                  (click)="changePath('emisor_existente')"
+                  [disabled]="readOnly()"
+                  class="flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed"
+                  [class]="isEnsayo() ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'"
+                >
+                  Ya es emisor
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-12 lg:col-span-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-8 py-5 bg-slate-50 border-b border-slate-200">
+              <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Alcance</h2>
+            </div>
+            <div class="p-8">
+              <p class="text-[11px] text-slate-500 mb-6 font-medium leading-relaxed">
+                Si la empresa no emite Boletas Electrónicas, ese checklist deja de bloquear el paso a producción.
+              </p>
+              <div class="flex bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  (click)="toggleBoletaScope(true)"
+                  [disabled]="readOnly()"
+                  class="flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed"
+                  [class]="emitsBoleta() ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'"
+                >
+                  Documentos y boletas
+                </button>
+                <button
+                  type="button"
+                  (click)="toggleBoletaScope(false)"
+                  [disabled]="readOnly()"
+                  class="flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer disabled:cursor-not-allowed"
+                  [class]="!emitsBoleta() ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'"
+                >
+                  Solo documentos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector de proceso -->
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="selectProcess('documentos')"
+            class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer"
+            [class]="selectedProcess() === 'documentos' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+          >
+            Documentos
+          </button>
+          <button
+            type="button"
+            (click)="selectProcess('boleta')"
+            class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer"
+            [class]="selectedProcess() === 'boleta' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+          >
+            Boleta
+            @if (!emitsBoleta()) {
+              <span class="ml-2 opacity-60">(no aplica)</span>
+            }
+          </button>
+        </div>
+
+        @if (!processApplicable()) {
+          <div class="bg-slate-100 border border-slate-200 rounded-2xl px-6 py-4">
+            <p class="text-[11px] text-slate-500 font-medium">
+              Este proceso está fuera del alcance declarado para la empresa: se puede operar igual, pero no bloquea el paso a producción.
+            </p>
+          </div>
+        }
+
+        <div class="grid grid-cols-12 gap-6">
+          <!-- Checklist -->
+          <div class="col-span-12 lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Checklist</h2>
+              <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 text-[10px] font-black text-slate-500">
+                {{ steps().length }} pasos
+              </span>
+            </div>
+            <ul class="divide-y divide-slate-100">
+              @for (step of steps(); track step.step_key) {
+                <li class="px-8 py-5">
+                  <div class="flex justify-between items-start gap-4">
+                    <div class="min-w-0">
+                      <p class="text-xs font-black text-slate-800">{{ stepLabel(step) }}</p>
+                      @if (step.kind === 'computed') {
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                          Automático
+                        </p>
+                      }
+                      @if (step.cases_total !== undefined) {
+                        <p class="text-[10px] font-bold text-slate-500 mt-2">
+                          {{ step.cases_accepted }} de {{ step.cases_total }} casos aceptados
+                        </p>
+                      }
+                      @if (step.missing_codes?.length) {
+                        <p class="text-[10px] font-bold text-amber-600 mt-1">
+                          Falta ensayar: {{ step.missing_codes?.join(', ') }}
+                        </p>
+                      }
+                      @if (step.completed_at) {
+                        <p class="text-[10px] font-medium text-slate-400 mt-1">{{ step.completed_at }}</p>
+                      }
+                    </div>
+                    <span
+                      class="shrink-0 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                      [class]="stepStatusClass(step.status)"
+                    >
+                      {{ stepStatusLabel(step.status) }}
+                    </span>
+                  </div>
+
+                  @if (step.kind === 'manual' && !readOnly()) {
+                    <div class="flex gap-2 mt-4">
+                      <button
+                        type="button"
+                        (click)="setStepStatus(step, 'pending')"
+                        [disabled]="savingStep() === step.step_key"
+                        class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-40"
+                      >
+                        Pendiente
+                      </button>
+                      <button
+                        type="button"
+                        (click)="setStepStatus(step, 'in_progress')"
+                        [disabled]="savingStep() === step.step_key"
+                        class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-amber-100 text-amber-600 hover:bg-amber-50 transition-all cursor-pointer disabled:opacity-40"
+                      >
+                        En curso
+                      </button>
+                      <button
+                        type="button"
+                        (click)="setStepStatus(step, 'done')"
+                        [disabled]="savingStep() === step.step_key"
+                        class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer disabled:opacity-40"
+                      >
+                        Completado
+                      </button>
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Casos -->
+          <div class="col-span-12 lg:col-span-7 space-y-6">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">
+                  {{ isEnsayo() ? 'Casos de ensayo' : 'Set de Pruebas' }}
+                </h2>
+                <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 text-[10px] font-black text-slate-500">
+                  {{ cases().length }} casos
+                </span>
+              </div>
+
+              <ul class="divide-y divide-slate-100">
+                @for (item of cases(); track item.id) {
+                  <li class="px-8 py-5">
+                    <div class="flex justify-between items-start gap-4">
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="text-[10px] font-black text-slate-800 px-2 py-0.5 bg-slate-100 rounded">
+                            {{ item.dte_type_code }}
+                          </span>
+                          @if (item.case_number) {
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                              Caso {{ item.case_number }}
+                            </span>
+                          }
+                          @if (item.attention_number) {
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                              Atención {{ item.attention_number }}
+                            </span>
+                          }
+                          @if (isPurchaseCase(item)) {
+                            <span class="text-[9px] font-black text-purple-600 uppercase tracking-widest px-2 py-0.5 bg-purple-50 rounded border border-purple-100">
+                              Compra
+                            </span>
+                          }
+                        </div>
+                        <p class="text-xs font-medium text-slate-600 mt-2">{{ item.description }}</p>
+                        @if (linkedDocument(item); as doc) {
+                          <div class="flex items-center gap-2 mt-3">
+                            <span class="text-[10px] font-black text-slate-500">Folio {{ doc.folio ?? '—' }}</span>
+                            <span
+                              class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                              [class]="siiStatusClass(doc.sii_status)"
+                            >
+                              {{ doc.sii_status ?? 'Sin estado' }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+
+                      @if (!readOnly()) {
+                        <div class="flex flex-col items-end gap-2 shrink-0">
+                          @if (!linkedDocument(item)) {
+                            <div class="flex gap-2">
+                              <button
+                                type="button"
+                                (click)="openEmitForm(item.id)"
+                                class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all active:scale-95 cursor-pointer"
+                              >
+                                Emitir
+                              </button>
+                              <button
+                                type="button"
+                                (click)="startLinking(item.id)"
+                                class="px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
+                              >
+                                Vincular
+                              </button>
+                            </div>
+                          }
+                          <button
+                            type="button"
+                            (click)="deleteCase(item.id)"
+                            [disabled]="deletingCaseId() === item.id"
+                            class="px-4 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Vincular documento existente -->
+                    @if (linkingCaseId() === item.id) {
+                      <form [formGroup]="linkForm" (ngSubmit)="confirmLink(item)" class="mt-4 flex items-end gap-3">
+                        <label class="flex-1">
+                          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                            ID de la {{ isPurchaseCase(item) ? 'compra' : 'venta' }} ya emitida
+                          </span>
+                          <input
+                            type="number"
+                            formControlName="document_id"
+                            class="block w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          [disabled]="linkForm.invalid"
+                          class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+                        >
+                          Vincular
+                        </button>
+                        <button
+                          type="button"
+                          (click)="cancelLink()"
+                          class="px-5 py-2.5 bg-white text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </form>
+                    }
+
+                    <!-- Emisión del documento de prueba -->
+                    @if (emitFormCaseId() === item.id) {
+                      <form [formGroup]="emitForm" (ngSubmit)="emitCase(item.id)" class="mt-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                        <label class="block mb-4 max-w-[220px]">
+                          <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Fecha</span>
+                          <input
+                            type="date"
+                            formControlName="date"
+                            class="block w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                          />
+                        </label>
+
+                        <div formArrayName="items" class="space-y-3">
+                          @for (itemGroup of items.controls; track $index) {
+                            <div [formGroupName]="$index" class="grid grid-cols-12 gap-3 items-end">
+                              <label class="col-span-5">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Detalle</span>
+                                <input
+                                  type="text"
+                                  formControlName="name"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                />
+                              </label>
+                              <label class="col-span-2">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Cant.</span>
+                                <input
+                                  type="number"
+                                  formControlName="quantity"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                />
+                              </label>
+                              <label class="col-span-3">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Unitario</span>
+                                <input
+                                  type="number"
+                                  formControlName="vr_unitary"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                />
+                              </label>
+                              <label class="col-span-1 flex flex-col items-center">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Ex.</span>
+                                <input type="checkbox" formControlName="is_exempt" class="w-4 h-4 mb-3 cursor-pointer" />
+                              </label>
+                              <button
+                                type="button"
+                                (click)="removeItem($index)"
+                                class="col-span-1 px-2 py-2.5 text-red-400 text-xs font-black hover:text-red-600 transition-all cursor-pointer"
+                                aria-label="Quitar ítem"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          }
+                        </div>
+
+                        <div class="flex gap-3 mt-5">
+                          <button
+                            type="button"
+                            (click)="addItem()"
+                            class="px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+                          >
+                            Agregar ítem
+                          </button>
+                          <button
+                            type="submit"
+                            [disabled]="emitForm.invalid || emittingCaseId() === item.id"
+                            class="px-5 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+                          >
+                            Emitir documento de prueba
+                          </button>
+                          <button
+                            type="button"
+                            (click)="closeEmitForm()"
+                            class="px-5 py-2 bg-white text-slate-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </form>
+                    }
+                  </li>
+                } @empty {
+                  <li class="py-16 text-center opacity-30 italic text-xs font-bold">
+                    No hay casos registrados para este proceso.
+                  </li>
+                }
+              </ul>
+
+              <!-- Alta de caso -->
+              @if (!readOnly()) {
+                <form [formGroup]="newCaseForm" (ngSubmit)="createCase()" class="px-8 py-6 bg-slate-50 border-t border-slate-200 grid grid-cols-12 gap-3 items-end">
+                  <label class="col-span-2">
+                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Atención</span>
+                    <input
+                      type="text"
+                      formControlName="attention_number"
+                      class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                    />
+                  </label>
+                  <label class="col-span-2">
+                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Caso</span>
+                    <input
+                      type="text"
+                      formControlName="case_number"
+                      class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                    />
+                  </label>
+                  <label class="col-span-3">
+                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Documento</span>
+                    <select
+                      formControlName="dte_type_code"
+                      class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none cursor-pointer"
+                    >
+                      @for (type of dteTypes; track type.code) {
+                        <option [value]="type.code">{{ type.label }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="col-span-3">
+                    <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Descripción</span>
+                    <input
+                      type="text"
+                      formControlName="description"
+                      class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    [disabled]="newCaseForm.invalid || creatingCase()"
+                    class="col-span-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+                  >
+                    Registrar caso
+                  </button>
+                </form>
+              }
+            </div>
+
+            <!-- Habilitación de producción -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <div class="px-8 py-5 bg-slate-50 border-b border-slate-200">
+                <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">Habilitar producción</h2>
+              </div>
+              <div class="p-8">
+                @if (readOnly()) {
+                  <p class="text-[11px] text-slate-500 font-medium mb-6">
+                    La empresa ya opera en producción. Este control solo permite devolverla a certificación.
+                  </p>
+                  <form (ngSubmit)="rollback()" class="flex items-end gap-3">
+                    <label class="flex-1">
+                      <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                        Motivo del rollback
+                      </span>
+                      <input
+                        type="text"
+                        [formControl]="rollbackReasonCtrl"
+                        placeholder="Por qué vuelve a certificación"
+                        class="block w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-amber-400 focus:outline-none"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      [disabled]="rollbackReasonCtrl.invalid"
+                      class="px-5 py-2.5 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+                    >
+                      Volver a certificación
+                    </button>
+                  </form>
+                } @else {
+                  @if (pendingSteps().length) {
+                    <div class="mb-6 px-5 py-4 bg-amber-50 border border-amber-100 rounded-2xl">
+                      <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-2">
+                        {{ pendingSteps().length }} pasos pendientes
+                      </p>
+                      <p class="text-[11px] text-amber-600 font-medium">{{ pendingSteps().join(' · ') }}</p>
+                    </div>
+                  } @else {
+                    <div class="mb-6 px-5 py-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                      <p class="text-[11px] text-emerald-700 font-bold">
+                        Checklist cerrado. Declare la resolución del SII para habilitar producción.
+                      </p>
+                    </div>
+                  }
+
+                  <form [formGroup]="promoteForm" (ngSubmit)="promote()" class="grid grid-cols-12 gap-3 items-end">
+                    <label class="col-span-3">
+                      <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">N° resolución</span>
+                      <input
+                        type="text"
+                        formControlName="resolution_num"
+                        class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                      />
+                    </label>
+                    <label class="col-span-3">
+                      <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Fecha resolución</span>
+                      <input
+                        type="date"
+                        formControlName="resolution_date"
+                        class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                      />
+                    </label>
+                    <label class="col-span-3">
+                      <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Notas</span>
+                      <input
+                        type="text"
+                        formControlName="notes"
+                        class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      [disabled]="!canPromote() || promoteForm.invalid || promoting()"
+                      class="col-span-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Habilitar producción
+                    </button>
+                  </form>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
