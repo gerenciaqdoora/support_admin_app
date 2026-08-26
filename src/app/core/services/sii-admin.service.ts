@@ -30,6 +30,8 @@ export interface SiiCertificate {
 export interface SiiCaf {
   id: number;
   doc_tributary_code: string | number;
+  /** Nombre del tipo de documento (core_documents.name); null si no está catalogado. */
+  doc_name: string | null;
   /** Ambiente del rango: un CAF solo sirve para emitir en su propio ambiente. */
   environment: 'certificacion' | 'produccion';
   folio_from: number;
@@ -138,11 +140,29 @@ export interface EmitCertificationCaseItem {
   unit_measure?: string;
 }
 
+/** Referencia a otro documento (usada para la marca 'SET' del Set de Pruebas). */
+export interface EmitCertificationCaseReference {
+  tipo_doc_ref?: string | null;
+  folio_ref?: number | null;
+  fecha_ref?: string | null;
+  razon_ref?: string | null;
+}
+
 export interface EmitCertificationCasePayload {
   items: EmitCertificationCaseItem[];
   date?: string;
   payment_form?: number;
   description?: string;
+  /** Descuento/recargo a nivel de todo el documento (<DscRcgGlobal>). */
+  discount_surcharge?: { type: 'D' | 'R'; value_type: '%' | '$'; value: number } | null;
+  /** Obligatorios en Nota de Crédito (61) / Nota de Débito (56): documento que corrige o anula. */
+  reference_venta_id?: number | null;
+  reference_cod_ref?: number | null;
+  reference_razon?: string | null;
+  type_note_credit_id?: number | null;
+  type_note_debit_id?: number | null;
+  /** Referencias adicionales sin CodRef (ej. la marca 'SET' del Set de Pruebas). */
+  document_references?: EmitCertificationCaseReference[];
 }
 
 export interface PromoteToProductionPayload {
@@ -240,6 +260,18 @@ export class SiiAdminService {
 
   deleteCase(companyId: number, caseId: number): Observable<unknown> {
     return this._http.delete(`${this.prefix(companyId)}/certification/cases/${caseId}`);
+  }
+
+  /**
+   * Reenvía al SII un documento ya emitido, sin rehacerlo ni consumir folio.
+   * Destraba los casos cuyo envío quedó a medias por una caída del SII.
+   */
+  resendCase(companyId: number, caseId: number): Observable<unknown> {
+    return this._http.post(`${this.prefix(companyId)}/certification/cases/${caseId}/resend`, {});
+  }
+
+  sendLibroVentas(companyId: number): Observable<{ xml_base64: string; track_id?: string }> {
+    return this._http.post<{ xml_base64: string; track_id?: string }>(`${this.prefix(companyId)}/certification/libro-ventas`, {});
   }
 
   /** 202: el documento se crea y el envío al SII queda encolado. */

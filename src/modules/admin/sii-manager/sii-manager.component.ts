@@ -261,7 +261,12 @@ import { AuthService } from '@core/services/auth.service';
                       @for (caf of cafs(); track caf.id) {
                         <tr class="hover:bg-slate-50 transition-colors">
                           <td class="px-4 py-4">
-                            <span class="text-[10px] font-black text-slate-800 px-2 py-0.5 bg-slate-100 rounded">{{ caf.doc_tributary_code }}</span>
+                            <div class="flex items-center gap-2">
+                              <span class="text-[10px] font-black text-slate-800 px-2 py-0.5 bg-slate-100 rounded shrink-0">{{ caf.doc_tributary_code }}</span>
+                              @if (caf.doc_name) {
+                                <span class="text-[11px] font-bold text-slate-600 leading-tight">{{ caf.doc_name }}</span>
+                              }
+                            </div>
                             <span
                               class="block mt-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded w-fit border"
                               [class]="caf.environment === 'produccion' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'"

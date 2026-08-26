@@ -237,12 +237,14 @@
           <div class="col-span-12 lg:col-span-7 space-y-6">
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
               <div class="px-8 py-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">
-                  {{ isEnsayo() ? 'Casos de ensayo' : 'Set de Pruebas' }}
-                </h2>
-                <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 text-[10px] font-black text-slate-500">
-                  {{ cases().length }} casos
-                </span>
+                <div class="flex items-center gap-3">
+                  <h2 class="text-xs font-black text-slate-900 uppercase tracking-widest">
+                    {{ isEnsayo() ? 'Casos de ensayo' : 'Set de Pruebas' }}
+                  </h2>
+                  <span class="px-2.5 py-1 bg-white rounded-lg border border-slate-200 text-[10px] font-black text-slate-500">
+                    {{ cases().length }} casos
+                  </span>
+                </div>
               </div>
 
               <ul class="divide-y divide-slate-100">
@@ -280,29 +282,68 @@
                             >
                               {{ doc.sii_status ?? 'Sin estado' }}
                             </span>
+                            @if (doc.track_id) {
+                              <span class="text-[10px] font-bold text-slate-400">Track {{ doc.track_id }}</span>
+                            } @else {
+                              <span class="text-[10px] font-bold text-amber-600">Sin envío al SII</span>
+                            }
+                          </div>
+                        } @else if (getLvcTrackId(item); as trackId) {
+                          <div class="flex items-center gap-2 mt-3">
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-100">
+                              Enviado
+                            </span>
+                            <span class="text-[10px] font-bold text-slate-400">Track {{ trackId }}</span>
                           </div>
                         }
                       </div>
 
                       @if (!readOnly()) {
                         <div class="flex flex-col items-end gap-2 shrink-0">
-                          @if (!linkedDocument(item)) {
-                            <div class="flex gap-2">
+                          @if (item.dte_type_code === 'LVC') {
+                            <button
+                              type="button"
+                              (click)="sendLibroVentas(item.id)"
+                              [disabled]="sendingLibro()"
+                              class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-indigo-100 hover:bg-indigo-100 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                            >
+                              @if (sendingLibro()) {
+                                <span class="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                              }
+                              Enviar Libro
+                            </button>
+                          } @else {
+                            @if (linkedDocument(item)) {
                               <button
                                 type="button"
-                                (click)="openEmitForm(item.id)"
-                                class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all active:scale-95 cursor-pointer"
+                                (click)="resendCase(item.id)"
+                                [disabled]="resendingCaseId() === item.id"
+                                class="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-amber-100 hover:bg-amber-100 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
                               >
-                                Emitir
+                                @if (resendingCaseId() === item.id) {
+                                  <span class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></span>
+                                }
+                                Reenviar al SII
                               </button>
-                              <button
-                                type="button"
-                                (click)="startLinking(item.id)"
-                                class="px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
-                              >
-                                Vincular
-                              </button>
-                            </div>
+                            }
+                            @if (!linkedDocument(item)) {
+                              <div class="flex gap-2">
+                                <button
+                                  type="button"
+                                  (click)="openEmitForm(item.id)"
+                                  class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all active:scale-95 cursor-pointer"
+                                >
+                                  Emitir
+                                </button>
+                                <button
+                                  type="button"
+                                  (click)="startLinking(item.id)"
+                                  class="px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
+                                >
+                                  Vincular
+                                </button>
+                              </div>
+                            }
                           }
                           <button
                             type="button"
@@ -360,55 +401,199 @@
 
                         <div formArrayName="items" class="space-y-3">
                           @for (itemGroup of items.controls; track $index) {
-                            <div [formGroupName]="$index" class="grid grid-cols-12 gap-3 items-end">
-                              <label class="col-span-5">
-                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Detalle</span>
-                                <input
-                                  type="text"
-                                  formControlName="name"
-                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
-                                />
-                              </label>
-                              <label class="col-span-2">
-                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Cant.</span>
-                                <input
-                                  type="number"
-                                  formControlName="quantity"
-                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
-                                />
-                              </label>
-                              <label class="col-span-3">
-                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Unitario</span>
-                                <input
-                                  type="number"
-                                  formControlName="vr_unitary"
-                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
-                                />
-                              </label>
-                              <label class="col-span-1 flex flex-col items-center">
-                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Ex.</span>
-                                <input type="checkbox" formControlName="is_exempt" class="w-4 h-4 mb-3 cursor-pointer" />
-                              </label>
+                            <div [formGroupName]="$index" class="relative p-3 bg-white rounded-xl border border-slate-200">
                               <button
                                 type="button"
                                 (click)="removeItem($index)"
-                                class="col-span-1 px-2 py-2.5 text-red-400 text-xs font-black hover:text-red-600 transition-all cursor-pointer"
+                                class="absolute top-2 right-2 text-red-400 text-xs font-black hover:text-red-600 transition-all cursor-pointer"
                                 aria-label="Quitar ítem"
                               >
                                 ✕
                               </button>
+                              <div class="grid grid-cols-12 gap-3 items-end pr-6">
+                                <label class="col-span-5">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Detalle</span>
+                                  <input
+                                    type="text"
+                                    formControlName="name"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  />
+                                </label>
+                                <label class="col-span-2">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Cant.</span>
+                                  <input
+                                    type="number"
+                                    formControlName="quantity"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  />
+                                </label>
+                                <label class="col-span-3">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Unitario</span>
+                                  <input
+                                    type="number"
+                                    formControlName="vr_unitary"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  />
+                                </label>
+                                <label class="col-span-2 flex flex-col items-center">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Exento</span>
+                                  <input type="checkbox" formControlName="is_exempt" class="w-4 h-4 mb-3 cursor-pointer" />
+                                </label>
+                              </div>
+                              <div class="grid grid-cols-12 gap-3 items-end mt-3 pr-6">
+                                <label class="col-span-3">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Descuento ítem %</span>
+                                  <input
+                                    type="number"
+                                    formControlName="discount_pct"
+                                    min="0"
+                                    max="100"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  />
+                                </label>
+                                <label class="col-span-3">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Unidad medida</span>
+                                  <input
+                                    type="text"
+                                    formControlName="unit_measure"
+                                    maxlength="4"
+                                    placeholder="Un."
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  />
+                                </label>
+                              </div>
                             </div>
                           }
                         </div>
 
+                        <button
+                          type="button"
+                          (click)="addItem()"
+                          class="mt-3 px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+                        >
+                          Agregar ítem
+                        </button>
+
+                        <!-- Descuento/recargo global del documento (<DscRcgGlobal>) -->
+                        <div class="mt-5 p-4 bg-white rounded-xl border border-slate-200">
+                          <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              [checked]="showGlobalDiscount()"
+                              (change)="showGlobalDiscount.set(!showGlobalDiscount())"
+                              class="w-4 h-4 cursor-pointer"
+                            />
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Descuento/recargo global del documento</span>
+                          </label>
+                          @if (showGlobalDiscount()) {
+                            <div formGroupName="discount_surcharge" class="grid grid-cols-12 gap-3 items-end mt-3">
+                              <label class="col-span-3">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo</span>
+                                <select
+                                  formControlName="type"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                >
+                                  <option value="D">Descuento</option>
+                                  <option value="R">Recargo</option>
+                                </select>
+                              </label>
+                              <label class="col-span-3">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Unidad</span>
+                                <select
+                                  formControlName="value_type"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                >
+                                  <option value="%">%</option>
+                                  <option value="$">$</option>
+                                </select>
+                              </label>
+                              <label class="col-span-3">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Valor</span>
+                                <input
+                                  type="number"
+                                  formControlName="value"
+                                  min="0"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                />
+                              </label>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Referencia obligatoria de Nota de Crédito (61) / Nota de Débito (56) -->
+                        @if (isNoteCase()) {
+                          <div class="mt-5 p-4 bg-amber-50 rounded-xl border border-amber-100">
+                            <span class="block text-[10px] font-black text-amber-700 uppercase tracking-widest mb-3">
+                              Documento que esta nota {{ isNoteCredit() ? 'corrige o anula' : 'corrige' }}
+                            </span>
+                            <div class="grid grid-cols-12 gap-3 items-end">
+                              <label class="col-span-6">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Documento referenciado</span>
+                                <select
+                                  formControlName="reference_venta_id"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                >
+                                  <option [ngValue]="null">Seleccione…</option>
+                                  @for (candidate of referenceableCases(); track candidate.id) {
+                                    <option [ngValue]="candidate.sale?.id">
+                                      Caso {{ candidate.case_number || candidate.id }} · Folio {{ candidate.sale?.folio ?? '—' }}
+                                    </option>
+                                  }
+                                </select>
+                              </label>
+                              @if (isNoteCredit()) {
+                                <label class="col-span-6">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Nota de Crédito</span>
+                                  <select
+                                    formControlName="type_note_credit_id"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  >
+                                    <option [ngValue]="null">Seleccione…</option>
+                                    @for (type of creditNoteTypes; track type.id) {
+                                      <option [ngValue]="type.id">{{ type.label }}</option>
+                                    }
+                                  </select>
+                                </label>
+                              }
+                              @if (isNoteDebit()) {
+                                <label class="col-span-6">
+                                  <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Nota de Débito</span>
+                                  <select
+                                    formControlName="type_note_debit_id"
+                                    class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                  >
+                                    <option [ngValue]="null">Seleccione…</option>
+                                    @for (type of debitNoteTypes; track type.id) {
+                                      <option [ngValue]="type.id">{{ type.label }}</option>
+                                    }
+                                  </select>
+                                </label>
+                              }
+                              <label class="col-span-12">
+                                <span class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Razón de la referencia</span>
+                                <input
+                                  type="text"
+                                  formControlName="reference_razon"
+                                  maxlength="90"
+                                  placeholder="Ej. ANULA FACTURA"
+                                  class="block w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Referencia 'SET' del Set de Pruebas (no tributaria, ALFA(3) sin validación) -->
+                        @if (item.attention_number && item.case_number) {
+                          <label class="flex items-center gap-2 mt-5 cursor-pointer">
+                            <input type="checkbox" formControlName="includeSetReference" class="w-4 h-4 cursor-pointer" />
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                              Incluir referencia al Set de Pruebas — "CASO {{ item.attention_number }}-{{ item.case_number }}"
+                            </span>
+                          </label>
+                        }
+
                         <div class="flex gap-3 mt-5">
-                          <button
-                            type="button"
-                            (click)="addItem()"
-                            class="px-4 py-2 bg-white text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
-                          >
-                            Agregar ítem
-                          </button>
                           <button
                             type="submit"
                             [disabled]="emitForm.invalid || emittingCaseId() === item.id"
