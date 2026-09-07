@@ -63,6 +63,27 @@ export interface SiiEnablementActa {
   notes: string | null;
 }
 
+/**
+ * Resolución SII de la empresa en un ambiente. Alimenta <FchResol>/<NroResol>
+ * de la carátula de todo envío. No se deriva de la <FA> del CAF.
+ */
+export interface SiiCompanyResolution {
+  id: number;
+  company_id: number;
+  environment: 'certificacion' | 'produccion';
+  /** El backend lo castea a integer; 0 es un valor válido (certificación). */
+  resolution_number: number;
+  resolution_date: string;
+  authorization_date: string | null;
+}
+
+export interface StoreResolutionPayload {
+  environment: 'certificacion' | 'produccion';
+  resolution_number: number;
+  resolution_date: string;
+  authorization_date: string | null;
+}
+
 export type CertificationProcessType = 'documentos' | 'boleta';
 export type CertificationStepStatus = 'pending' | 'in_progress' | 'done';
 export type SiiOnboardingPath = 'certificacion' | 'emisor_existente';
@@ -106,6 +127,11 @@ export interface CertificationCase {
   notes: string | null;
   sale: CertificationLinkedDocument | null;
   purchase: CertificationLinkedDocument | null;
+  /** SET LIBRO DE GUIAS: solo se completan en casos con dte_type_code '52'. */
+  guide_book_anulado?: number | null;
+  guide_book_ref_type?: string | null;
+  guide_book_ref_folio?: number | null;
+  guide_book_ref_date?: string | null;
 }
 
 export interface CertificationProcess {
@@ -148,6 +174,67 @@ export interface EmitCertificationCaseReference {
   razon_ref?: string | null;
 }
 
+/** Bloque de traslado de la Guía de Despacho (52): IdDoc + sección Transporte. */
+export interface EmitCertificationCaseDispatch {
+  tipo_despacho: number | null;
+  ind_traslado: number | null;
+  patente?: string | null;
+  rut_transporte?: string | null;
+  rut_chofer?: string | null;
+  nombre_chofer?: string | null;
+  dir_dest?: string | null;
+  comuna_dest?: string | null;
+  ciudad_dest?: string | null;
+}
+
+/**
+ * Bloque de exportación del DTE 110/111/112: Receptor extranjero + Aduana +
+ * OtraMoneda. Espejo exacto de `EmitDteRequest` (Portal Cliente) — mismo
+ * contrato que persiste `ElectronicDocumentService::persistExportDetail()`.
+ */
+export interface EmitCertificationCaseExport {
+  tpo_moneda: string;
+  tpo_cambio: number;
+  /** Forma de pago del importador extranjero (tabla Formas de Pago de Aduanas). */
+  fma_pag_exp?: number | null;
+  /**
+   * Fecha de cancelación del documento (Y-m-d). El backend la exige cuando
+   * `fma_pag_exp` es 32 (anticipo): el SII rechaza el DTE sin ella.
+   */
+  fch_cancel?: string | null;
+  /**
+   * Clasifica solo operaciones de SERVICIOS: 3 = calificado por Aduana ·
+   * 4 = hotelería · 5 = transporte terrestre internacional · 6 = servicios
+   * prestados y utilizados totalmente en el extranjero. No existe código para
+   * "venta de bienes" — una exportación de bienes físicos omite el campo (null).
+   */
+  ind_servicio?: number | null;
+  recep_num_id?: string | null;
+  recep_nacionalidad?: number | null;
+  cod_mod_venta?: number | null;
+  cod_clau_venta?: number | null;
+  tot_clau_venta?: number | null;
+  cod_via_transp?: number | null;
+  nombre_transp?: string | null;
+  rut_cia_transp?: string | null;
+  nom_cia_transp?: string | null;
+  cod_pto_embarque?: number | null;
+  cod_pto_desemb?: number | null;
+  tara?: number | null;
+  cod_unid_med_tara?: number | null;
+  peso_bruto?: number | null;
+  cod_unid_peso_bruto?: number | null;
+  peso_neto?: number | null;
+  cod_unid_peso_neto?: number | null;
+  tot_bultos?: number | null;
+  cod_tpo_bultos?: number | null;
+  cant_bultos?: number | null;
+  mnt_flete?: number | null;
+  mnt_seguro?: number | null;
+  cod_pais_recep?: number | null;
+  cod_pais_destin?: number | null;
+}
+
 export interface EmitCertificationCasePayload {
   items: EmitCertificationCaseItem[];
   date?: string;
@@ -157,18 +244,58 @@ export interface EmitCertificationCasePayload {
   discount_surcharge?: { type: 'D' | 'R'; value_type: '%' | '$'; value: number } | null;
   /** Obligatorios en Nota de Crédito (61) / Nota de Débito (56): documento que corrige o anula. */
   reference_venta_id?: number | null;
+  /**
+   * Compra que esta Nota de Crédito/Débito corrige o anula (DTE 61/56 emitidos
+   * sobre una Factura de Compra 46). Excluyente con reference_venta_id: el
+   * receptor del DTE es el proveedor, no un cliente.
+   */
+  reference_purchase_id?: number | null;
   reference_cod_ref?: number | null;
   reference_razon?: string | null;
   type_note_credit_id?: number | null;
   type_note_debit_id?: number | null;
   /** Referencias adicionales sin CodRef (ej. la marca 'SET' del Set de Pruebas). */
   document_references?: EmitCertificationCaseReference[];
+  /** Solo Guía de Despacho (52). El Set de Pruebas exige siempre ind_traslado. */
+  dispatch?: EmitCertificationCaseDispatch;
+  /** Solo Factura/Nota de Exportación (110/111/112). */
+  export?: EmitCertificationCaseExport;
 }
 
 export interface PromoteToProductionPayload {
   resolution_num: string;
   resolution_date: string;
   notes?: string;
+}
+
+export interface CertificationPurchaseLine {
+  id: number;
+  doc_tributary_code: string;
+  folio: number;
+  counterparty_rut: string;
+  counterparty_name: string;
+  doc_date: string;
+  amount_exempt: number;
+  amount_net: number;
+  nature: 'normal' | 'iva_uso_comun' | 'entrega_gratuita' | 'retencion_total';
+  // Eloquent castea esta columna como decimal:3, que Laravel serializa como
+  // string en el JSON de lectura — a diferencia del payload de escritura, que
+  // manda un número (ver StorePurchaseLinePayload).
+  proportionality_factor: string | null;
+  observations: string | null;
+}
+
+export interface StorePurchaseLinePayload {
+  doc_tributary_code: string;
+  folio: number;
+  counterparty_rut: string;
+  counterparty_name: string;
+  doc_date: string;
+  amount_exempt: number;
+  amount_net: number;
+  nature: 'normal' | 'iva_uso_comun' | 'entrega_gratuita' | 'retencion_total';
+  proportionality_factor: number | null;
+  observations: string | null;
 }
 
 /**
@@ -252,7 +379,18 @@ export class SiiAdminService {
       .pipe(map((res) => res.data));
   }
 
-  updateCase(companyId: number, caseId: number, payload: Partial<StoreCertificationCasePayload> & { doc_sale_id?: number | null; doc_purchase_id?: number | null }): Observable<CertificationCase> {
+  updateCase(
+    companyId: number,
+    caseId: number,
+    payload: Partial<StoreCertificationCasePayload> & {
+      doc_sale_id?: number | null;
+      doc_purchase_id?: number | null;
+      guide_book_anulado?: number | null;
+      guide_book_ref_type?: string | null;
+      guide_book_ref_folio?: number | null;
+      guide_book_ref_date?: string | null;
+    },
+  ): Observable<CertificationCase> {
     return this._http
       .patch<ApiEnvelope<CertificationCase>>(`${this.prefix(companyId)}/certification/cases/${caseId}`, payload)
       .pipe(map((res) => res.data));
@@ -266,12 +404,93 @@ export class SiiAdminService {
    * Reenvía al SII un documento ya emitido, sin rehacerlo ni consumir folio.
    * Destraba los casos cuyo envío quedó a medias por una caída del SII.
    */
-  resendCase(companyId: number, caseId: number): Observable<unknown> {
-    return this._http.post(`${this.prefix(companyId)}/certification/cases/${caseId}/resend`, {});
+  resendCase(companyId: number, caseId: number, rebuild = false): Observable<unknown> {
+    return this._http.post(`${this.prefix(companyId)}/certification/cases/${caseId}/resend`, { rebuild });
   }
 
-  sendLibroVentas(companyId: number): Observable<{ xml_base64: string; track_id?: string }> {
-    return this._http.post<{ xml_base64: string; track_id?: string }>(`${this.prefix(companyId)}/certification/libro-ventas`, {});
+  /** Construye, firma y envía el Libro de Ventas de certificación; incluye el XML en base64 para descarga. */
+  sendLibroVentas(companyId: number): Observable<{
+    status: string | null;
+    glosa: string | null;
+    track_id: string | null;
+    period: string;
+    xml_base64: string;
+  }> {
+    return this._http
+      .post<
+        ApiEnvelope<{
+          status: string | null;
+          glosa: string | null;
+          track_id: string | null;
+          period: string;
+          xml_base64: string;
+        }>
+      >(`${this.prefix(companyId)}/certification/libro-ventas`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  listPurchaseLines(companyId: number): Observable<CertificationPurchaseLine[]> {
+    return this._http
+      .get<ApiEnvelope<CertificationPurchaseLine[]>>(`${this.prefix(companyId)}/certification/purchase-lines`)
+      .pipe(map((res) => res.data));
+  }
+
+  storePurchaseLine(companyId: number, payload: StorePurchaseLinePayload): Observable<CertificationPurchaseLine> {
+    return this._http
+      .post<ApiEnvelope<CertificationPurchaseLine>>(`${this.prefix(companyId)}/certification/purchase-lines`, payload)
+      .pipe(map((res) => res.data));
+  }
+
+  deletePurchaseLine(companyId: number, lineId: number): Observable<unknown> {
+    return this._http.delete(`${this.prefix(companyId)}/certification/purchase-lines/${lineId}`);
+  }
+
+  /** Construye, firma y envía el Libro de Compras de certificación. */
+  sendLibroCompras(companyId: number): Observable<{
+    status: string | null;
+    glosa: string | null;
+    track_id: string | null;
+    period: string;
+    xml_base64: string;
+  }> {
+    return this._http
+      .post<
+        ApiEnvelope<{
+          status: string | null;
+          glosa: string | null;
+          track_id: string | null;
+          period: string;
+          xml_base64: string;
+        }>
+      >(`${this.prefix(companyId)}/certification/libro-compras`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Construye, firma y envía el Libro de Guías de certificación. El folio de
+   * notificación es obligatorio: el servidor nunca lo deriva ni lo adivina.
+   */
+  sendLibroGuias(
+    companyId: number,
+    folioNotificacion: number,
+  ): Observable<{
+    status: string | null;
+    glosa: string | null;
+    track_id: string | null;
+    period: string;
+    xml_base64: string;
+  }> {
+    return this._http
+      .post<
+        ApiEnvelope<{
+          status: string | null;
+          glosa: string | null;
+          track_id: string | null;
+          period: string;
+          xml_base64: string;
+        }>
+      >(`${this.prefix(companyId)}/certification/libro-guias`, { folio_notificacion: folioNotificacion })
+      .pipe(map((res) => res.data));
   }
 
   /** 202: el documento se crea y el envío al SII queda encolado. */
@@ -292,5 +511,17 @@ export class SiiAdminService {
 
   updateCertificationScope(companyId: number, emitsBoleta: boolean): Observable<unknown> {
     return this._http.patch(`${this.prefix(companyId)}/certification-scope`, { sii_emits_boleta: emitsBoleta });
+  }
+
+  listResolutions(companyId: number): Observable<SiiCompanyResolution[]> {
+    return this._http
+      .get<ApiEnvelope<SiiCompanyResolution[]>>(`${this.prefix(companyId)}/sii-resolutions`)
+      .pipe(map((res) => res.data));
+  }
+
+  storeResolution(companyId: number, payload: StoreResolutionPayload): Observable<SiiCompanyResolution> {
+    return this._http
+      .post<ApiEnvelope<SiiCompanyResolution>>(`${this.prefix(companyId)}/sii-resolutions`, payload)
+      .pipe(map((res) => res.data));
   }
 }
