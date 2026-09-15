@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-09-15] feat[core]: configuración de aduana para suscriptores e importación de plan de cuentas
+
 - [2026-09-07] feat(sii): implementar certificacion de libros de compras y guias, resoluciones y emision de dtes de exportacion y despacho
 
 - [2026-08-26] feat(sii): agregar envio y registro de casos para Libro de Ventas en certificacion asistida

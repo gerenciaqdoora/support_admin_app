@@ -1,3 +1,5 @@
+import { AccountPlanImportRow } from './account-plan-import.model';
+
 export interface AduanaSubscriberData {
   // User Data
   name: string;
@@ -18,6 +20,11 @@ export interface AduanaSubscriberData {
   agent_code?: string;
   address?: string;
   phone?: string;
+
+  // Plan de cuentas: se importa desde el archivo del cliente
+  account_plan_name: string;
+  largos: [number, number, number, number];
+  rows: AccountPlanImportRow[];
 }
 
 export interface AduanaSubscriberResponse {

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminCustomsService } from '../../../app/core/services/admin-customs.service';
 import { AduanaSubscriberData, AduanaAgent } from '../../../app/core/models/aduana-subscriber.model';
+import { AccountPlanImportRow, AccountPlanPreview, AccountPlanPreviewNode } from '../../../app/core/models/account-plan-import.model';
+import { AccountPlanExcelParserService } from '../../../app/core/services/account-plan-excel-parser.service';
 import { RutFormatPipe } from '../../../app/core/pipes/rut-format.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { OnInit } from '@angular/core';
@@ -21,8 +23,10 @@ export class CreateCustomsSubscriberComponent {
   private _adminService = inject(AdminCustomsService);
   private _planService = inject(PlanManagerService);
   private _router = inject(Router);
+  private _excelParser = inject(AccountPlanExcelParserService);
 
   @ViewChild('alertContainer') alertContainer!: ElementRef;
+  @ViewChild('excelFileInput') excelFileInput?: ElementRef<HTMLInputElement>;
 
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -34,6 +38,13 @@ export class CreateCustomsSubscriberComponent {
   isLoadingPlans = signal(false);
   customsPlans = signal<Plan[]>([]);
   selectedPlan = signal<Plan | null>(null);
+
+  // Importación del plan de cuentas
+  excelFile = signal<File | null>(null);
+  excelRows = signal<AccountPlanImportRow[]>([]);
+  excelErrors = signal<string[]>([]);
+  preview = signal<AccountPlanPreview | null>(null);
+  isPreviewing = signal(false);
 
   // Dropdown Management
   activeDropdown = signal<string | null>(null);
@@ -73,7 +84,19 @@ export class CreateCustomsSubscriberComponent {
     agent_code: [{ value: '', disabled: true }, Validators.required],
     address: [''],
     phone: [''],
+
+    // Plan de Cuentas (importación desde archivo del cliente).
+    // El largo del tipo es siempre 1 dígito — no es editable, así que no
+    // forma parte del form. La clase de cada dígito la declara el archivo
+    // (columna "Clase Cuenta"), no una convención fija.
+    account_plan_name: ['Plan de Cuentas Aduana', Validators.required],
+    largo_subtipo: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
+    largo_cuenta: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
+    largo_subcuenta: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
   });
+
+  /** El código del tipo vive en un varchar(1): el largo del tipo es siempre 1. */
+  readonly LARGO_TIPO = 1;
 
   ngOnInit() {
     this.loadAgents();
@@ -101,6 +124,91 @@ export class CreateCustomsSubscriberComponent {
         error: () => this.errorMessage.set('Error al cargar los planes con módulo Aduana.')
       });
   }
+
+  /** Lee el archivo elegido y extrae el listado plano de cuentas (sin interpretar jerarquía aún). */
+  async onExcelSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    this.preview.set(null);
+    this.excelErrors.set([]);
+    this.excelRows.set([]);
+    this.excelFile.set(file);
+
+    if (!file) return;
+
+    const result = await this._excelParser.parse(file);
+    this.excelRows.set(result.rows);
+    this.excelErrors.set(result.errors);
+  }
+
+  /** Reinicia el proceso de importación para adjuntar otro archivo desde cero. */
+  clearExcelPlan() {
+    this.excelFile.set(null);
+    this.excelRows.set([]);
+    this.excelErrors.set([]);
+    this.preview.set(null);
+
+    // Sin esto, seleccionar el mismo archivo de nuevo no dispara (change).
+    if (this.excelFileInput) {
+      this.excelFileInput.nativeElement.value = '';
+    }
+  }
+
+  /** Largos por nivel tal como los declara el operador (tipo siempre 1). */
+  private currentLargos(): number[] {
+    return [
+      this.LARGO_TIPO,
+      Number(this.form.value.largo_subtipo),
+      Number(this.form.value.largo_cuenta),
+      Number(this.form.value.largo_subcuenta),
+    ];
+  }
+
+  /** Pide al backend la interpretación del archivo con los largos declarados. */
+  generatePreview() {
+    const rows = this.excelRows();
+    if (!rows.length) {
+      this.excelErrors.set(['Debe cargar un archivo con cuentas antes de previsualizar.']);
+      return;
+    }
+
+    this.isPreviewing.set(true);
+    this._adminService.previewAccountPlan({ largos: this.currentLargos(), rows })
+      .pipe(finalize(() => this.isPreviewing.set(false)))
+      .subscribe({
+        next: (preview) => {
+          this.preview.set(preview);
+          this.excelErrors.set([]);
+        },
+        error: (error) => {
+          this.preview.set(null);
+          this.excelErrors.set([error.error?.message || 'No se pudo interpretar el archivo.']);
+        },
+      });
+  }
+
+  /**
+   * Filas a mostrar en la tabla de detalle de la previsualización.
+   *
+   * El archivo puede aterrizar en cualquier nivel según los largos que
+   * declare el operador (`tree.level`). Cuando aterriza en 'subcuenta', las
+   * filas reales —con su sigla y configuración— viven en `tree.subcuentas`;
+   * `tree.cuentas` solo trae los nodos padre generados automáticamente
+   * (nombre genérico, sin configuración). Mostrar siempre `tree.cuentas`
+   * ocultaría al operador lo que realmente se va a importar.
+   */
+  previewNodes = computed<AccountPlanPreviewNode[]>(() => {
+    const tree = this.preview();
+    if (!tree) return [];
+
+    switch (tree.level) {
+      case 'subcuenta': return tree.subcuentas;
+      case 'cuenta': return tree.cuentas;
+      case 'subtipo': return tree.subtipos;
+      case 'tipo': return tree.tipos;
+    }
+  });
 
   /** Módulos que el plan seleccionado trae incluidos */
   includedModules(plan: Plan) {
@@ -143,15 +251,24 @@ export class CreateCustomsSubscriberComponent {
       return;
     }
 
+    if (!this.preview()) {
+      this.errorMessage.set('Debe previsualizar el plan de cuentas antes de crear el suscriptor.');
+      this.scrollToAlert();
+      return;
+    }
+
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.validationErrors.set([]);
 
+    const raw = this.form.getRawValue();
     const data: AduanaSubscriberData = {
-      ...this.form.getRawValue(),
+      ...raw,
       name: this.form.value.email, // Usamos el email como nombre de usuario por defecto
       dni: this.form.get('dni')?.value.replace(/\./g, '').replace('-', ''),
       rut: this.form.get('rut')?.value.replace(/\./g, '').replace('-', ''),
+      largos: this.currentLargos() as [number, number, number, number],
+      rows: this.excelRows(),
     };
 
     this._adminService.createAduanaSubscriber(data).subscribe({
@@ -159,6 +276,10 @@ export class CreateCustomsSubscriberComponent {
         this.isLoading.set(false);
         this.showNotification(response.message);
         this.form.reset();
+        this.excelFile.set(null);
+        this.excelRows.set([]);
+        this.excelErrors.set([]);
+        this.preview.set(null);
       },
       error: (error) => {
         this.isLoading.set(false);

@@ -455,6 +455,253 @@
         </div>
       </div>
 
+      <div class="h-px bg-slate-100"></div>
+
+      <!-- Section 3: Plan de Cuentas (Importación desde archivo del cliente) -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-2">
+          <div class="w-1 h-4 bg-emerald-500 rounded-full"></div>
+          <h2 class="text-sm font-black text-slate-800 uppercase tracking-tight">Plan de Cuentas</h2>
+        </div>
+        <p class="text-[10px] font-bold text-slate-500">
+          Cargue el archivo del plan de cuentas del cliente e indique cuántos dígitos ocupa cada
+          nivel del código para poder interpretarlo.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Account Plan Name -->
+          <div class="flex flex-col gap-1.5 md:col-span-4">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Nombre del Plan de Cuentas</label
+            >
+            <input
+              formControlName="account_plan_name"
+              type="text"
+              placeholder="Plan de Cuentas Aduana"
+              [class.border-red-300]="
+                form.get('account_plan_name')?.invalid && form.get('account_plan_name')?.touched
+              "
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-sm shadow-inner"
+            />
+          </div>
+
+          <!-- Excel File -->
+          <div class="flex flex-col gap-1.5 md:col-span-4">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Archivo del Plan de Cuentas (.xlsx)</label
+            >
+            <input
+              #excelFileInput
+              type="file"
+              accept=".xlsx,.xls"
+              (change)="onExcelSelected($event)"
+              class="text-sm font-bold text-slate-700 file:mr-4 file:px-4 file:py-2 file:rounded-xl file:border-0 file:font-black file:text-[9px] file:uppercase file:tracking-widest file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+            />
+            @if (excelFile()) {
+              <span class="text-[9px] font-bold text-slate-500 ml-1">
+                {{ excelFile()?.name }} — {{ excelRows().length }} cuenta(s) leída(s)
+              </span>
+            }
+          </div>
+
+          <!-- Largos -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Largo Tipo</label
+            >
+            <div
+              class="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 text-sm shadow-inner cursor-not-allowed"
+              title="Siempre 1 dígito: 1 Activo, 2 Pasivo, 3 Patrimonio, 4 Ganancias, 5 Pérdidas"
+            >
+              1 (fijo)
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Largo Subtipo</label
+            >
+            <input
+              formControlName="largo_subtipo"
+              type="number"
+              min="1"
+              max="10"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 text-sm shadow-inner"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Largo Cuenta</label
+            >
+            <input
+              formControlName="largo_cuenta"
+              type="number"
+              min="1"
+              max="10"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 text-sm shadow-inner"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1"
+              >Largo Subcuenta</label
+            >
+            <input
+              formControlName="largo_subcuenta"
+              type="number"
+              min="1"
+              max="10"
+              class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700 text-sm shadow-inner"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            [disabled]="isPreviewing() || !excelRows().length"
+            (click)="generatePreview()"
+            class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+          >
+            {{ isPreviewing() ? 'Interpretando...' : 'Previsualizar plan' }}
+          </button>
+
+          @if (excelFile()) {
+            <button
+              type="button"
+              (click)="clearExcelPlan()"
+              class="px-6 py-2.5 bg-white hover:bg-slate-50 text-slate-500 border border-slate-200 rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all cursor-pointer"
+            >
+              Limpiar plan
+            </button>
+          }
+        </div>
+
+        @if (excelErrors().length > 0) {
+          <ul class="p-4 bg-red-50 border border-red-100 rounded-xl space-y-1">
+            @for (error of excelErrors(); track $index) {
+              <li class="text-red-600 text-[10px] font-bold flex items-center gap-1.5">
+                <span class="w-1 h-1 bg-red-400 rounded-full"></span>
+                {{ error }}
+              </li>
+            }
+          </ul>
+        }
+
+        @if (preview(); as tree) {
+          <div class="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-4">
+            <p class="text-[10px] font-bold text-slate-600">
+              Las filas del archivo se crearán como <strong class="uppercase">{{ tree.level }}</strong>.
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="p-3 bg-white rounded-xl border border-slate-100 text-center">
+                <p class="text-lg font-black text-slate-800">{{ tree.totals.tipos }}</p>
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Tipos</p>
+              </div>
+              <div class="p-3 bg-white rounded-xl border border-slate-100 text-center">
+                <p class="text-lg font-black text-slate-800">{{ tree.totals.subtipos }}</p>
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Subtipos</p>
+              </div>
+              <div class="p-3 bg-white rounded-xl border border-slate-100 text-center">
+                <p class="text-lg font-black text-slate-800">{{ tree.totals.cuentas }}</p>
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Cuentas</p>
+              </div>
+              <div class="p-3 bg-white rounded-xl border border-slate-100 text-center">
+                <p class="text-lg font-black text-slate-800">{{ tree.totals.subcuentas }}</p>
+                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Subcuentas</p>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-[10px] font-black text-slate-600 uppercase tracking-wider">Clases declaradas por Tipo</p>
+              <div class="flex flex-wrap gap-2">
+                @for (tipo of tree.tipos; track tipo.code) {
+                  <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-100">
+                    <span class="font-mono font-black text-slate-500">{{ tipo.code }}</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="font-bold text-slate-700">{{ tipo.name }}</span>
+                    @if (tipo.type_class_code) {
+                      <span
+                        class="px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider text-[9px]"
+                        [class.bg-blue-100]="tipo.type_class_code === 'ACTIVO'"
+                        [class.text-blue-700]="tipo.type_class_code === 'ACTIVO'"
+                        [class.bg-orange-100]="tipo.type_class_code === 'PASIVO'"
+                        [class.text-orange-700]="tipo.type_class_code === 'PASIVO'"
+                        [class.bg-purple-100]="tipo.type_class_code === 'PATRIMONIO'"
+                        [class.text-purple-700]="tipo.type_class_code === 'PATRIMONIO'"
+                        [class.bg-emerald-100]="tipo.type_class_code === 'GANANCIA'"
+                        [class.text-emerald-700]="tipo.type_class_code === 'GANANCIA'"
+                        [class.bg-pink-100]="tipo.type_class_code === 'PERDIDA'"
+                        [class.text-pink-700]="tipo.type_class_code === 'PERDIDA'"
+                      >{{ tipo.type_class_code }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (tree.warnings.length > 0) {
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <p class="text-[10px] font-black text-amber-900 uppercase tracking-wider">
+                  {{ tree.warnings.length }} advertencia(s) — la importación puede continuar
+                </p>
+                <ul class="mt-2 space-y-1">
+                  @for (warning of tree.warnings; track $index) {
+                    <li class="text-amber-700 text-[9px] font-bold flex items-start gap-1.5">
+                      <span class="w-1 h-1 mt-1 bg-amber-400 rounded-full shrink-0"></span>
+                      {{ warning }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+              <table class="w-full text-left text-[10px]">
+                <thead class="bg-slate-100">
+                  <tr>
+                    <th class="px-3 py-2 font-black uppercase tracking-wider text-slate-500">Código</th>
+                    <th class="px-3 py-2 font-black uppercase tracking-wider text-slate-500">Nombre</th>
+                    <th class="px-3 py-2 font-black uppercase tracking-wider text-slate-500">Cuenta Maestra</th>
+                    <th class="px-3 py-2 font-black uppercase tracking-wider text-slate-500">Configuración</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (node of previewNodes(); track node.code) {
+                    <tr class="border-t border-slate-100" [class.text-slate-400]="node.is_generated">
+                      <td class="px-3 py-1.5 font-mono">{{ node.code }}</td>
+                      <td class="px-3 py-1.5 font-bold">{{ node.name }}</td>
+                      <td class="px-3 py-1.5">
+                        @if (node.account_category_code) {
+                          <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-md font-black whitespace-nowrap">{{ node.account_category_code }}</span>
+                        } @else {
+                          <span class="text-slate-300">—</span>
+                        }
+                      </td>
+                      <td class="px-3 py-1.5">
+                        <div class="flex flex-wrap gap-1">
+                          @if (node.show_in_cash_box) {
+                            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md font-black">Caja</span>
+                          }
+                          @if (node.show_in_bank) {
+                            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-md font-black">Banco</span>
+                          }
+                          @if (node.trabaja_como_activo_fijo) {
+                            <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-md font-black">Activo fijo</span>
+                          }
+                          @if (node.trabaja_con_auxiliar_con_rut) {
+                            <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-md font-black">Auxiliar RUT</span>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+
       <!-- Footer / Action Area -->
       <div
         class="pt-6 flex flex-col md:flex-row items-center justify-end gap-3 bg-slate-50/50 -mx-6 -mb-6 p-6 md:p-8 border-t border-slate-100"
@@ -468,7 +715,7 @@
         </button>
         <button
           type="submit"
-          [disabled]="isLoading() || customsPlans().length === 0"
+          [disabled]="isLoading() || customsPlans().length === 0 || !preview()"
           class="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
         >
           @if (isLoading()) {
@@ -511,7 +758,7 @@
       Esta es la <strong>única vía</strong> para habilitar el módulo Aduana: el alta general de
       suscriptores rechaza cualquier plan que lo contenga. Al confirmar, el sistema creará la
       empresa de la agencia, contratará el plan seleccionado con los módulos que trae incluidos e
-      iniciará el proceso asíncrono de clonación del Plan de Cuentas (PUC) estándar para agencias.
+      importará el Plan de Cuentas a partir del archivo cargado y previsualizado más arriba.
     </div>
   </div>
 </div>
