@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError, map } from 'rxjs';
-import { AuthResponse, LoginCredentials, User } from '../models/auth.models';
+import { AuthResponse, LoginCredentials, RefreshResponse, User } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -57,28 +57,34 @@ export class AuthService {
   }
 
   /**
-   * Refreshes the access token using the stored refresh token
+   * Renueva los tokens con el refresh guardado. /v1/refresh responde solo tokens: el usuario se conserva.
    */
-  refreshToken(): Observable<AuthResponse> {
-    const refresh_token = this.getRefreshToken();
-    if (!refresh_token) {
+  refreshToken(): Observable<string> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
       this._clearSession();
       return throwError(() => new Error('No refresh token available'));
     }
 
-    // Usamos el token actual en los headers si es necesario, aunque en QdoorA el refresh se envía a /v1/refresh
-    return this._http.post<{ data: AuthResponse }>('/v1/refresh', {}, {
-      headers: {
-        'Authorization': `Bearer ${refresh_token}`
-      }
+    return this._http.post<{ data: RefreshResponse }>('/v1/refresh', {}, {
+      headers: { Authorization: `Bearer ${refreshToken}` }
     }).pipe(
       map(res => res.data),
-      tap((response) => this._setSession(response)),
+      tap(tokens => this._setTokens(tokens.access_token, tokens.refresh_token)),
+      map(tokens => tokens.access_token),
       catchError((error) => {
         this._clearSession();
         return throwError(() => error);
       })
     );
+  }
+
+  /** Limpia la sesión de esta pestaña sin navegar (se usa antes de la primera navegación). */
+  clearLocalSession(): void {
+    sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
+    this.currentUser.set(null);
   }
 
   // --- Utility Methods ---
@@ -91,6 +97,11 @@ export class AuthService {
     return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
+  private _setTokens(accessToken: string, refreshToken: string): void {
+    sessionStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
+    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+  }
+
   private _setSession(authResult: AuthResponse): void {
     // Extract role from JWT if it's missing in the user object (Security hardening QD-01)
     if (!authResult.user.role && authResult.access_token) {
@@ -100,17 +111,13 @@ export class AuthService {
       }
     }
 
-    sessionStorage.setItem(this.ACCESS_TOKEN_KEY, authResult.access_token);
-    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, authResult.refresh_token);
+    this._setTokens(authResult.access_token, authResult.refresh_token);
     sessionStorage.setItem(this.USER_KEY, JSON.stringify(authResult.user));
     this.currentUser.set(authResult.user);
   }
 
   private _clearSession(): void {
-    sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    sessionStorage.removeItem(this.USER_KEY);
-    this.currentUser.set(null);
+    this.clearLocalSession();
     this._router.navigate(['/login']);
   }
 

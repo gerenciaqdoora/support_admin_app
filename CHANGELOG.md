@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-10-09] fix(auth): la renovación de sesión ya no cierra la sesión cada hora y detecta pestañas duplicadas
+
 - [2026-09-15] feat[core]: configuración de aduana para suscriptores e importación de plan de cuentas
 
 - [2026-09-07] feat(sii): implementar certificacion de libros de compras y guias, resoluciones y emision de dtes de exportacion y despacho
