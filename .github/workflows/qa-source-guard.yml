@@ -1,0 +1,25 @@
+name: Verificar rama origen
+
+on:
+  pull_request:
+    branches: [qa]
+    types: [opened, synchronize, reopened, edited]
+
+permissions: {}
+
+jobs:
+  verificar-rama-origen:
+    name: Verificar rama origen
+    runs-on: ubuntu-latest
+    steps:
+      - name: El PR hacia qa debe venir de dev de este repositorio
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          THIS_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" != "dev" ] || [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::Solo se aceptan PR desde la rama dev de $THIS_REPO (recibido: $HEAD_REPO:$HEAD_REF)"
+            exit 1
+          fi
+          echo "Rama origen válida: $HEAD_REF"

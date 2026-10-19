@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://173.224.115.230/api',
+  apiUrl: 'https://api-qa.qdoora.com/api',
   envName: 'qa'
 };
