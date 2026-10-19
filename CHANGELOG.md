@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-10-19] feat(devops): pipeline de QA con build en ECR y despliegue automático en el EC2 por SSM (OIDC) y URL de la API de QA en api-qa.qdoora.com
+
 - [2026-10-09] fix(auth): la renovación de sesión ya no cierra la sesión cada hora y detecta pestañas duplicadas
 
 - [2026-09-15] feat[core]: configuración de aduana para suscriptores e importación de plan de cuentas

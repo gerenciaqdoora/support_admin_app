@@ -1,0 +1,123 @@
+name: QA - Build y despliegue
+
+on:
+  push:
+    branches: [qa]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: qa-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-west-2
+  AWS_ROLE_ARN: arn:aws:iam::310734905914:role/github-qdoora-chile-qa-deploy
+  ECR_REPOSITORY: qdoora-support-admin-portal
+  DEPLOY_SERVICE: support
+  INSTANCE_ID: i-0ceea9ec1bca59eda
+  SSM_DOCUMENT: QdooraChileQaDeploy
+
+jobs:
+  build-deploy:
+    name: Build, push y despliegue QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Los rulesets no se aplican en repos privados del plan Free:
+      # solo se despliega un commit que llegó por un PR mergeado dev → qa.
+      - name: Verificar que el commit viene de un PR dev → qa
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          MERGED=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "qa" and .head.ref == "dev")] | length')
+          if [ "$MERGED" = "0" ]; then
+            echo "::error::El commit ${GITHUB_SHA::7} no proviene de un PR mergeado de dev a qa. No se despliega."
+            exit 1
+          fi
+          echo "Commit ${GITHUB_SHA::7} proviene de un PR dev → qa"
+
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Credenciales AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Calcular siguiente versión
+        id: version
+        run: |
+          set -euo pipefail
+          LAST_TAG=$(aws ecr describe-images --repository-name "$ECR_REPOSITORY" \
+            --query 'imageDetails[].imageTags[]' --output text \
+            | tr '\t' '\n' | grep -E '^qa-v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)
+          if [ -z "$LAST_TAG" ]; then
+            NEXT="qa-v1.0.0"
+          else
+            IFS=. read -r MAJOR MINOR PATCH <<< "${LAST_TAG#qa-v}"
+            NEXT="qa-v$MAJOR.$MINOR.$((PATCH + 1))"
+          fi
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Versión: $NEXT (anterior: ${LAST_TAG:-ninguna})"
+
+      - name: Login a ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build y push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          target: runtime
+          build-args: |
+            BUILD_ENV=qa
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.version }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Desplegar en EC2 (SSM)
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "$SSM_DOCUMENT" \
+            --parameters "service=$DEPLOY_SERVICE,tag=$VERSION" \
+            --comment "$GITHUB_REPOSITORY ${GITHUB_SHA::7} $VERSION" \
+            --query Command.CommandId --output text)
+          echo "SSM CommandId: $CMD_ID"
+
+          STATUS=Pending
+          for _ in $(seq 1 180); do
+            sleep 10
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in Success|Failed|Cancelled|TimedOut) break ;; esac
+          done
+
+          echo "----- Salida del despliegue -----"
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text
+          echo "----- Errores -----"
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardErrorContent --output text
+
+          echo "Estado: $STATUS"
+          [ "$STATUS" = "Success" ]
