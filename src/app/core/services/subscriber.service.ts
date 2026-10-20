@@ -12,6 +12,64 @@ export interface ChangePlanPayload {
   ends_at?: string;
 }
 
+export interface DimensionCapacity {
+  tier: string | null;
+  tier_max: number;
+  addons: number;
+  limit: number;
+  usage: number;
+  exceeds: boolean;
+  aduana_capped?: boolean;
+}
+
+export interface QuantityAddon {
+  id: number;
+  dimension: 'users' | 'companies';
+  quantity: number;
+  reason: string | null;
+  granted_by: string;
+  valid_from: string;
+  valid_until: string | null;
+  revoked_at: string | null;
+  revoked_reason: string | null;
+}
+
+export interface SubscriberCapacity {
+  plan_id: number | null;
+  users: DimensionCapacity;
+  companies: DimensionCapacity;
+  addons: QuantityAddon[];
+}
+
+export interface GrantAddonPayload {
+  dimension: 'users' | 'companies';
+  quantity: number;
+  reason: string;
+}
+
+export interface ExtendPlanPayload {
+  ends_at: string;
+  reason: string;
+}
+
+export type ExpirationGroup = 'upcoming' | 'past_due' | 'suspended';
+
+export interface ExpirationRow {
+  subscriber_id: number;
+  owner_name: string | null;
+  owner_email: string | null;
+  plan_name: string;
+  status: string;
+  ends_at: string | null;
+  suspends_at: string | null;
+  pending_cron: boolean;
+}
+
+export interface ExpirationPage {
+  records: ExpirationRow[];
+  pagination: { length: number; size: number; page: number; lastPage: number; startIndex: number; endIndex: number };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -53,6 +111,28 @@ export class SubscriberService {
 
   changePlan(id: number, payload: ChangePlanPayload): Observable<any> {
     return this._http.post<any>(`${this.API_URL}/${id}/plan`, payload);
+  }
+
+  getCapacity(id: number): Observable<{ data: SubscriberCapacity }> {
+    return this._http.get<{ data: SubscriberCapacity }>(`${this.API_URL}/${id}/capacity`);
+  }
+
+  grantAddon(id: number, payload: GrantAddonPayload): Observable<{ data: QuantityAddon }> {
+    return this._http.post<{ data: QuantityAddon }>(`${this.API_URL}/${id}/addons`, payload);
+  }
+
+  revokeAddon(id: number, addonId: number, reason: string): Observable<{ data: QuantityAddon }> {
+    return this._http.post<{ data: QuantityAddon }>(`${this.API_URL}/${id}/addons/${addonId}/revoke`, { reason });
+  }
+
+  extendPlan(id: number, payload: ExtendPlanPayload): Observable<unknown> {
+    return this._http.post(`${this.API_URL}/${id}/plan/extend`, payload);
+  }
+
+  getExpirations(group: ExpirationGroup, page: number, size = 15, days = 7): Observable<{ data: ExpirationPage }> {
+    return this._http.get<{ data: ExpirationPage }>('/api/v1/support/subscriptions/expirations', {
+      params: { group, page, size, days },
+    });
   }
 
   forcePasswordChange(subscriberId: number, userId: number): Observable<any> {

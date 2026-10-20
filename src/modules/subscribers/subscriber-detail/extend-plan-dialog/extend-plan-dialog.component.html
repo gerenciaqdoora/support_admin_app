@@ -1,0 +1,24 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header [title]="'Extender plazo'" [showCloseButton]="true" (closeDialog)="dialogRef.close()"></app-dialog-header>
+
+  <div class="standard-dialog-content">
+    <form [formGroup]="form" class="flex flex-col gap-4 p-6">
+      <p class="text-sm text-slate-600">{{ data.ownerLabel }}</p>
+      @if (reactivates) {
+        <p role="status" class="text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg p-3">
+          El plan está {{ data.status === 'past_due' ? 'en gracia' : 'suspendido' }}: al guardar vuelve a operar y se levanta el bloqueo.
+        </p>
+      }
+      <app-input-form [form]="form" controlName="ends_at" label="Nuevo vencimiento*" type="date"></app-input-form>
+      <qdoora-textarea formControlName="reason" [title]="'Motivo*'" [maxLength]="255" [rows]="3"></qdoora-textarea>
+      <p class="text-xs text-slate-500">La fecha debe ser posterior a hoy y al vencimiento actual. No escribas datos personales en el motivo.</p>
+    </form>
+  </div>
+
+  <app-dialog-footer>
+    <button mat-button (click)="dialogRef.close()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid || isSaving()" (click)="save()">
+      {{ isSaving() ? 'Guardando…' : 'Extender' }}
+    </button>
+  </app-dialog-footer>
+</div>

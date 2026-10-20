@@ -1,0 +1,43 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header [title]="'Dar cupos'" [showCloseButton]="true" (closeDialog)="dialogRef.close()"></app-dialog-header>
+
+  <div class="standard-dialog-content">
+    <form [formGroup]="form" class="flex flex-col gap-4 p-6">
+      <div class="grid grid-cols-2 gap-4">
+        <qdoora-select formControlName="dimension" [label]="'Tipo*'" [items]="dimensionOptions" bindValue="val" bindLabel="label"></qdoora-select>
+        <qdoora-number-stepper formControlName="quantity" [label]="'Cantidad a sumar*'" [step]="1" [min]="1" [required]="true"></qdoora-number-stepper>
+      </div>
+      @if (data.aduanaCapped) {
+        <p class="text-xs text-slate-600">El plan incluye Aduana: solo se pueden dar cupos de usuarios.</p>
+      }
+
+      <!-- Antes y después del límite, para ver la diferencia antes de guardar -->
+      <div class="grid grid-cols-3 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-center" aria-live="polite">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Hoy</p>
+          <p class="text-2xl font-black text-slate-700">{{ preview().before }}</p>
+        </div>
+        <p class="text-sm font-black text-blue-600">+{{ preview().delta }} →</p>
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Quedará</p>
+          <p class="text-2xl font-black text-blue-700">{{ preview().after }}</p>
+        </div>
+        <p class="col-span-3 text-xs text-slate-500">
+          {{ dimensionLabel() }} permitidos · en uso: {{ preview().usage }}
+        </p>
+      </div>
+
+      <qdoora-textarea formControlName="reason" [title]="'Motivo*'" [maxLength]="255" [rows]="3"></qdoora-textarea>
+      <p class="text-xs text-slate-500">
+        Los cupos se suman al plan de forma permanente y se trasladan si cambias el plan. No escribas datos personales en el motivo.
+      </p>
+    </form>
+  </div>
+
+  <app-dialog-footer>
+    <button mat-button (click)="dialogRef.close()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid || isSaving()" (click)="save()">
+      {{ isSaving() ? 'Guardando…' : 'Dar cupos' }}
+    </button>
+  </app-dialog-footer>
+</div>

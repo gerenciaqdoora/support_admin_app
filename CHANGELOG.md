@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-10-20] feat(suscriptores): tarjeta de capacidad con cupos (antes y después), extensión de plazo, badge de vencimiento y página de Vencimientos
+
 - [2026-10-20] feat(suscripciones): cambio de plan del suscriptor desde el detalle y tramos por defecto obligatorios al crear un plan
 
 - [2026-10-19] feat(devops): pipeline de QA con build en ECR y despliegue automático en el EC2 por SSM (OIDC) y URL de la API de QA en api-qa.qdoora.com

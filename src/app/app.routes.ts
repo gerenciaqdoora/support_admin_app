@@ -71,6 +71,14 @@ export const routes: Routes = [
         data: { breadcrumb: 'Detalle de Suscriptor' },
       },
       {
+        path: 'subscriptions/expirations',
+        loadComponent: () =>
+          import('@modules/subscribers/subscription-expirations/subscription-expirations.component').then(
+            (m) => m.SubscriptionExpirationsComponent,
+          ),
+        data: { breadcrumb: 'Vencimientos' },
+      },
+      {
         path: 'logs-ti',
         loadComponent: () =>
           import('@modules/logs-ti/logs-ti.component').then((m) => m.LogsTiComponent),
