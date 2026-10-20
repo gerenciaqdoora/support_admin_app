@@ -13,6 +13,15 @@ export interface PlanModule {
   };
 }
 
+export interface QuantityTier {
+  id: number;
+  dimension: 'users' | 'companies';
+  code: string;
+  name: string;
+  min_qty: number;
+  max_qty: number;
+}
+
 export interface Plan {
   id: number;
   slug: string;
@@ -28,6 +37,7 @@ export interface Plan {
   deprecated_at: string | null;
   notes: string | null;
   modules?: PlanModule[];
+  quantity_tiers?: (QuantityTier & { pivot?: { is_default: boolean } })[];
 }
 
 export interface CreatePlanPayload {
@@ -42,6 +52,8 @@ export interface CreatePlanPayload {
   is_public: boolean;
   active: boolean;
   notes?: string;
+  default_user_tier_code: string;
+  default_company_tier_code: string;
   modules: {
     module_code: string;
     included: boolean;
@@ -108,6 +120,10 @@ export class PlanManagerService {
 
   getModules(): Observable<{ data: { code: string; name: string; is_core: boolean }[] }> {
     return this.http.get<{ data: { code: string; name: string; is_core: boolean }[] }>(this.modulesUrl);
+  }
+
+  getQuantityTiers(): Observable<{ data: { tiers: QuantityTier[] } }> {
+    return this.http.get<{ data: { tiers: QuantityTier[] } }>(`${this.apiUrl}/quantity-tiers`);
   }
 
   createPlan(payload: CreatePlanPayload): Observable<{ data: { plan: Plan }; message: string }> {

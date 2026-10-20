@@ -36,6 +36,15 @@
         <qdoora-number-stepper formControlName="base_company_quantity" [label]="'Empresas Base'" [step]="1" [min]="1"
           [required]="true">
         </qdoora-number-stepper>
+
+        @if (!isEditMode) {
+          <qdoora-select formControlName="default_user_tier_code" [label]="'Tramo de usuarios por defecto*'"
+            [items]="userTierOptions" bindValue="val" bindLabel="label" [placeholder]="'Seleccione el tramo'">
+          </qdoora-select>
+          <qdoora-select formControlName="default_company_tier_code" [label]="'Tramo de empresas por defecto*'"
+            [items]="companyTierOptions" bindValue="val" bindLabel="label" [placeholder]="'Seleccione el tramo'">
+          </qdoora-select>
+        }
       </div>
 
       <div class="flex gap-4 mb-4">

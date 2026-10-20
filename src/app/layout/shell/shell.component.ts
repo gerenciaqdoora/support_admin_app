@@ -248,6 +248,7 @@ export class ShellComponent implements OnInit {
             { id: 'dashboard', title: 'Tablero', link: '/dashboard', icon: '📊' },
             { id: 'tickets', title: 'Tickets', link: '/tickets', icon: '🎟️' },
             { id: 'subscribers', title: 'Suscriptores', link: '/subscribers', icon: '👥' },
+            { id: 'expirations', title: 'Vencimientos', link: '/subscriptions/expirations', icon: '⏳' },
           ],
         },
         {

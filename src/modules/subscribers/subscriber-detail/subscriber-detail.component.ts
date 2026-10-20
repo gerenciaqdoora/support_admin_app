@@ -6,11 +6,16 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ChangePlanDialogComponent } from './change-plan-dialog/change-plan-dialog.component';
+import { CapacityCardComponent } from './capacity-card/capacity-card.component';
+import { ExtendPlanDialogComponent } from './extend-plan-dialog/extend-plan-dialog.component';
+import { EXPIRY_TONE_CLASS, expiryBadge } from '../plan-expiry';
 
 @Component({
   selector: 'app-subscriber-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, CapacityCardComponent],
   template: `
     <div
       class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans relative"
@@ -169,6 +174,33 @@ import { NotificationService } from '@core/services/notification.service';
                     >
                       Plan {{ subscriber.metrics?.plan_name }}
                     </span>
+                    @if (subscriber.metrics?.plan_status) {
+                      <span
+                        class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                        [class]="planStatusClass(subscriber.metrics?.plan_status)"
+                      >
+                        {{ subscriber.metrics?.plan_status }}
+                      </span>
+                    }
+                    @if (authService.isAdminRole() && !subscriber.record?.deleted_at) {
+                      <button
+                        (click)="openChangePlan()"
+                        class="px-3 py-1 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        Cambiar Plan
+                      </button>
+                    }
+                    @if (expiry(); as badge) {
+                      <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border" [class]="expiryClass()">
+                        {{ badge.label }}
+                      </span>
+                    }
+                    @if (authService.isAdminRole() && !subscriber.record?.deleted_at && subscriber.metrics?.plan_ends_at && subscriber.metrics?.plan_status !== 'cancelled') {
+                      <button (click)="openExtendPlan()"
+                        class="px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-amber-600 transition-colors cursor-pointer">
+                        Extender plazo
+                      </button>
+                    }
                     @if (authService.isAdminRole()) {
                       <button
                         (click)="confirmForcePassword(subscriber.record?.usuario?.id || subscriber.record?.user_id)"
@@ -205,6 +237,11 @@ import { NotificationService } from '@core/services/notification.service';
                   </div>
                 </div>
               </div>
+
+              <!-- Un suscriptor dado de baja no tiene capacidad que administrar (la API responde 404) -->
+              @if (!subscriber.record?.deleted_at) {
+                <app-capacity-card [subscriberId]="subscriberId" [canManage]="authService.isAdminRole()" />
+              }
 
               <!-- Métricas de Uso Forense -->
               <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
@@ -671,6 +708,7 @@ export class SubscriberDetailComponent {
   private _subscriberService = inject(SubscriberService);
   public authService = inject(AuthService);
   private _notificationService = inject(NotificationService);
+  private _dialog = inject(MatDialog);
 
   // Estados reactivos para la baja y reactivación
   isConfirmingDelete = signal(false);
@@ -691,6 +729,47 @@ export class SubscriberDetailComponent {
     const res = this.subscriberResource.value();
     return res?.data || null;
   });
+
+  subscriberId = Number(this._route.snapshot.params['id']);
+
+  // Badge de vencimiento del plan actual (null si no vence)
+  expiry = computed(() => {
+    const m = this.data()?.metrics;
+    return expiryBadge(m?.plan_status, m?.plan_ends_at, m?.plan_suspends_at, new Date());
+  });
+  expiryClass = computed(() => {
+    const badge = this.expiry();
+    return badge ? EXPIRY_TONE_CLASS[badge.tone] : '';
+  });
+
+  openExtendPlan(): void {
+    const record = this.data()?.record;
+    const ref = this._dialog.open(ExtendPlanDialogComponent, {
+      panelClass: 'dialog-panel',
+      data: {
+        subscriberId: this.subscriberId,
+        ownerLabel: record?.usuario?.name ?? `Suscriptor #${this.subscriberId}`,
+        status: this.data()?.metrics?.plan_status ?? null,
+      },
+    });
+    ref.afterClosed().subscribe((extended) => extended && this.subscriberResource.reload());
+  }
+
+  openChangePlan(): void {
+    const id = Number(this._route.snapshot.params['id']);
+    const ref = this._dialog.open(ChangePlanDialogComponent, {
+      panelClass: 'dialog-panel',
+      data: { subscriberId: id, currentPlanSlug: this.data()?.metrics?.plan_slug ?? null },
+    });
+    ref.afterClosed().subscribe((changed) => changed && this.subscriberResource.reload());
+  }
+
+  // Suspendido o cancelado en rojo, en gracia en ámbar, vigente en verde
+  planStatusClass(status: string | null | undefined): string {
+    if (status === 'suspended' || status === 'cancelled') return 'bg-red-50 text-red-600 border-red-100';
+    if (status === 'past_due') return 'bg-amber-50 text-amber-700 border-amber-100';
+    return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+  }
 
   confirmDelete(): void {
     this.isConfirmingDelete.set(true);

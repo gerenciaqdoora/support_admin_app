@@ -1,0 +1,32 @@
+<div class="standard-dialog-container relative">
+  <app-dialog-header [title]="'Cambiar Plan'" [showCloseButton]="true" (closeDialog)="dialogRef.close()"></app-dialog-header>
+
+  <div class="standard-dialog-content">
+    @if (isLoading()) {
+      <p class="p-6 text-sm text-slate-500">Cargando planes…</p>
+    } @else if (planOptions().length === 0) {
+      <p class="p-6 text-sm text-slate-500">No hay planes activos para asignar.</p>
+    } @else {
+      <form [formGroup]="form" class="flex flex-col gap-4 p-6">
+        <qdoora-select formControlName="plan_slug" [label]="'Plan nuevo*'" [items]="planOptions()"
+          bindValue="val" bindLabel="label" [placeholder]="'Seleccione el plan'"></qdoora-select>
+        <div class="grid grid-cols-2 gap-4">
+          <qdoora-select formControlName="user_tier_code" [label]="'Tramo de usuarios'" [items]="userTierOptions()"
+            bindValue="val" bindLabel="label" [placeholder]="'Por defecto del plan'"></qdoora-select>
+          <qdoora-select formControlName="company_tier_code" [label]="'Tramo de empresas'" [items]="companyTierOptions()"
+            bindValue="val" bindLabel="label" [placeholder]="'Por defecto del plan'"></qdoora-select>
+        </div>
+        <app-input-form [form]="form" controlName="ends_at" label="Vence el (vacío = sin vencimiento)" type="date"></app-input-form>
+        <qdoora-textarea formControlName="reason" [title]="'Motivo del cambio*'" [maxLength]="255" [rows]="3"></qdoora-textarea>
+        <p class="text-xs text-slate-500">El plan actual quedará en el historial. Un plan Demo vence automáticamente a los 15 días.</p>
+      </form>
+    }
+  </div>
+
+  <app-dialog-footer>
+    <button mat-button (click)="dialogRef.close()">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid || isSaving()" (click)="save()">
+      {{ isSaving() ? 'Guardando…' : 'Cambiar Plan' }}
+    </button>
+  </app-dialog-footer>
+</div>
