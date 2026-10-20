@@ -4,6 +4,14 @@ import { Suscriptor } from '../models/support.models';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 
+export interface ChangePlanPayload {
+  plan_slug: string;
+  reason: string;
+  user_tier_code?: string;
+  company_tier_code?: string;
+  ends_at?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,6 +49,10 @@ export class SubscriberService {
 
   reactivateSubscriber(id: number): Observable<any> {
     return this._http.post<any>(`${this.API_URL}/${id}/reactivate`, {});
+  }
+
+  changePlan(id: number, payload: ChangePlanPayload): Observable<any> {
+    return this._http.post<any>(`${this.API_URL}/${id}/plan`, payload);
   }
 
   forcePasswordChange(subscriberId: number, userId: number): Observable<any> {

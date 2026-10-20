@@ -6,6 +6,8 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ChangePlanDialogComponent } from './change-plan-dialog/change-plan-dialog.component';
 
 @Component({
   selector: 'app-subscriber-detail',
@@ -169,6 +171,22 @@ import { NotificationService } from '@core/services/notification.service';
                     >
                       Plan {{ subscriber.metrics?.plan_name }}
                     </span>
+                    @if (subscriber.metrics?.plan_status) {
+                      <span
+                        class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                        [class]="planStatusClass(subscriber.metrics?.plan_status)"
+                      >
+                        {{ subscriber.metrics?.plan_status }}
+                      </span>
+                    }
+                    @if (authService.isAdminRole() && !subscriber.record?.deleted_at) {
+                      <button
+                        (click)="openChangePlan()"
+                        class="px-3 py-1 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        Cambiar Plan
+                      </button>
+                    }
                     @if (authService.isAdminRole()) {
                       <button
                         (click)="confirmForcePassword(subscriber.record?.usuario?.id || subscriber.record?.user_id)"
@@ -671,6 +689,7 @@ export class SubscriberDetailComponent {
   private _subscriberService = inject(SubscriberService);
   public authService = inject(AuthService);
   private _notificationService = inject(NotificationService);
+  private _dialog = inject(MatDialog);
 
   // Estados reactivos para la baja y reactivación
   isConfirmingDelete = signal(false);
@@ -691,6 +710,22 @@ export class SubscriberDetailComponent {
     const res = this.subscriberResource.value();
     return res?.data || null;
   });
+
+  openChangePlan(): void {
+    const id = Number(this._route.snapshot.params['id']);
+    const ref = this._dialog.open(ChangePlanDialogComponent, {
+      panelClass: 'dialog-panel',
+      data: { subscriberId: id, currentPlanSlug: this.data()?.metrics?.plan_slug ?? null },
+    });
+    ref.afterClosed().subscribe((changed) => changed && this.subscriberResource.reload());
+  }
+
+  // Suspendido o cancelado en rojo, en gracia en ámbar, vigente en verde
+  planStatusClass(status: string | null | undefined): string {
+    if (status === 'suspended' || status === 'cancelled') return 'bg-red-50 text-red-600 border-red-100';
+    if (status === 'past_due') return 'bg-amber-50 text-amber-700 border-amber-100';
+    return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+  }
 
   confirmDelete(): void {
     this.isConfirmingDelete.set(true);

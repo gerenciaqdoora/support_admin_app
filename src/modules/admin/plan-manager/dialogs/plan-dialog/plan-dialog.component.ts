@@ -2,7 +2,7 @@ import { Component, Inject, OnInit, inject, signal, HostListener } from '@angula
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { PlanManagerService, Plan } from '../../services/plan-manager.service';
+import { PlanManagerService, Plan, QuantityTier } from '../../services/plan-manager.service';
 import { DialogHeaderComponent } from '../../../puc-manager/dialogs/shared/header/header.component';
 import { DialogFooterComponent } from '../../../puc-manager/dialogs/shared/footer/footer.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -73,8 +73,14 @@ export class PlanDialogComponent implements OnInit {
     is_public: [true],
     active: [true],
     notes: [''],
+    default_user_tier_code: [''],
+    default_company_tier_code: [''],
     modules: this.fb.array([])
   });
+
+  // Tramos por defecto (solo al crear): sin ellos el plan no se puede contratar
+  userTierOptions: { val: string; label: string }[] = [];
+  companyTierOptions: { val: string; label: string }[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<PlanDialogComponent>,
@@ -95,7 +101,20 @@ export class PlanDialogComponent implements OnInit {
   ngOnInit() {
     if (!this.isEditMode) {
       this.loadModules();
+      this.loadQuantityTiers();
+      for (const control of [this.form.controls.default_user_tier_code, this.form.controls.default_company_tier_code]) {
+        control.setValidators(Validators.required);
+        control.updateValueAndValidity();
+      }
     }
+  }
+
+  loadQuantityTiers() {
+    this.planService.getQuantityTiers().subscribe(res => {
+      const toOption = (t: QuantityTier) => ({ val: t.code, label: `${t.name} (${t.min_qty}–${t.max_qty})` });
+      this.userTierOptions = res.data.tiers.filter(t => t.dimension === 'users').map(toOption);
+      this.companyTierOptions = res.data.tiers.filter(t => t.dimension === 'companies').map(toOption);
+    });
   }
 
   get modulesArray(): FormArray {
@@ -162,6 +181,8 @@ export class PlanDialogComponent implements OnInit {
         is_public: !!raw.is_public,
         active: !!raw.active,
         notes: raw.notes ?? undefined,
+        default_user_tier_code: raw.default_user_tier_code ?? '',
+        default_company_tier_code: raw.default_company_tier_code ?? '',
         modules: (raw.modules as any[] || []).map(m => ({
           module_code: m.module_code,
           included: !!m.included,
