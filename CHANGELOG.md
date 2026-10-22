@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-10-22] fix(docker): fijar la imagen de construcción en node:24.22.1 (parche del boletín de seguridad de Node de octubre 2026) y agregar .dockerignore para no enviar node_modules/.angular/dist al contexto
+
 - [2026-10-20] feat(suscriptores): tarjeta de capacidad con cupos (antes y después), extensión de plazo, badge de vencimiento y página de Vencimientos
 
 - [2026-10-20] feat(suscripciones): cambio de plan del suscriptor desde el detalle y tramos por defecto obligatorios al crear un plan
