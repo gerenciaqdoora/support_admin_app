@@ -1,5 +1,5 @@
 # ---------- BASE ----------
-FROM node:24 AS base
+FROM node:24.22.1 AS base
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./

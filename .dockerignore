@@ -1,0 +1,17 @@
+# Dependencias y cachés locales: la imagen instala las suyas con npm ci (binarios de Linux)
+node_modules
+.angular
+dist
+tmp
+
+# Control de versiones, CI y herramientas de agentes/editor
+.git
+.github
+graphify-out
+.claude
+.gemini
+.vscode
+.DS_Store
+
+# Variables locales
+.env*
