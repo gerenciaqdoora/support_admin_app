@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from '@app/layout/shell/shell.component';
 import { authGuard } from '@core/guards/auth.guard';
+import { consigneeImportResolver } from '@modules/admin/consignee-import/consignee-import.resolver';
 
 export const routes: Routes = [
   {
@@ -131,6 +132,13 @@ export const routes: Routes = [
             (m) => m.SiiCertificationComponent,
           ),
         data: { breadcrumb: 'Certificación SII' },
+      },
+      {
+        path: 'admin/consignee-import/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
+        resolve: { importData: consigneeImportResolver },
+        data: { breadcrumb: 'Importar consignatarios' },
       },
     ],
   },

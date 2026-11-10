@@ -364,6 +364,13 @@ import { EXPIRY_TONE_CLASS, expiryBadge } from '../plan-expiry';
                           >
                             🔐 Gestionar SII
                           </a>
+                          <a
+                            [routerLink]="['/admin/consignee-import', company.id]"
+                            class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-widest border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all cursor-pointer"
+                            title="Importar consignatarios desde el listado de clientes de SIGAD"
+                          >
+                            📥 Importar consignatarios
+                          </a>
                         }
                       </div>
                     </div>
