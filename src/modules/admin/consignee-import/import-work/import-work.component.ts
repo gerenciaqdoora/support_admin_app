@@ -2,13 +2,12 @@ import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, expand, reduce } from 'rxjs';
-import { ConsigneeImportService } from '@core/services/consignee-import.service';
+import { ActivatedRoute } from '@angular/router';
+import { ImportItem, ImportKind } from '@core/imports/import-kind';
 import { NotificationService } from '@core/services/notification.service';
-import { ISSUE_LABELS } from '@core/imports/sigad-clientes-v1';
-import { ConsigneeImportItem, ConsigneeImportSession, ImportItemStatus, Pagination } from '@core/models/consignee-import.model';
+import { ConsigneeImportSession, ImportItemStatus, Pagination } from '@core/models/consignee-import.model';
 import { statusLabel } from '../consignee-import.utils';
 import { MatDialog } from '@angular/material/dialog';
-import { ImportItemDialogData, ImportItemPanelComponent } from '../import-item-panel/import-item-panel.component';
 
 const STATUSES: ImportItemStatus[] = ['ready', 'pending', 'edited', 'skipped', 'imported', 'failed'];
 
@@ -43,11 +42,11 @@ const STATUSES: ImportItemStatus[] = ['ready', 'pending', 'edited', 'skipped', '
           </select>
         </div>
         <div class="flex flex-col gap-1.5 flex-1 min-w-[240px] max-w-md">
-          <label for="search-filter" class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Buscar por RUT o nombre</label>
+          <label for="search-filter" class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ kind.searchLabel }}</label>
           <input id="search-filter" (input)="setSearch($any($event.target).value)" placeholder="Buscar..."
             class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-[11px] font-black text-slate-700 min-h-[44px] outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" />
         </div>
-        @if (issue() === 'BROKEN_CHARACTERS' && rows().length) {
+        @if (kind.bulkVerifyCode && issue() === kind.bulkVerifyCode && rows().length) {
           <button type="button" (click)="bulkVerify()"
             class="px-4 py-2.5 min-h-[44px] rounded-2xl bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 cursor-pointer">
             Verificar todas las filas de este filtro ({{ pagination()?.length ?? 0 }})
@@ -73,9 +72,9 @@ const STATUSES: ImportItemStatus[] = ['ready', 'pending', 'edited', 'skipped', '
             <tr class="bg-slate-500 text-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
               <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5 w-20">Fila</th>
               <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5 w-44">Estado</th>
-              <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5">Nombre</th>
-              <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5 w-40">Comuna</th>
-              <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5 w-16">Rep.</th>
+              @for (col of kind.columns; track col.header) {
+                <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px] border-r border-white/5 {{ col.widthClass ?? '' }}">{{ col.header }}</th>
+              }
               <th class="px-6 py-2 font-black uppercase tracking-widest text-[8px]">Problemas</th>
             </tr>
           </thead>
@@ -89,13 +88,13 @@ const STATUSES: ImportItemStatus[] = ['ready', 'pending', 'edited', 'skipped', '
                   <span class="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border"
                     [class]="statusClass(item.status)">{{ label(item.status) }}</span>
                 </td>
-                <td class="px-6 py-1.5 font-bold text-slate-800 text-[11px] max-w-xs truncate">{{ item.normalized.name }}</td>
-                <td class="px-6 py-1.5 text-slate-500 font-bold text-[10px]">{{ item.original['H'] }}</td>
-                <td class="px-6 py-1.5 text-slate-500 font-bold text-[10px]">{{ item.normalized.legal_representatives.length }}</td>
+                @for (col of kind.columns; track col.header) {
+                  <td class="px-6 py-1.5 font-bold text-slate-700 text-[11px] max-w-xs truncate">{{ col.value(item) }}</td>
+                }
                 <td class="px-6 py-1.5 text-red-700 font-bold text-[10px]">{{ problems(item) }}</td>
               </tr>
             } @empty {
-              <tr><td colspan="6" class="p-10 text-center text-[11px] font-black uppercase tracking-widest text-slate-400">No hay filas con este filtro.</td></tr>
+              <tr><td [attr.colspan]="3 + kind.columns.length" class="p-10 text-center text-[11px] font-black uppercase tracking-widest text-slate-400">No hay filas con este filtro.</td></tr>
             }
           </tbody>
         </table>
@@ -145,7 +144,9 @@ export class ImportWorkComponent {
   readonly session = input.required<ConsigneeImportSession>();
   readonly changed = output<void>();
 
-  private _api = inject(ConsigneeImportService);
+  /** Qué importación es: lo toma de los datos de la ruta, igual que el contenedor. */
+  readonly kind = inject(ActivatedRoute).snapshot.data['kind'] as ImportKind;
+  private _api = inject(this.kind.api);
   private _notification = inject(NotificationService);
   private _destroyRef = inject(DestroyRef);
   private _dialog = inject(MatDialog);
@@ -159,9 +160,9 @@ export class ImportWorkComponent {
   readonly size = signal(50);
   readonly sizes = [10, 20, 50, 100];
   readonly loading = signal(false);
-  readonly rows = signal<ConsigneeImportItem[]>([]);
+  readonly rows = signal<ImportItem[]>([]);
   readonly pagination = signal<Pagination | null>(null);
-  readonly selected = signal<ConsigneeImportItem | null>(null);
+  readonly selected = signal<ImportItem | null>(null);
 
   /** Descarta respuestas de peticiones anteriores si el usuario ya cambió el filtro. */
   private _seq = 0;
@@ -175,8 +176,8 @@ export class ImportWorkComponent {
 
   issueCodes(): string[] { return Object.keys(this.session().issues ?? {}); }
   label(s: ImportItemStatus): string { return statusLabel(s); }
-  issueLabel(code: string): string { return ISSUE_LABELS[code] ?? code; }
-  problems(item: ConsigneeImportItem): string {
+  issueLabel(code: string): string { return this.kind.issueLabels[code] ?? code; }
+  problems(item: ImportItem): string {
     return [...item.errors.map((e) => e.code), ...item.warnings.filter((w) => !w.verified).map((w) => w.code)]
       .map((c) => this.issueLabel(c)).join(' · ') || (item.failure_message ?? '');
   }
@@ -218,7 +219,7 @@ export class ImportWorkComponent {
 
     fetchPage(0).pipe(
       expand((r) => (r.pagination.page < r.pagination.lastPage ? fetchPage(r.pagination.page + 1) : EMPTY)),
-      reduce((all, r) => all.concat(r.records), [] as ConsigneeImportItem[]),
+      reduce((all, r) => all.concat(r.records), [] as ImportItem[]),
       takeUntilDestroyed(this._destroyRef),
     ).subscribe({
       next: (items) => this.confirmBulk(items),
@@ -226,7 +227,7 @@ export class ImportWorkComponent {
     });
   }
 
-  private confirmBulk(items: ConsigneeImportItem[]): void {
+  private confirmBulk(items: ImportItem[]): void {
     const sample = items.slice(0, 3).flatMap((r) => r.warnings.filter((w) => !w.verified).map((w) => `${w.original} → ${w.suggested}`));
     this._confirm.confirm({
       title: '¿Verificar en bloque?',
@@ -235,20 +236,18 @@ export class ImportWorkComponent {
       tone: 'primary',
     }).subscribe((ok) => {
       if (!ok) return;
-      this._api.bulkVerify(this.companyId(), this.session().id, 'BROKEN_CHARACTERS', items.map((r) => r.id)).subscribe({
-        next: (r) => { this._notification.success(`${r.verified} filas verificadas.`); this.changed.emit(); },
+      this._api.bulkVerify(this.companyId(), this.session().id, this.kind.bulkVerifyCode ?? '', items.map((r) => r.id)).subscribe({
+        next: (r) => { this._notification.success(`${r.verified} filas verificadas.`); this.setIssue(''); this.changed.emit(); },
         error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo verificar en bloque.'),
       });
     });
   }
 
-  /** La fila se edita en un diálogo (cabecera con cierre, contenido con scroll, pie fijo). */
-  openItem(item: ConsigneeImportItem): void {
+  /** La fila se edita en un diálogo propio de cada importación (cabecera con cierre, contenido con scroll, pie fijo). */
+  openItem(item: ImportItem): void {
     this.selected.set(item);
-    const data: ImportItemDialogData = {
-      companyId: this.companyId(), sessionId: this.session().id, item, onChanged: () => this.changed.emit(),
-    };
-    this._dialog.open(ImportItemPanelComponent, { panelClass: 'dialog-panel', width: '780px', maxWidth: '95vw', maxHeight: '92vh', data })
-      .afterClosed().subscribe(() => this.selected.set(null));
+    this.kind.openItem({
+      dialog: this._dialog, companyId: this.companyId(), sessionId: this.session().id, item, api: this._api, onChanged: () => this.changed.emit(),
+    }).afterClosed().subscribe(() => this.selected.set(null));
   }
 }

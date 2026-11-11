@@ -3,24 +3,26 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, in
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { concatMap, finalize, from, interval, switchMap, takeWhile, tap, toArray } from 'rxjs';
-import { ConsigneeImportService } from '@core/services/consignee-import.service';
-import { ConsigneeImportParserService } from '@core/services/consignee-import-parser.service';
+import { ImportKind } from '@core/imports/import-kind';
 import { NotificationService } from '@core/services/notification.service';
 import { QdooraAlertService } from '@core/components/alert/alert.service';
 import { ConsigneeImportSession, ParsedSigadFile } from '@core/models/consignee-import.model';
+import { MasterAccountSummary } from '@core/models/supplier-import.model';
+import { accountWarning } from './account-warning';
+import { MasterAccountBarComponent } from './master-account-bar/master-account-bar.component';
 import { SharedAlertComponent } from '@shared/alert/alert.component';
+import { FileDropzoneComponent } from '@shared/file-dropzone/file-dropzone.component';
 import { ConsigneeImportRouteData } from './consignee-import.resolver';
 import { POLL_MS, chunkRows, totalOpen } from './consignee-import.utils';
 import { ImportWorkComponent } from './import-work/import-work.component';
 
 type Stage = 'blocked' | 'upload' | 'uploading' | 'work' | 'processing' | 'closed';
-const ALERT = 'consignee-import';
 
-/** Importación masiva de consignatarios desde el listado de clientes de SIGAD (ADMIN_ROLE). */
+/** Pantalla de una importación masiva desde SIGAD (ADMIN_ROLE): su `ImportKind` viene en los datos de la ruta. */
 @Component({
   selector: 'app-consignee-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent],
+  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent, FileDropzoneComponent, MasterAccountBarComponent],
   host: { class: 'block h-full overflow-hidden' },
   template: `
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
@@ -32,8 +34,8 @@ const ALERT = 'consignee-import';
             <div class="absolute inset-0 bg-blue-600 blur-lg opacity-20"></div>
           </div>
           <div>
-            <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">Importar consignatarios</h1>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">Empresa #{{ companyId }} · Formato SIGAD_CLIENTES_V1</p>
+            <h1 class="text-xl font-black text-slate-900 tracking-tight uppercase leading-none">{{ kind.title }}</h1>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2">Empresa #{{ companyId }} · {{ kind.formatLabel }}</p>
           </div>
         </div>
         @if (session(); as s) {
@@ -51,7 +53,7 @@ const ALERT = 'consignee-import';
               </button>
             </div>
             @if (stage() === 'work') {
-              <button (click)="execute()" [disabled]="!(s.counts.ready ?? 0) || busy()" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase disabled:opacity-40">
+              <button (click)="execute()" [disabled]="!(s.counts.ready ?? 0) || busy() || !!warning()" [attr.title]="warning() ? 'Resuelva la diferencia de cuenta maestra para ejecutar' : null" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase disabled:opacity-40">
                 Ejecutar ({{ s.counts.ready ?? 0 }})
               </button>
               <button (click)="abort()" [disabled]="busy()" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl border border-slate-200 font-black uppercase">Cancelar sesión</button>
@@ -59,6 +61,20 @@ const ALERT = 'consignee-import';
           </div>
         }
       </div>
+
+      @if (kind.masterAccountLabel && (stage() === 'work' || stage() === 'upload' || stage() === 'blocked')) {
+        <app-master-account-bar [label]="kind.masterName ?? ''" [master]="master()" [check]="session()?.account_check" [warning]="stage() === 'work' ? warning() : null"
+          [busy]="busy()" (reassign)="reassignMaster()" />
+      }
+
+      @if (busyLabel(); as label) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm" role="status" aria-live="polite">
+          <div class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-lg">
+            <span class="h-6 w-6 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" aria-hidden="true"></span>
+            <p class="text-sm font-black uppercase tracking-wide text-slate-800">{{ label }}</p>
+          </div>
+        </div>
+      }
 
       @if (stage() === 'work') {
         <app-shared-alert [name]="alertName" class="block px-8 pt-4 shrink-0 empty:hidden"></app-shared-alert>
@@ -72,19 +88,18 @@ const ALERT = 'consignee-import';
             <p class="text-sm text-slate-500">Resuelva los requisitos indicados arriba para habilitar la importación.</p>
           }
           @case ('upload') {
-            <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-4"
-                 (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
-              <p class="font-black uppercase text-sm">Arrastre el "Listado de clientes" de SIGAD (.xls o .xlsx)</p>
-              <input type="file" accept=".xls,.xlsx" (change)="onFile($event)" class="text-xs" />
-              <button type="button" (click)="downloadExample()" class="cursor-pointer block mx-auto text-xs text-blue-600 underline">Descargar formato de ejemplo</button>
-              @if (formatErrors().length) {
-                <ul class="text-left text-xs text-red-600 list-disc pl-5">
-                  @for (e of formatErrors(); track e) { <li>{{ e }}</li> }
-                </ul>
-              }
+            <div class="max-w-2xl mx-auto space-y-4">
+              <app-file-dropzone
+                [title]="kind.uploadTitle"
+                [accept]="kind.uploadAccept"
+                [templateText]="kind.templateLinkText"
+                [fileName]="file?.name ?? null"
+                [errors]="formatErrors()"
+                (fileSelected)="read($event)"
+                (template)="downloadExample()" />
               @if (parsed(); as p) {
                 <div class="text-sm bg-slate-50 rounded-xl p-4">
-                  {{ p.rows.length }} filas detectadas · {{ p.inactive }} inactivas
+                  {{ p.rows.length }} filas detectadas@if (p.inactive) { · {{ p.inactive }} inactivas }
                   <button (click)="createSession(false)" [disabled]="busy()" class="ml-4 cursor-pointer px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase">Crear sesión</button>
                 </div>
               }
@@ -98,7 +113,15 @@ const ALERT = 'consignee-import';
             </div>
           }
           @case ('uploading') {
-            <p class="text-center text-sm font-bold">Enviando filas {{ sent() }} de {{ parsed()?.rows?.length }}…</p>
+            <div class="max-w-2xl mx-auto flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-10 text-center" role="status" aria-live="polite">
+              <span class="h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" aria-hidden="true"></span>
+              <p class="text-sm font-black uppercase tracking-wide text-slate-800">
+                @if (sent() === 0) { Creando la sesión… } @else { Enviando filas {{ sent() }} de {{ parsed()?.rows?.length }}… }
+              </p>
+              <div class="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-blue-600 transition-all duration-300" [style.width.%]="progress()"></div>
+              </div>
+            </div>
           }
           @case ('processing') {
             <p class="text-center text-sm font-bold">
@@ -123,8 +146,10 @@ const ALERT = 'consignee-import';
 })
 export class ConsigneeImportComponent implements OnDestroy {
   private _route = inject(ActivatedRoute);
-  private _api = inject(ConsigneeImportService);
-  private _parser = inject(ConsigneeImportParserService);
+  /** Qué importación es (consignatarios, proveedores…): textos, API, lector de archivo y alerta. */
+  readonly kind = this._route.snapshot.data['kind'] as ImportKind;
+  private _api = inject(this.kind.api);
+  private _parser = inject(this.kind.parser);
   private _notification = inject(NotificationService);
   private _confirm = inject(ConfirmService);
   private _alert = inject(QdooraAlertService);
@@ -132,16 +157,31 @@ export class ConsigneeImportComponent implements OnDestroy {
 
   private readonly data = this._route.snapshot.data['importData'] as ConsigneeImportRouteData;
   readonly companyId = this.data.companyId;
-  readonly alertName = ALERT;
+  readonly alertName = this.kind.alertName;
 
   readonly session = signal<ConsigneeImportSession | null>(this.data.session);
   readonly parsed = signal<ParsedSigadFile | null>(null);
   readonly formatErrors = signal<string[]>([]);
   readonly confirmReplace = signal(false);
   readonly busy = signal(false);
+  /** Texto del loader a pantalla completa mientras corre una acción corta (p. ej. cancelar). */
+  readonly busyLabel = signal<string | null>(null);
   readonly sent = signal(0);
+  readonly progress = computed(() => {
+    const total = this.parsed()?.rows.length ?? 0;
+    return total ? Math.min(100, Math.round((this.sent() / total) * 100)) : 0;
+  });
   readonly uploading = signal(false);
-  private file: File | null = null;
+  protected file: File | null = null;
+
+  /** Cuenta maestra vigente: la de la sesión si existe; antes de subir el archivo, la de los requisitos. */
+  readonly master = computed<MasterAccountSummary | null>(() => {
+    const fromSession = this.session()?.account_check?.master;
+    if (fromSession !== undefined) return fromSession;
+    return this.data.requirements.role_account ?? null;
+  });
+  /** Aviso cuando la cuenta maestra no calza con la cuenta mayor del archivo (solo importaciones que lo declaran). */
+  readonly warning = computed(() => (this.kind.masterAccountLabel ? accountWarning(this.session()?.account_check, this.kind.masterName ?? '') : null));
 
   readonly stage = computed<Stage>(() => {
     if (!this.data.requirements.ready) return 'blocked';
@@ -156,7 +196,7 @@ export class ConsigneeImportComponent implements OnDestroy {
   constructor() {
     if (!this.data.requirements.ready) {
       this._alert.showAlert({
-        appearance: 'border', type: 'error', name: ALERT,
+        appearance: 'border', type: 'error', name: this.alertName,
         message: this.data.requirements.blockers.map((b) => b.message).join(' '),
       });
     }
@@ -164,21 +204,10 @@ export class ConsigneeImportComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._alert.clearAlert(ALERT);
+    this._alert.clearAlert(this.alertName);
   }
 
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    const file = event.dataTransfer?.files?.[0];
-    if (file) void this.read(file);
-  }
-
-  onFile(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) void this.read(file);
-  }
-
-  private async read(file: File): Promise<void> {
+  async read(file: File): Promise<void> {
     this.file = file;
     this.parsed.set(null);
     const result = await this._parser.parse(file);
@@ -187,23 +216,24 @@ export class ConsigneeImportComponent implements OnDestroy {
   }
 
   downloadExample(): void {
-    const url = URL.createObjectURL(this._parser.buildExampleFile());
+    const url = URL.createObjectURL(this._parser.buildTemplateFile());
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'formato-sigad-clientes.xlsx';
+    a.download = this.kind.templateFileName;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   createSession(replace: boolean): void {
     const parsed = this.parsed();
-    if (!parsed || !this.file) return;
+    if (!parsed || !this.file || this.busy()) return;
+    // Loader inmediato: la creación (subida del original a S3) tarda y evita clics repetidos.
     this.busy.set(true);
+    this.uploading.set(true);
+    this.sent.set(0);
     this.confirmReplace.set(false);
     this._api.createSession(this.companyId, this.file, parsed, replace).pipe(
       switchMap((session) => {
-        this.uploading.set(true);
-        this.sent.set(0);
         return from(chunkRows(parsed.rows)).pipe(
           concatMap((chunk) => this._api.addItems(this.companyId, session.id, chunk).pipe(
             tap(() => this.sent.update((n) => n + chunk.length)),
@@ -243,7 +273,7 @@ export class ConsigneeImportComponent implements OnDestroy {
       message: pending > 0
         ? `Se importarán ${ready} filas listas. Quedan ${pending} sin procesar; podrá ejecutarlas después.`
         : `Se importarán ${ready} filas listas.`,
-      warning: 'Crea consignatarios en la empresa',
+      warning: this.kind.executeWarning,
       confirmText: 'Ejecutar',
       tone: 'primary',
     }).subscribe((ok) => {
@@ -282,6 +312,28 @@ export class ConsigneeImportComponent implements OnDestroy {
     });
   }
 
+  /** Reasigna la cuenta maestra a la cuenta mayor del archivo, con el popup estándar (cambia configuración contable). */
+  reassignMaster(): void {
+    const s = this.session();
+    const check = s?.account_check;
+    if (!s || !check?.target) return;
+    const affected = check.impact.members_on_current_master;
+    this._confirm.confirm({
+      title: '¿Reasignar la cuenta maestra?',
+      message: `La cuenta maestra ${this.kind.masterName} pasará a ${check.target.code} (${check.target.name}).`
+        + (affected > 0 ? ` ${affected} auxiliares con la cuenta actual dejarán de contar como ${this.kind.memberLabelPlural} hasta recibir la nueva; los que están en el archivo la reciben al importarse.` : ''),
+      warning: 'Cambia la configuración contable de la empresa',
+      confirmText: 'Reasignar',
+    }).subscribe((ok) => {
+      if (!ok) return;
+      this.busy.set(true);
+      this._api.reassignMasterAccount(this.companyId, s.id).pipe(finalize(() => this.busy.set(false))).subscribe({
+        next: (session) => { this.session.set(session); this._notification.success('Cuenta maestra reasignada.'); },
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo reasignar la cuenta maestra.'),
+      });
+    });
+  }
+
   abort(): void {
     const s = this.session();
     if (!s) return;
@@ -293,7 +345,9 @@ export class ConsigneeImportComponent implements OnDestroy {
       cancelText: 'Volver',
     }).subscribe((ok) => {
       if (!ok) return;
-      this._api.abort(this.companyId, s.id).subscribe({
+      this.busy.set(true);
+      this.busyLabel.set('Cancelando la sesión…');
+      this._api.abort(this.companyId, s.id).pipe(finalize(() => { this.busy.set(false); this.busyLabel.set(null); })).subscribe({
         next: () => this.session.set({ ...s, status: 'aborted', has_backup: { original: true, snapshot: true } }),
         error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo cancelar la sesión.'),
       });

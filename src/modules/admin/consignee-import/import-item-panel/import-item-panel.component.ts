@@ -296,6 +296,7 @@ export class ImportItemPanelComponent implements OnInit {
       name: (raw.name ?? '').trim().toUpperCase(), address: (raw.address ?? '').trim().toUpperCase(),
       municipality_id: raw.municipality?.id ?? null, email: raw.email?.trim().toLowerCase() || null,
       phone: raw.phone?.trim() || null, giro: raw.giro?.trim().toUpperCase() || null,
+      external_code: this.item().normalized.external_code ?? null, // solo lectura: el servidor lo toma de la columna original
       legal_representatives: raw.legal_representatives.map((r: LegalRepresentativeRow) => ({
         ...r, name: (r.name ?? '').trim().toUpperCase(), rut: (r.rut ?? '').trim().toUpperCase(), email: r.email?.trim().toLowerCase() || null,
       })),

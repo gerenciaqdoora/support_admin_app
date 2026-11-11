@@ -1,3 +1,5 @@
+import type { AccountCheck } from './supplier-import.model';
+
 export type ImportItemStatus = 'pending' | 'edited' | 'ready' | 'skipped' | 'imported' | 'failed';
 export type ImportSessionStatus = 'initialized' | 'in_progress' | 'processing' | 'completed' | 'aborted' | 'error';
 export type SkipReason = 'inactive' | 'already_consignee' | 'branch_discarded' | 'manual';
@@ -16,6 +18,7 @@ export interface NormalizedConsignee {
   name: string; address: string; municipality_id: number | null;
   email: string | null; phone: string | null; giro: string | null;
   legal_representatives: LegalRepresentativeRow[];
+  external_code: string | null;
 }
 
 export interface ConsigneeImportItem {
@@ -33,6 +36,8 @@ export interface ConsigneeImportSession {
   created_at: string; user_name: string | null;
   counts: Partial<Record<ImportItemStatus, number>>; issues: Record<string, number>;
   has_backup: { original: boolean; snapshot: boolean };
+  /** Solo lo trae la importación de proveedores: cuenta maestra frente a la cuenta mayor del archivo. */
+  account_check?: AccountCheck;
 }
 
 export interface ConsigneeImportRequirements {

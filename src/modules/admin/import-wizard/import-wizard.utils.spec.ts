@@ -29,4 +29,12 @@ describe('import-wizard.utils', () => {
     expect(progressPercent({ completed: 1, total: 4 })).toBe(25);
     expect(progressPercent({ completed: 0, total: 0 })).toBe(0);
   });
+
+  it('el paso employees lleva a la importación de empleados', () => {
+    expect(stepLink('employees', 5)).toEqual(['/admin/employee-import', 5]);
+  });
+
+  it('el paso providers lleva a la importación de proveedores', () => {
+    expect(stepLink('providers', 5)).toEqual(['/admin/supplier-import', 5]);
+  });
 });

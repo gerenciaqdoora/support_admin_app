@@ -74,6 +74,11 @@ export class ConsigneeImportParserService {
     return new Blob([this.buildExampleWorkbook()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   }
 
+  /** Nombre común a todas las importaciones. */
+  buildTemplateFile(): Blob {
+    return this.buildExampleFile();
+  }
+
   private fail(message: string): ParsedSigadFile {
     return { signature: '', headers: {}, rows: [], errors: [message], inactive: 0 };
   }

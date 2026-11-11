@@ -18,6 +18,8 @@ const OPEN_LABELS: Record<ImportStepStatus, string> = {
 /** Ruta del portal de cada paso del catálogo del backend. Un paso nuevo agrega aquí su entrada. */
 const STEP_ROUTES: Record<string, (companyId: number) => (string | number)[]> = {
   consignees: (companyId) => ['/admin/consignee-import', companyId],
+  providers: (companyId) => ['/admin/supplier-import', companyId],
+  employees: (companyId) => ['/admin/employee-import', companyId],
 };
 
 export function statusLabel(status: ImportStepStatus): string { return LABELS[status]; }

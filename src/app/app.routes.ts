@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 import { ShellComponent } from '@app/layout/shell/shell.component';
 import { authGuard } from '@core/guards/auth.guard';
 import { consigneeImportResolver } from '@modules/admin/consignee-import/consignee-import.resolver';
+import { CONSIGNEE_KIND } from '@modules/admin/consignee-import/consignee-import.kind';
+import { SUPPLIER_KIND } from '@modules/admin/supplier-import/supplier-import.kind';
+import { EMPLOYEE_KIND } from '@modules/admin/employee-import/employee-import.kind';
 import { importWizardResolver } from '@modules/admin/import-wizard/import-wizard.resolver';
 
 export const routes: Routes = [
@@ -146,7 +149,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
         resolve: { importData: consigneeImportResolver },
-        data: { breadcrumb: 'Importar consignatarios' },
+        data: { breadcrumb: 'Importar consignatarios', kind: CONSIGNEE_KIND },
+      },
+      {
+        path: 'admin/supplier-import/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
+        resolve: { importData: consigneeImportResolver },
+        data: { breadcrumb: 'Importar proveedores', kind: SUPPLIER_KIND },
+      },
+      {
+        path: 'admin/employee-import/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
+        resolve: { importData: consigneeImportResolver },
+        data: { breadcrumb: 'Importar empleados', kind: EMPLOYEE_KIND },
       },
     ],
   },
