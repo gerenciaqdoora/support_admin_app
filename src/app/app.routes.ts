@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { ShellComponent } from '@app/layout/shell/shell.component';
 import { authGuard } from '@core/guards/auth.guard';
 import { consigneeImportResolver } from '@modules/admin/consignee-import/consignee-import.resolver';
+import { importWizardResolver } from '@modules/admin/import-wizard/import-wizard.resolver';
 
 export const routes: Routes = [
   {
@@ -132,6 +133,13 @@ export const routes: Routes = [
             (m) => m.SiiCertificationComponent,
           ),
         data: { breadcrumb: 'Certificación SII' },
+      },
+      {
+        path: 'admin/imports/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/import-wizard/import-wizard.component').then((m) => m.ImportWizardComponent),
+        resolve: { wizardData: importWizardResolver },
+        data: { breadcrumb: 'Importaciones' },
       },
       {
         path: 'admin/consignee-import/:companyId',

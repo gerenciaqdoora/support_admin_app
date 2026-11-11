@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-11-10] feat(importaciones): asistente de importaciones en /admin/imports/:companyId y botón "Importaciones" visible solo con módulo Aduana
+
 - [2026-11-10] feat(consignatarios): vista de importación masiva desde SIGAD (carga, tabla de filas, diálogo de edición, ejecución y respaldo) y contenedor global de notificaciones
 
 - [2026-10-22] fix(docker): fijar la imagen de construcción en node:24.22.1 (parche del boletín de seguridad de Node de octubre 2026) y agregar .dockerignore para no enviar node_modules/.angular/dist al contexto

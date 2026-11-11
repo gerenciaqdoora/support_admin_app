@@ -25,7 +25,7 @@ const ALERT = 'consignee-import';
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
       <div class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center shrink-0 z-50 shadow-sm relative">
         <div class="flex items-center gap-5">
-          <a routerLink="/subscribers" aria-label="Volver a suscriptores" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:bg-slate-100">‹</a>
+          <a [routerLink]="['/admin/imports', companyId]" aria-label="Volver al asistente de importaciones" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:bg-slate-100">‹</a>
           <div class="relative">
             <div class="w-1.5 h-10 bg-blue-600 rounded-full"></div>
             <div class="absolute inset-0 bg-blue-600 blur-lg opacity-20"></div>
