@@ -20,6 +20,7 @@ const STEP_ROUTES: Record<string, (companyId: number) => (string | number)[]> = 
   consignees: (companyId) => ['/admin/consignee-import', companyId],
   providers: (companyId) => ['/admin/supplier-import', companyId],
   employees: (companyId) => ['/admin/employee-import', companyId],
+  issuers: (companyId) => ['/admin/issuer-import', companyId],
 };
 
 export function statusLabel(status: ImportStepStatus): string { return LABELS[status]; }

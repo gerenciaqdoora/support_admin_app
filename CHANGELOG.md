@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-11-11] feat(importaciones): importación masiva de emisores de honorarios desde SIGAD en el Portal Soporte (ISSUER_KIND, formato EMISORES_V1, ruta admin/issuer-import y paso Emisores del asistente)
+
 - [2026-11-11] feat(importaciones): importación masiva de proveedores y empleados desde SIGAD en el Portal Soporte (ImportKind por rol, panel de fila reutilizado, barra de cuenta maestra, verificación de caracteres corregidos y zona de carga reutilizable)
 
 - [2026-11-10] feat(portal): popup de confirmación estándar (ConfirmService), archivo de la sesión de importación con descarga y cursor pointer en la cabecera; reemplaza los confirm() nativos

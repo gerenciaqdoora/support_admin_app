@@ -34,6 +34,10 @@ describe('import-wizard.utils', () => {
     expect(stepLink('employees', 5)).toEqual(['/admin/employee-import', 5]);
   });
 
+  it('el paso issuers lleva a la importación de emisores', () => {
+    expect(stepLink('issuers', 5)).toEqual(['/admin/issuer-import', 5]);
+  });
+
   it('el paso providers lleva a la importación de proveedores', () => {
     expect(stepLink('providers', 5)).toEqual(['/admin/supplier-import', 5]);
   });

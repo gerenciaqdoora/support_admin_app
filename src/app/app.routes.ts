@@ -5,6 +5,7 @@ import { consigneeImportResolver } from '@modules/admin/consignee-import/consign
 import { CONSIGNEE_KIND } from '@modules/admin/consignee-import/consignee-import.kind';
 import { SUPPLIER_KIND } from '@modules/admin/supplier-import/supplier-import.kind';
 import { EMPLOYEE_KIND } from '@modules/admin/employee-import/employee-import.kind';
+import { ISSUER_KIND } from '@modules/admin/issuer-import/issuer-import.kind';
 import { importWizardResolver } from '@modules/admin/import-wizard/import-wizard.resolver';
 
 export const routes: Routes = [
@@ -164,6 +165,13 @@ export const routes: Routes = [
           import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
         resolve: { importData: consigneeImportResolver },
         data: { breadcrumb: 'Importar empleados', kind: EMPLOYEE_KIND },
+      },
+      {
+        path: 'admin/issuer-import/:companyId',
+        loadComponent: () =>
+          import('@modules/admin/consignee-import/consignee-import.component').then((m) => m.ConsigneeImportComponent),
+        resolve: { importData: consigneeImportResolver },
+        data: { breadcrumb: 'Importar emisores', kind: ISSUER_KIND },
       },
     ],
   },
