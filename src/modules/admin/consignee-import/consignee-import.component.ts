@@ -1,3 +1,4 @@
+import { ConfirmService } from '../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -25,7 +26,7 @@ const ALERT = 'consignee-import';
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
       <div class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center shrink-0 z-50 shadow-sm relative">
         <div class="flex items-center gap-5">
-          <a [routerLink]="['/admin/imports', companyId]" aria-label="Volver al asistente de importaciones" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:bg-slate-100">‹</a>
+          <a [routerLink]="['/admin/imports', companyId]" aria-label="Volver al asistente de importaciones" class="cursor-pointer w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:bg-slate-100">‹</a>
           <div class="relative">
             <div class="w-1.5 h-10 bg-blue-600 rounded-full"></div>
             <div class="absolute inset-0 bg-blue-600 blur-lg opacity-20"></div>
@@ -37,12 +38,23 @@ const ALERT = 'consignee-import';
         </div>
         @if (session(); as s) {
           <div class="flex items-center gap-3 text-xs">
-            <span class="text-slate-500">{{ s.file_name }} · {{ s.user_name }}</span>
+            <div class="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-xl border border-slate-200 bg-slate-50 max-w-sm">
+              <span aria-hidden="true" class="w-8 h-8 shrink-0 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black">XLS</span>
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 truncate" [title]="s.file_name">{{ s.file_name }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">Cargado por {{ s.user_name }}</p>
+              </div>
+              <button type="button" (click)="download('original')" [disabled]="!s.has_backup.original"
+                [attr.aria-label]="'Descargar archivo original ' + s.file_name" title="Descargar archivo original"
+                class="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 w-8 h-8 shrink-0 rounded-lg border border-slate-200 bg-white text-slate-500 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 focus-visible:outline-2 focus-visible:outline-blue-600">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path d="M10 3a1 1 0 0 1 1 1v6.586l1.793-1.793a1 1 0 1 1 1.414 1.414l-3.5 3.5a1 1 0 0 1-1.414 0l-3.5-3.5a1 1 0 1 1 1.414-1.414L9 10.586V4a1 1 0 0 1 1-1Z"/><path d="M4 14a1 1 0 0 1 1 1v1h10v-1a1 1 0 1 1 2 0v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a1 1 0 0 1 1-1Z"/></svg>
+              </button>
+            </div>
             @if (stage() === 'work') {
-              <button (click)="execute()" [disabled]="!(s.counts.ready ?? 0) || busy()" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase disabled:opacity-40">
+              <button (click)="execute()" [disabled]="!(s.counts.ready ?? 0) || busy()" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase disabled:opacity-40">
                 Ejecutar ({{ s.counts.ready ?? 0 }})
               </button>
-              <button (click)="abort()" [disabled]="busy()" class="px-4 py-2 rounded-xl border border-slate-200 font-black uppercase">Cancelar sesión</button>
+              <button (click)="abort()" [disabled]="busy()" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl border border-slate-200 font-black uppercase">Cancelar sesión</button>
             }
           </div>
         }
@@ -64,7 +76,7 @@ const ALERT = 'consignee-import';
                  (dragover)="$event.preventDefault()" (drop)="onDrop($event)">
               <p class="font-black uppercase text-sm">Arrastre el "Listado de clientes" de SIGAD (.xls o .xlsx)</p>
               <input type="file" accept=".xls,.xlsx" (change)="onFile($event)" class="text-xs" />
-              <button type="button" (click)="downloadExample()" class="block mx-auto text-xs text-blue-600 underline">Descargar formato de ejemplo</button>
+              <button type="button" (click)="downloadExample()" class="cursor-pointer block mx-auto text-xs text-blue-600 underline">Descargar formato de ejemplo</button>
               @if (formatErrors().length) {
                 <ul class="text-left text-xs text-red-600 list-disc pl-5">
                   @for (e of formatErrors(); track e) { <li>{{ e }}</li> }
@@ -73,14 +85,14 @@ const ALERT = 'consignee-import';
               @if (parsed(); as p) {
                 <div class="text-sm bg-slate-50 rounded-xl p-4">
                   {{ p.rows.length }} filas detectadas · {{ p.inactive }} inactivas
-                  <button (click)="createSession(false)" [disabled]="busy()" class="ml-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase">Crear sesión</button>
+                  <button (click)="createSession(false)" [disabled]="busy()" class="ml-4 cursor-pointer px-4 py-2 rounded-xl bg-blue-600 text-white font-black uppercase">Crear sesión</button>
                 </div>
               }
               @if (confirmReplace()) {
                 <div class="text-sm bg-amber-50 border border-amber-200 rounded-xl p-4 space-x-3">
                   <span>Hay una sesión con filas trabajadas.</span>
-                  <button (click)="resume()" class="px-3 py-1 rounded-lg border font-bold">Retomar</button>
-                  <button (click)="createSession(true)" class="px-3 py-1 rounded-lg bg-red-600 text-white font-bold">Descartar y empezar de nuevo</button>
+                  <button (click)="resume()" class="cursor-pointer disabled:cursor-not-allowed px-3 py-1 rounded-lg border font-bold">Retomar</button>
+                  <button (click)="createSession(true)" class="cursor-pointer disabled:cursor-not-allowed px-3 py-1 rounded-lg bg-red-600 text-white font-bold">Descartar y empezar de nuevo</button>
                 </div>
               }
             </div>
@@ -98,7 +110,7 @@ const ALERT = 'consignee-import';
             <div class="max-w-xl mx-auto bg-white rounded-2xl border p-8 space-y-3 text-sm">
               <p class="font-black uppercase">Sesión cerrada ({{ session()?.status }})</p>
               <p>Importadas: {{ session()?.counts?.imported ?? 0 }} · Omitidas: {{ session()?.counts?.skipped ?? 0 }}</p>
-              <button (click)="download('original')" class="px-4 py-2 rounded-xl border font-bold">Descargar archivo original</button>
+              <button (click)="download('original')" class="cursor-pointer disabled:cursor-not-allowed px-4 py-2 rounded-xl border font-bold">Descargar archivo original</button>
               <button (click)="download('snapshot')" [disabled]="!session()?.has_backup?.snapshot" class="ml-2 px-4 py-2 rounded-xl border font-bold">Descargar registro de la sesión</button>
               <button (click)="startOver()" class="ml-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold">Nueva importación</button>
             </div>
@@ -114,6 +126,7 @@ export class ConsigneeImportComponent implements OnDestroy {
   private _api = inject(ConsigneeImportService);
   private _parser = inject(ConsigneeImportParserService);
   private _notification = inject(NotificationService);
+  private _confirm = inject(ConfirmService);
   private _alert = inject(QdooraAlertService);
   private _destroyRef = inject(DestroyRef);
 
@@ -225,11 +238,21 @@ export class ConsigneeImportComponent implements OnDestroy {
     if (!s) return;
     const ready = s.counts.ready ?? 0;
     const pending = totalOpen(s.counts) - ready;
-    if (!confirm(`Se importarán ${ready} filas listas. Quedan ${pending} sin procesar; podrá ejecutarlas después.`)) return;
-    this.busy.set(true);
-    this._api.execute(this.companyId, s.id).pipe(finalize(() => this.busy.set(false))).subscribe({
-      next: () => { this.session.set({ ...s, status: 'processing' }); this.poll(); },
-      error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo ejecutar la importación.'),
+    this._confirm.confirm({
+      title: '¿Ejecutar la importación?',
+      message: pending > 0
+        ? `Se importarán ${ready} filas listas. Quedan ${pending} sin procesar; podrá ejecutarlas después.`
+        : `Se importarán ${ready} filas listas.`,
+      warning: 'Crea consignatarios en la empresa',
+      confirmText: 'Ejecutar',
+      tone: 'primary',
+    }).subscribe((ok) => {
+      if (!ok) return;
+      this.busy.set(true);
+      this._api.execute(this.companyId, s.id).pipe(finalize(() => this.busy.set(false))).subscribe({
+        next: () => { this.session.set({ ...s, status: 'processing' }); this.poll(); },
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo ejecutar la importación.'),
+      });
     });
   }
 
@@ -261,10 +284,19 @@ export class ConsigneeImportComponent implements OnDestroy {
 
   abort(): void {
     const s = this.session();
-    if (!s || !confirm('¿Cancelar la sesión? Lo ya importado se mantiene y queda el respaldo.')) return;
-    this._api.abort(this.companyId, s.id).subscribe({
-      next: () => this.session.set({ ...s, status: 'aborted', has_backup: { original: true, snapshot: true } }),
-      error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo cancelar la sesión.'),
+    if (!s) return;
+    this._confirm.confirm({
+      title: '¿Cancelar la sesión?',
+      message: 'Lo ya importado se mantiene y queda el respaldo del archivo y del registro de la sesión.',
+      warning: 'Las filas pendientes no se importarán',
+      confirmText: 'Cancelar sesión',
+      cancelText: 'Volver',
+    }).subscribe((ok) => {
+      if (!ok) return;
+      this._api.abort(this.companyId, s.id).subscribe({
+        next: () => this.session.set({ ...s, status: 'aborted', has_backup: { original: true, snapshot: true } }),
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo cancelar la sesión.'),
+      });
     });
   }
 

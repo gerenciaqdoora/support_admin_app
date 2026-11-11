@@ -1,3 +1,4 @@
+import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, expand, reduce } from 'rxjs';
@@ -148,6 +149,7 @@ export class ImportWorkComponent {
   private _notification = inject(NotificationService);
   private _destroyRef = inject(DestroyRef);
   private _dialog = inject(MatDialog);
+  private _confirm = inject(ConfirmService);
 
   readonly statuses = STATUSES;
   readonly status = signal<ImportItemStatus | null>(null);
@@ -226,10 +228,17 @@ export class ImportWorkComponent {
 
   private confirmBulk(items: ConsigneeImportItem[]): void {
     const sample = items.slice(0, 3).flatMap((r) => r.warnings.filter((w) => !w.verified).map((w) => `${w.original} → ${w.suggested}`));
-    if (!confirm(`Verificará las correcciones de ${items.length} filas. Ejemplos:\n${sample.join('\n')}`)) return;
-    this._api.bulkVerify(this.companyId(), this.session().id, 'BROKEN_CHARACTERS', items.map((r) => r.id)).subscribe({
-      next: (r) => { this._notification.success(`${r.verified} filas verificadas.`); this.changed.emit(); },
-      error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo verificar en bloque.'),
+    this._confirm.confirm({
+      title: '¿Verificar en bloque?',
+      message: `Se darán por correctas las sugerencias de ${items.length} filas. Ejemplos: ${sample.join(' · ')}`,
+      confirmText: 'Verificar',
+      tone: 'primary',
+    }).subscribe((ok) => {
+      if (!ok) return;
+      this._api.bulkVerify(this.companyId(), this.session().id, 'BROKEN_CHARACTERS', items.map((r) => r.id)).subscribe({
+        next: (r) => { this._notification.success(`${r.verified} filas verificadas.`); this.changed.emit(); },
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo verificar en bloque.'),
+      });
     });
   }
 

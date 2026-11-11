@@ -1,3 +1,4 @@
+import { ConfirmService } from '../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -251,6 +252,7 @@ export class SiiCertificationComponent {
   private _route = inject(ActivatedRoute);
   private _service = inject(SiiAdminService);
   private _notification = inject(NotificationService);
+  private _confirm = inject(ConfirmService);
   private _fb = inject(FormBuilder);
   private _aduanaCatalogs = inject(AduanaCatalogService);
 
@@ -707,15 +709,19 @@ export class SiiCertificationComponent {
    * destraba los casos cuyo envío quedó a medias por una caída del SII.
    */
   resendCase(caseId: number, rebuild = false): void {
-    if (
-      rebuild &&
-      !confirm(
-        'Se reconstruirá el DTE desde cero y se tomará un folio nuevo. Úsalo solo si el SII rechazó el documento por esquema inválido. ¿Continuar?',
-      )
-    ) {
+    if (!rebuild) {
+      this.doResendCase(caseId, false);
       return;
     }
+    this._confirm.confirm({
+      title: '¿Reconstruir el DTE?',
+      message: 'Se reconstruirá el DTE desde cero y se tomará un folio nuevo. Úsalo solo si el SII rechazó el documento por esquema inválido.',
+      warning: 'Consume un folio nuevo',
+      confirmText: 'Reconstruir',
+    }).subscribe((ok) => { if (ok) this.doResendCase(caseId, true); });
+  }
 
+  private doResendCase(caseId: number, rebuild: boolean): void {
     this.resendingCaseId.set(caseId);
     this._service
       .resendCase(this.companyId(), caseId, rebuild)

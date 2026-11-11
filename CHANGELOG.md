@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-11-10] feat(portal): popup de confirmación estándar (ConfirmService), archivo de la sesión de importación con descarga y cursor pointer en la cabecera; reemplaza los confirm() nativos
+
 - [2026-11-10] feat(importaciones): asistente de importaciones en /admin/imports/:companyId y botón "Importaciones" visible solo con módulo Aduana
 
 - [2026-11-10] feat(consignatarios): vista de importación masiva desde SIGAD (carga, tabla de filas, diálogo de edición, ejecución y respaldo) y contenedor global de notificaciones

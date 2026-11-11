@@ -285,3 +285,9 @@
   max-width: 280px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
 }
+
+/* Popup de confirmación estándar (ConfirmService): esquinas amplias como el diseño de baja de suscriptor. */
+.confirm-dialog-panel .mdc-dialog__surface {
+  border-radius: 2.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
+}

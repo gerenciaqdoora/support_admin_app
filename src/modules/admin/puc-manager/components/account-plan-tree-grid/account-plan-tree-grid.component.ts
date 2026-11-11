@@ -1,3 +1,4 @@
+import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { FlatNode, FoodNode } from './matTree';
@@ -84,6 +85,7 @@ export class AccountPlanTreeGridComponent
     // Alerta
 
     private _notificationService = inject(NotificationService);
+    private _confirm = inject(ConfirmService);
     alertName: string = 'accountPlanTable';
     // Despliegue de columnas en tabla
     displayedColumns: string[] = [];
@@ -596,6 +598,16 @@ export class AccountPlanTreeGridComponent
     /**
      * Funcion para eliminar un nodo
     */
+    /** Pide confirmación con el popup estándar y ejecuta la eliminación solo si se confirma. */
+    private askDelete(run: () => void): void {
+        this._confirm.confirm({
+            title: '¿Eliminar registro?',
+            message: 'Se eliminará el registro seleccionado del plan de cuentas.',
+            warning: 'Acción irreversible',
+            confirmText: 'Eliminar',
+        }).subscribe((ok) => { if (ok) run(); });
+    }
+
     onActionDeleteRow(node: FlatNode) {
         // No permitimos el cambio en PUC - solo de empresas
         if (!this.is_available_crud) return;
@@ -604,7 +616,7 @@ export class AccountPlanTreeGridComponent
         switch (node.level) {
             case 1: //Eliminacion de subtipo
                 // Mostrar dialogo de confirmacion
-                if (confirm('¿Estas seguro de eliminar?')) {
+                this.askDelete(() => {
                     let result = 'confirmed';
                     if (result == 'confirmed') {
                         // Eliminacion de subtipo
@@ -618,11 +630,11 @@ export class AccountPlanTreeGridComponent
                                 error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
                             });
                     }
-                }
+                });
                 break;
             case 2: //Eliminacion de cuenta
                 // Mostrar dialogo de confirmacion
-                if (confirm('¿Estas seguro de eliminar?')) {
+                this.askDelete(() => {
                     let result = 'confirmed';
                     if (result == 'confirmed') {
                         // Eliminacion de subtipo
@@ -636,11 +648,11 @@ export class AccountPlanTreeGridComponent
                                 error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
                             });
                     }
-                }
+                });
                 break;
             case 3: //Eliminacion de subcuenta
                 // Mostrar dialogo de confirmacion
-                if (confirm('¿Estas seguro de eliminar?')) {
+                this.askDelete(() => {
                     let result = 'confirmed';
                     if (result == 'confirmed') {
                         // Eliminacion de subtipo
@@ -654,7 +666,7 @@ export class AccountPlanTreeGridComponent
                                 error: (response: JsonResponse<any>) => this.showAlertMessage('error', response.message)
                             });
                     }
-                }
+                });
                 break;
         }
 
