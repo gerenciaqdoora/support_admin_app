@@ -13,16 +13,20 @@ import { MasterAccountBarComponent } from './master-account-bar/master-account-b
 import { SharedAlertComponent } from '@shared/alert/alert.component';
 import { FileDropzoneComponent } from '@shared/file-dropzone/file-dropzone.component';
 import { ConsigneeImportRouteData } from './consignee-import.resolver';
-import { POLL_MS, chunkRows, totalOpen } from './consignee-import.utils';
+import { POLL_MS, RunBase, chunkRows, totalOpen } from './consignee-import.utils';
 import { ImportWorkComponent } from './import-work/import-work.component';
+import { ImportProgressPanelComponent } from './import-progress/import-progress-panel.component';
 
 type Stage = 'blocked' | 'upload' | 'uploading' | 'work' | 'processing' | 'closed';
+
+/** Ejecución en curso o recién terminada: base para el avance y marcas de tiempo (null = sin ejecución). */
+interface RunState { base: RunBase; startedAt: number; finishedAt: number | null; }
 
 /** Pantalla de una importación masiva desde SIGAD (ADMIN_ROLE): su `ImportKind` viene en los datos de la ruta. */
 @Component({
   selector: 'app-consignee-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent, FileDropzoneComponent, MasterAccountBarComponent],
+  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent, FileDropzoneComponent, MasterAccountBarComponent, ImportProgressPanelComponent],
   host: { class: 'block h-full overflow-hidden' },
   template: `
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
@@ -124,10 +128,11 @@ type Stage = 'blocked' | 'upload' | 'uploading' | 'work' | 'processing' | 'close
             </div>
           }
           @case ('processing') {
-            <p class="text-center text-sm font-bold">
-              Importando: {{ (session()?.counts?.imported ?? 0) + (session()?.counts?.failed ?? 0) }} procesadas ·
-              {{ session()?.counts?.failed ?? 0 }} fallidas. La sesión está en modo lectura.
-            </p>
+            @if (run(); as r) {
+              <app-import-progress-panel [counts]="session()?.counts ?? {}" [base]="r.base" [startedAt]="r.startedAt"
+                [finishedAt]="r.finishedAt" [phase]="r.finishedAt ? 'done' : 'running'"
+                [pluralLabel]="kind.memberLabelPlural ?? 'filas'" (continued)="run.set(null)"></app-import-progress-panel>
+            }
           }
           @case ('closed') {
             <div class="max-w-xl mx-auto bg-white rounded-2xl border p-8 space-y-3 text-sm">
@@ -164,6 +169,8 @@ export class ConsigneeImportComponent implements OnDestroy {
   readonly formatErrors = signal<string[]>([]);
   readonly confirmReplace = signal(false);
   readonly busy = signal(false);
+  /** Ejecución en curso (o terminada y aún sin «Continuar»): mantiene la etapa `processing` y alimenta el panel. */
+  readonly run = signal<RunState | null>(null);
   /** Texto del loader a pantalla completa mientras corre una acción corta (p. ej. cancelar). */
   readonly busyLabel = signal<string | null>(null);
   readonly sent = signal(0);
@@ -186,6 +193,7 @@ export class ConsigneeImportComponent implements OnDestroy {
   readonly stage = computed<Stage>(() => {
     if (!this.data.requirements.ready) return 'blocked';
     if (this.uploading()) return 'uploading';
+    if (this.run()) return 'processing';
     const s = this.session();
     if (!s) return 'upload';
     if (s.status === 'processing') return 'processing';
@@ -200,7 +208,11 @@ export class ConsigneeImportComponent implements OnDestroy {
         message: this.data.requirements.blockers.map((b) => b.message).join(' '),
       });
     }
-    if (this.session()?.status === 'processing') this.poll();
+    if (this.session()?.status === 'processing') {
+      // Retomada tras recargar: no se conoce lo cerrado antes de esta ejecución, el avance parte de lo ya contado.
+      this.run.set({ base: { imported: 0, failed: 0 }, startedAt: Date.now(), finishedAt: null });
+      this.poll();
+    }
   }
 
   ngOnDestroy(): void {
@@ -280,7 +292,11 @@ export class ConsigneeImportComponent implements OnDestroy {
       if (!ok) return;
       this.busy.set(true);
       this._api.execute(this.companyId, s.id).pipe(finalize(() => this.busy.set(false))).subscribe({
-        next: () => { this.session.set({ ...s, status: 'processing' }); this.poll(); },
+        next: () => {
+          this.run.set({ base: { imported: s.counts.imported ?? 0, failed: s.counts.failed ?? 0 }, startedAt: Date.now(), finishedAt: null });
+          this.session.set({ ...s, status: 'processing' });
+          this.poll();
+        },
         error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo ejecutar la importación.'),
       });
     });
@@ -295,6 +311,7 @@ export class ConsigneeImportComponent implements OnDestroy {
     ).subscribe((p) => {
       this.session.update((s) => (s ? { ...s, status: p.status, counts: p.counts } : s));
       if (p.status !== 'processing') {
+        this.run.update((r) => (r ? { ...r, finishedAt: Date.now() } : r));
         this._notification.success(`Importación terminada: ${p.counts.imported ?? 0} importadas, ${p.counts.failed ?? 0} fallidas.`);
         this.afterProcessing();
       }
@@ -364,6 +381,7 @@ export class ConsigneeImportComponent implements OnDestroy {
   }
 
   startOver(): void {
+    this.run.set(null);
     this.session.set(null);
     this.parsed.set(null);
     this.formatErrors.set([]);
