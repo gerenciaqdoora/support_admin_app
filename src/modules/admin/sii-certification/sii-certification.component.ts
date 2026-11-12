@@ -1,3 +1,4 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { ConfirmService } from '../../shared/confirm-dialog/confirm.service';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -227,7 +228,7 @@ const EXPORT_REFERENCE_TYPES: ReadonlyArray<{ code: string; label: string }> = [
  */
 @Component({
   selector: 'app-sii-certification',
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, RutFormatPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sii-certification.component.html',
   styles: [

@@ -1,9 +1,13 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { ImportKind } from '@core/imports/import-kind';
 import { SUPPLIER_ISSUE_LABELS } from '@core/imports/proveedores-v1';
 import { SupplierImportItem } from '@core/models/supplier-import.model';
 import { SupplierImportService } from '@core/services/supplier-import.service';
 import { SupplierImportParserService } from '@core/services/supplier-import-parser.service';
 import { SupplierItemDialogData, SupplierItemPanelComponent } from './supplier-item-panel/supplier-item-panel.component';
+
+const rutPipe = new RutFormatPipe();
+const formatRut = (rut: string | null | undefined): string => rutPipe.transform(rut ?? '');
 
 export const SUPPLIER_KIND: ImportKind = {
   key: 'suppliers',
@@ -25,7 +29,7 @@ export const SUPPLIER_KIND: ImportKind = {
   bulkVerifyCode: 'BROKEN_CHARACTERS',
   columns: [
     { header: 'Código', widthClass: 'w-28', value: (i) => (i as SupplierImportItem).normalized.code ?? '' },
-    { header: 'RUT', widthClass: 'w-36', value: (i) => (i as SupplierImportItem).normalized.rut ?? '' },
+    { header: 'RUT', widthClass: 'w-36', value: (i) => formatRut((i as SupplierImportItem).normalized.rut) },
     { header: 'Nombre', value: (i) => (i as SupplierImportItem).normalized.name ?? '' },
   ],
   openItem: ({ dialog, companyId, sessionId, item, api, onChanged }) => {

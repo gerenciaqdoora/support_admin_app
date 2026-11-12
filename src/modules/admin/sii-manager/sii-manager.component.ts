@@ -1,3 +1,4 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ import { AuthService } from '@core/services/auth.service';
 @Component({
   selector: 'app-sii-manager',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, RutFormatPipe],
   template: `
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
       <!-- Header -->
@@ -130,7 +131,7 @@ import { AuthService } from '@core/services/auth.service';
                     </div>
                     <div class="flex justify-between items-center">
                       <dt class="text-[10px] font-black text-slate-400 uppercase tracking-widest">RUT titular</dt>
-                      <dd class="text-xs font-black text-slate-800 text-right">{{ cert.holder_rut || '—' }}</dd>
+                      <dd class="text-xs font-black text-slate-800 text-right">{{ (cert.holder_rut | rutFormat) || '—' }}</dd>
                     </div>
                     <div class="flex justify-between items-center">
                       <dt class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vigencia</dt>

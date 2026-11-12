@@ -543,7 +543,7 @@
                               <li class="px-4 py-3 flex justify-between items-center gap-3">
                                 <div class="min-w-0">
                                   <span class="text-[10px] font-black text-slate-800">{{ line.doc_tributary_code }} · Folio {{ line.folio }}</span>
-                                  <span class="text-[10px] font-bold text-slate-400 ml-2">{{ line.counterparty_rut }}</span>
+                                  <span class="text-[10px] font-bold text-slate-400 ml-2">{{ line.counterparty_rut | rutFormat }}</span>
                                   <p class="text-[10px] text-slate-500 mt-1">
                                     Exento {{ line.amount_exempt }} · Afecto {{ line.amount_net }} · {{ line.nature }}
                                   </p>

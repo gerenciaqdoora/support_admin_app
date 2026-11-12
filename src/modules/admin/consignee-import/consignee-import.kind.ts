@@ -1,9 +1,16 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { ImportKind } from '@core/imports/import-kind';
 import { ISSUE_LABELS } from '@core/imports/sigad-clientes-v1';
 import { ConsigneeImportItem } from '@core/models/consignee-import.model';
 import { ConsigneeImportService } from '@core/services/consignee-import.service';
 import { ConsigneeImportParserService } from '@core/services/consignee-import-parser.service';
 import { ImportItemDialogData, ImportItemPanelComponent } from './import-item-panel/import-item-panel.component';
+
+const rutPipe = new RutFormatPipe();
+
+/** RUT con puntos y guion; el pasaporte ('04') se muestra tal cual. */
+const formatDocument = (n: ConsigneeImportItem['normalized']): string =>
+  n.document_code === '03' ? rutPipe.transform(n.document_number ?? '') : (n.document_number ?? '');
 
 export const CONSIGNEE_KIND: ImportKind = {
   key: 'consignees',
@@ -21,6 +28,7 @@ export const CONSIGNEE_KIND: ImportKind = {
   issueLabels: { ...ISSUE_LABELS, CODE_IN_USE: 'Código de otro auxiliar' },
   bulkVerifyCode: 'BROKEN_CHARACTERS',
   columns: [
+    { header: 'RUT', widthClass: 'w-36', value: (i) => formatDocument((i as ConsigneeImportItem).normalized) },
     { header: 'Nombre', value: (i) => (i as ConsigneeImportItem).normalized.name },
     { header: 'Comuna', widthClass: 'w-40', value: (i) => i.original['H'] ?? '' },
     { header: 'Rep.', widthClass: 'w-16', value: (i) => String((i as ConsigneeImportItem).normalized.legal_representatives.length) },

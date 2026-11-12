@@ -1,3 +1,4 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -24,7 +25,7 @@ export interface SupplierItemDialogData {
 @Component({
   selector: 'app-supplier-item-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogHeaderComponent, DialogFooterComponent],
+  imports: [ReactiveFormsModule, DialogHeaderComponent, DialogFooterComponent, RutFormatPipe],
   template: `
     <div class="standard-dialog-container relative">
       <app-dialog-header [title]="'Fila ' + item().row_number + ' · ' + statusText()" [showCloseButton]="true" (closeDialog)="dialogRef.close()"></app-dialog-header>
@@ -54,7 +55,7 @@ export interface SupplierItemDialogData {
             <ul class="mt-2 space-y-2">
               @for (c of candidates(); track c.id) {
                 <li class="flex items-center justify-between gap-3 rounded-xl bg-white border border-blue-100 px-3 py-2">
-                  <span class="min-w-0 text-xs"><span class="font-mono font-bold text-slate-900">{{ c.rut }}</span> · <span class="text-slate-700">{{ c.name }}</span></span>
+                  <span class="min-w-0 text-xs"><span class="font-mono font-bold text-slate-900">{{ c.rut | rutFormat }}</span> · <span class="text-slate-700">{{ c.name }}</span></span>
                   <button type="button" (click)="useCandidate(c)" [disabled]="busy()"
                     class="shrink-0 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40">
                     Usar

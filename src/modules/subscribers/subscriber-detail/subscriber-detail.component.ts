@@ -1,3 +1,4 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
@@ -15,7 +16,7 @@ import { EXPIRY_TONE_CLASS, expiryBadge } from '../plan-expiry';
 @Component({
   selector: 'app-subscriber-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, CapacityCardComponent],
+  imports: [CommonModule, RouterLink, CapacityCardComponent, RutFormatPipe],
   template: `
     <div
       class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans relative"
@@ -345,7 +346,7 @@ import { EXPIRY_TONE_CLASS, expiryBadge } from '../plan-expiry';
                         <p
                           class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5"
                         >
-                          RUT: {{ company.rut }}
+                          RUT: {{ company.rut | rutFormat }}
                         </p>
                         <div class="flex items-center gap-2 mt-2">
                           <span

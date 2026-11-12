@@ -1,9 +1,13 @@
+import { RutFormatPipe } from '@core/pipes/rut-format.pipe';
 import { ImportKind } from '@core/imports/import-kind';
 import { SUPPLIER_ISSUE_LABELS } from '@core/imports/proveedores-v1';
 import { SupplierImportItem } from '@core/models/supplier-import.model';
 import { EmployeeImportService } from '@core/services/employee-import.service';
 import { EmployeeImportParserService } from '@core/services/employee-import-parser.service';
 import { SupplierItemDialogData, SupplierItemPanelComponent } from '../supplier-import/supplier-item-panel/supplier-item-panel.component';
+
+const rutPipe = new RutFormatPipe();
+const formatRut = (rut: string | null | undefined): string => rutPipe.transform(rut ?? '');
 
 export const EMPLOYEE_KIND: ImportKind = {
   key: 'employees',
@@ -25,7 +29,7 @@ export const EMPLOYEE_KIND: ImportKind = {
   bulkVerifyCode: 'BROKEN_CHARACTERS',
   columns: [
     { header: 'Código', widthClass: 'w-28', value: (i) => (i as SupplierImportItem).normalized.code ?? '' },
-    { header: 'RUT', widthClass: 'w-36', value: (i) => (i as SupplierImportItem).normalized.rut ?? '' },
+    { header: 'RUT', widthClass: 'w-36', value: (i) => formatRut((i as SupplierImportItem).normalized.rut) },
     { header: 'Nombre', value: (i) => (i as SupplierImportItem).normalized.name ?? '' },
   ],
   openItem: ({ dialog, companyId, sessionId, item, api, onChanged }) => {
