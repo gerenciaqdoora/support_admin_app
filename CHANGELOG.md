@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-11-12] feat(importaciones): vista compacta del asistente con tablero de avance (barra segmentada, filtros por estado y siguiente paso) y tabla con cabecera fija, filas expandibles y paginación
+
 - [2026-11-12] feat(portal): RUT con formato (12.345.678-9) en las tablas de importación (consignatarios, proveedores, empleados y emisores), candidatas del diálogo, certificado SII, certificación SII y detalle de suscriptor
 
 - [2026-11-11] feat(importaciones): importación masiva de emisores de honorarios desde SIGAD en el Portal Soporte (ISSUER_KIND, formato EMISORES_V1, ruta admin/issuer-import y paso Emisores del asistente)
