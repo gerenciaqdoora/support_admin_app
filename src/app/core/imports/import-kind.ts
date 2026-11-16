@@ -55,4 +55,10 @@ export interface ImportKind {
   /** Nombre de la cuenta maestra y plural del rol, para el aviso y el popup de reasignación. */
   masterName?: string;
   memberLabelPlural?: string;
+  /** Si es true, la cabecera deja asignar o cambiar la cuenta maestra desde el plan de la empresa (consignatarios: no hay archivo que la dicte). */
+  masterAccountAssign?: boolean;
+  /** Cuentas maestras adicionales (con su segmento de ruta) que la pantalla muestra y deja asignar; el texto sale de los requisitos (emisores: Retención 2ª Categoría). */
+  extraMasterAccounts?: { categoryCode: string; path: string; hint: string; missingNote: string }[];
+  /** Si existe, la pantalla ofrece las cuentas RCV por defecto de esa naturaleza (proveedores: compra). */
+  rcvDefaultsOperation?: 'purchase' | 'sale';
 }

@@ -27,6 +27,16 @@ export const CONSIGNEE_KIND: ImportKind = {
   parser: ConsigneeImportParserService,
   issueLabels: { ...ISSUE_LABELS, CODE_IN_USE: 'Código de otro auxiliar' },
   bulkVerifyCode: 'BROKEN_CHARACTERS',
+  masterAccountLabel: 'Cuenta maestra Cliente Nacional',
+  masterName: 'Cliente Nacional',
+  memberLabelPlural: 'clientes',
+  masterAccountAssign: true,
+  extraMasterAccounts: [{
+    categoryCode: 'IVA_DEBITO_FISCAL', path: 'extra-account/vat',
+    missingNote: 'No bloquea la importación. La centralización de las ventas exige esta cuenta.',
+    hint: 'Solo se ofrecen cuentas de clase Pasivo. Al asignarla queda asociada al impuesto IVA GENERAL (venta), igual que en el catálogo de impuestos.',
+  }],
+  rcvDefaultsOperation: 'sale',
   columns: [
     { header: 'RUT', widthClass: 'w-36', value: (i) => formatDocument((i as ConsigneeImportItem).normalized) },
     { header: 'Nombre', value: (i) => (i as ConsigneeImportItem).normalized.name },

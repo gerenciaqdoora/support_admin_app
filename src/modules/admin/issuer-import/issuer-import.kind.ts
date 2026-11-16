@@ -22,6 +22,11 @@ export const ISSUER_KIND: ImportKind = {
   searchLabel: 'Buscar por código, RUT o nombre',
   masterAccountLabel: 'Cuenta maestra Honorarios por Pagar',
   masterName: 'Honorarios por Pagar',
+  extraMasterAccounts: [{
+    categoryCode: 'RETE_2DA_CATEGORIA', path: 'extra-account/retention',
+    missingNote: 'No bloquea la importación. Las boletas de honorarios con retención exigen esta cuenta.',
+    hint: 'Solo se ofrecen cuentas de clase Pasivo. La cuenta queda con auxiliar con RUT, como al asignarla desde el plan de cuentas.',
+  }],
   memberLabelPlural: 'emisores',
   api: IssuerImportService,
   parser: IssuerImportParserService,

@@ -7,9 +7,13 @@ import { ImportKind } from '@core/imports/import-kind';
 import { NotificationService } from '@core/services/notification.service';
 import { QdooraAlertService } from '@core/components/alert/alert.service';
 import { ConsigneeImportSession, ParsedSigadFile } from '@core/models/consignee-import.model';
+import { ExtraMasterAccount, ImportRequirementsBase } from '@core/services/import-session-api';
 import { MasterAccountSummary } from '@core/models/supplier-import.model';
-import { accountWarning } from './account-warning';
+import { AccountWarning, accountWarning } from './account-warning';
+import { MatDialog } from '@angular/material/dialog';
+import { MasterAccountAssignDialogComponent, MasterAccountAssignData } from './master-account-bar/master-account-assign-dialog.component';
 import { MasterAccountBarComponent } from './master-account-bar/master-account-bar.component';
+import { RcvDefaultsPanelComponent } from '../supplier-import/rcv-defaults/rcv-defaults-panel.component';
 import { SharedAlertComponent } from '@shared/alert/alert.component';
 import { FileDropzoneComponent } from '@shared/file-dropzone/file-dropzone.component';
 import { ConsigneeImportRouteData } from './consignee-import.resolver';
@@ -26,7 +30,7 @@ interface RunState { base: RunBase; startedAt: number; finishedAt: number | null
 @Component({
   selector: 'app-consignee-import',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent, FileDropzoneComponent, MasterAccountBarComponent, ImportProgressPanelComponent],
+  imports: [RouterLink, ImportWorkComponent, SharedAlertComponent, FileDropzoneComponent, MasterAccountBarComponent, ImportProgressPanelComponent, RcvDefaultsPanelComponent],
   host: { class: 'block h-full overflow-hidden' },
   template: `
     <div class="h-full flex flex-col bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
@@ -68,7 +72,23 @@ interface RunState { base: RunBase; startedAt: number; finishedAt: number | null
 
       @if (kind.masterAccountLabel && (stage() === 'work' || stage() === 'upload' || stage() === 'blocked')) {
         <app-master-account-bar [label]="kind.masterName ?? ''" [master]="master()" [check]="session()?.account_check" [warning]="stage() === 'work' ? warning() : null"
-          [busy]="busy()" (reassign)="reassignMaster()" />
+          [busy]="busy()" [assignable]="!!kind.masterAccountAssign && canAssignMaster()" (reassign)="reassignMaster()" (assign)="assignMaster()" />
+      }
+
+      @for (extra of kind.extraMasterAccounts ?? []; track extra.categoryCode) {
+        @if (extraAccount(extra.categoryCode); as acc) {
+          @if (stage() === 'work' || stage() === 'upload') {
+            <app-master-account-bar [label]="acc.label" [master]="acc.account" [assignable]="acc.assignable" [busy]="busy()" [blocking]="false"
+              [warning]="extraWarning(acc)" [ok]="acc.tax_linked === true" [statusLabel]="acc.tax_linked === null ? null : (acc.tax_linked ? 'Asociada a IVA GENERAL' : 'Sin asociar a IVA GENERAL')"
+              [note]="acc.account ? null : extra.missingNote" (assign)="assignExtra(extra, acc)" (reassign)="linkExtra(extra, acc)" />
+          }
+        }
+      }
+
+      @if (kind.rcvDefaultsOperation; as rcvOperation) {
+        @if (stage() === 'work' || stage() === 'upload' || stage() === 'closed') {
+          <app-rcv-defaults-panel [companyId]="companyId" [operation]="rcvOperation" />
+        }
       }
 
       @if (busyLabel(); as label) {
@@ -159,11 +179,14 @@ export class ConsigneeImportComponent implements OnDestroy {
   private _confirm = inject(ConfirmService);
   private _alert = inject(QdooraAlertService);
   private _destroyRef = inject(DestroyRef);
+  private _dialog = inject(MatDialog);
 
   private readonly data = this._route.snapshot.data['importData'] as ConsigneeImportRouteData;
   readonly companyId = this.data.companyId;
   readonly alertName = this.kind.alertName;
 
+  /** Requisitos de la empresa: cambian al asignar la cuenta maestra desde esta pantalla. */
+  readonly requirements = signal<ImportRequirementsBase>(this.data.requirements);
   readonly session = signal<ConsigneeImportSession | null>(this.data.session);
   readonly parsed = signal<ParsedSigadFile | null>(null);
   readonly formatErrors = signal<string[]>([]);
@@ -185,13 +208,13 @@ export class ConsigneeImportComponent implements OnDestroy {
   readonly master = computed<MasterAccountSummary | null>(() => {
     const fromSession = this.session()?.account_check?.master;
     if (fromSession !== undefined) return fromSession;
-    return this.data.requirements.role_account ?? null;
+    return this.requirements().role_account ?? null;
   });
   /** Aviso cuando la cuenta maestra no calza con la cuenta mayor del archivo (solo importaciones que lo declaran). */
   readonly warning = computed(() => (this.kind.masterAccountLabel ? accountWarning(this.session()?.account_check, this.kind.masterName ?? '') : null));
 
   readonly stage = computed<Stage>(() => {
-    if (!this.data.requirements.ready) return 'blocked';
+    if (!this.requirements().ready) return 'blocked';
     if (this.uploading()) return 'uploading';
     if (this.run()) return 'processing';
     const s = this.session();
@@ -202,12 +225,7 @@ export class ConsigneeImportComponent implements OnDestroy {
   });
 
   constructor() {
-    if (!this.data.requirements.ready) {
-      this._alert.showAlert({
-        appearance: 'border', type: 'error', name: this.alertName,
-        message: this.data.requirements.blockers.map((b) => b.message).join(' '),
-      });
-    }
+    this.syncBlockersAlert();
     if (this.session()?.status === 'processing') {
       // Retomada tras recargar: no se conoce lo cerrado antes de esta ejecución, el avance parte de lo ya contado.
       this.run.set({ base: { imported: 0, failed: 0 }, startedAt: Date.now(), finishedAt: null });
@@ -330,6 +348,75 @@ export class ConsigneeImportComponent implements OnDestroy {
   }
 
   /** Reasigna la cuenta maestra a la cuenta mayor del archivo, con el popup estándar (cambia configuración contable). */
+  /** La cuenta se puede asignar cuando la empresa ya tiene Aduana, Contabilidad y plan de cuentas (si no, otro requisito bloquea). */
+  readonly canAssignMaster = computed(() => {
+    const modules = this.requirements().modules;
+    return !!modules && modules.aduana && modules.contabilidad && modules.account_plan;
+  });
+
+  /** Elige la cuenta maestra entre las del plan de la empresa (consignatarios: no hay archivo que la dicte). */
+  assignMaster(): void {
+    this.openAssignDialog({
+      masterName: this.kind.masterName ?? '', current: this.master(), membersLabel: this.kind.memberLabelPlural,
+      hint: 'Solo se ofrecen cuentas de clase Activo que trabajan con auxiliar con RUT.',
+      path: 'master-account',
+    });
+  }
+
+  /** Cuenta maestra adicional de los requisitos (p. ej. Retención 2ª Categoría), si la importación la declara. */
+  extraAccount(categoryCode: string) {
+    return this.requirements().extra_accounts?.find((a) => a.category_code === categoryCode) ?? null;
+  }
+
+  /** Cuenta de IVA ya asignada pero sin asociar al impuesto IVA GENERAL: se ofrece asociarla. */
+  extraWarning(account: ExtraMasterAccount): AccountWarning | null {
+    if (!account.account || account.tax_linked !== false) return null;
+    return {
+      message: `La cuenta ${account.account.display_code} es la maestra ${account.label}, pero no está asociada al impuesto IVA GENERAL: la centralización no resolverá esta cuenta para el IVA.`,
+      hint: null, actionLabel: 'Asociar al impuesto',
+    };
+  }
+
+  /** Asocia al impuesto IVA GENERAL la cuenta que ya es la maestra (volver a asignarla crea o corrige la asociación). */
+  linkExtra(extra: { path: string }, account: ExtraMasterAccount): void {
+    if (!account.account) return;
+    this.busy.set(true);
+    this._api.assignMasterAccount(this.companyId, { type: account.account.node_type, account_id: account.account.account_id }, extra.path)
+      .pipe(finalize(() => this.busy.set(false))).subscribe({
+        next: (requirements) => { this.requirements.set(requirements); this._notification.success('Cuenta asociada al impuesto IVA GENERAL.'); },
+        error: (err) => this._notification.error(err?.error?.message ?? 'No se pudo asociar la cuenta al impuesto.'),
+      });
+  }
+
+  assignExtra(extra: { path: string; hint: string }, account: ExtraMasterAccount): void {
+    this.openAssignDialog({ masterName: account.label, current: account.account, hint: extra.hint, path: extra.path });
+  }
+
+  private openAssignDialog(o: { masterName: string; current: MasterAccountAssignData['current']; hint: string; membersLabel?: string; path: string }): void {
+    this._dialog.open(MasterAccountAssignDialogComponent, {
+      panelClass: 'dialog-panel', width: '560px', maxWidth: '95vw', maxHeight: '92vh',
+      data: {
+        masterName: o.masterName, current: o.current, hint: o.hint, membersLabel: o.membersLabel,
+        load: () => this._api.masterAccountOptions(this.companyId, o.path),
+        assign: (account) => this._api.assignMasterAccount(this.companyId, account, o.path),
+      } satisfies MasterAccountAssignData,
+    }).afterClosed().subscribe((requirements) => {
+      if (!requirements) return;
+      this.requirements.set(requirements);
+      this.syncBlockersAlert();
+    });
+  }
+
+  /** Muestra el aviso de bloqueo mientras haya requisitos sin cumplir y lo retira al resolverlos. */
+  private syncBlockersAlert(): void {
+    const r = this.requirements();
+    if (!r.ready) {
+      this._alert.showAlert({ appearance: 'border', type: 'error', name: this.alertName, message: r.blockers.map((b) => b.message).join(' ') });
+    } else {
+      this._alert.dismiss(this.alertName);
+    }
+  }
+
   reassignMaster(): void {
     const s = this.session();
     const check = s?.account_check;

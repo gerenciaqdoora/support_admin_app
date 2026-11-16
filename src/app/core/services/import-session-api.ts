@@ -2,16 +2,31 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import {
-  ConsigneeImportProgress, ConsigneeImportSession, ImportItemFilters, Paginated, ParsedSigadFile, ParsedSigadRow,
+  ConsigneeImportProgress, ConsigneeImportSession, ImportItemFilters, MasterAccountOptions, Paginated, ParsedSigadFile, ParsedSigadRow,
 } from '../models/consignee-import.model';
 
 export interface ApiEnvelope<T> { data: T; message: string; }
 
 /** Lo mínimo que la pantalla de importación necesita de los requisitos de cada importación. */
+/** Cuenta maestra adicional que la importación muestra y deja asignar desde el plan de la empresa (p. ej. Retención 2ª Categoría en emisores). */
+export interface ExtraMasterAccount {
+  /** Clave de la ruta (`extra-account/{key}`). */
+  key: string;
+  category_code: string;
+  label: string;
+  /** La empresa tiene Aduana, Contabilidad y plan de cuentas: solo entonces se puede asignar. */
+  assignable: boolean;
+  account: { account_id: number; code: string; display_code: string; name: string; node_type: string } | null;
+  /** Solo cuentas de IVA: si la cuenta está asociada al impuesto IVA GENERAL (null = no aplica o sin cuenta). */
+  tax_linked: boolean | null;
+}
+
 export interface ImportRequirementsBase {
   ready: boolean;
+  modules?: { aduana: boolean; contabilidad: boolean; account_plan: boolean };
   blockers: { code: string; message: string }[];
   role_account?: { code: string; display_code: string; name: string; node_type: string } | null;
+  extra_accounts?: ExtraMasterAccount[];
 }
 
 /**
@@ -78,5 +93,15 @@ export abstract class ImportSessionApi<TItem, TNormalized> {
   /** Lo atienden las importaciones por rol (proveedores, empleados). */
   reassignMasterAccount(companyId: number, sessionId: number) {
     return this.data(this._http.put<ApiEnvelope<ConsigneeImportSession>>(`${this.prefix(companyId)}/session/${sessionId}/master-account`, {}));
+  }
+
+  /** Cuentas del plan que pueden ser la maestra de `path` (`master-account` por defecto) y cuántos auxiliares cuentan hoy con la actual. */
+  masterAccountOptions(companyId: number, path = 'master-account') {
+    return this.data(this._http.get<ApiEnvelope<MasterAccountOptions>>(`${this.prefix(companyId)}/${path}/options`));
+  }
+
+  /** Asigna la cuenta maestra de `path`; responde con los requisitos recalculados. */
+  assignMasterAccount(companyId: number, account: { type: string; account_id: number }, path = 'master-account') {
+    return this.data(this._http.put<ApiEnvelope<ImportRequirementsBase>>(`${this.prefix(companyId)}/${path}`, account));
   }
 }

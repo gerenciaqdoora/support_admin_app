@@ -4,6 +4,8 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+- [2026-11-16] feat(importaciones): cuentas RCV por defecto (venta y compra) en la importación de consignatarios y proveedores, y cuentas maestras adicionales (IVA Débito, IVA Crédito y Retención 2ª Categoría) con verificación, asociación a IVA GENERAL y asignación desde el plan de la empresa
+
 - [2026-11-12] feat(importaciones): panel de progreso con anillo animado, barra, contadores en vivo, tiempo y tarjeta de resultado con Continuar al ejecutar una importación masiva
 
 - [2026-11-12] feat(importaciones): vista compacta del asistente con tablero de avance (barra segmentada, filtros por estado y siguiente paso) y tabla con cabecera fija, filas expandibles y paginación

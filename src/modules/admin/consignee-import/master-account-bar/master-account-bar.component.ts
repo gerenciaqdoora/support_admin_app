@@ -44,6 +44,12 @@ type Tone = 'ok' | 'warn' | 'neutral';
 
         <div class="ml-auto flex items-center gap-3">
           <span [class]="'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ' + styles().pill">{{ statusText() }}</span>
+          @if (assignable()) {
+            <button type="button" (click)="assign.emit()" [disabled]="busy()"
+              class="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 shrink-0 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 focus-visible:outline-2 focus-visible:outline-blue-600">
+              {{ master() ? 'Cambiar cuenta' : 'Asignar cuenta' }}
+            </button>
+          }
           @if (warning()?.actionLabel; as action) {
             <button type="button" (click)="reassign.emit()" [disabled]="busy()"
               class="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 shrink-0 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 focus-visible:outline-2 focus-visible:outline-amber-700">
@@ -53,9 +59,13 @@ type Tone = 'ok' | 'warn' | 'neutral';
         </div>
       </div>
 
+      @if (note(); as n) {
+        <p class="mt-3 text-xs text-slate-600">{{ n }}</p>
+      }
+
       @if (warning(); as w) {
         <div class="mt-3 text-xs text-amber-900">
-          <p class="font-semibold">{{ w.message }} <span class="font-black">No se puede ejecutar hasta resolverlo.</span></p>
+          <p class="font-semibold">{{ w.message }} @if (blocking()) { <span class="font-black">No se puede ejecutar hasta resolverlo.</span> }</p>
           @if (w.hint) { <p class="mt-0.5 text-amber-800">{{ w.hint }}</p> }
         </div>
       }
@@ -71,17 +81,33 @@ export class MasterAccountBarComponent {
   readonly warning = input<AccountWarning | null>(null);
   readonly busy = input(false);
 
+  /** La cuenta se elige desde el plan de la empresa (importaciones sin archivo que la dicte). */
+  readonly assignable = input(false);
+  /** Aclaración bajo la barra (p. ej. para qué se usa la cuenta). */
+  readonly note = input<string | null>(null);
+  /** Texto del estado cuando la barra no compara con un archivo (p. ej. «Asociada a IVA GENERAL»). */
+  readonly statusLabel = input<string | null>(null);
+  /** La cuenta está bien: pinta la barra en verde. */
+  readonly ok = input(false);
+  /** El aviso impide ejecutar (la cuenta maestra del rol); las cuentas adicionales no bloquean. */
+  readonly blocking = input(true);
+
   readonly reassign = output<void>();
+  readonly assign = output<void>();
 
   protected readonly fileCodes = computed(() => this.check()?.file_codes ?? []);
 
   protected readonly tone = computed<Tone>(() => {
     if (this.warning() || !this.master()) return 'warn';
+    if (this.ok()) return 'ok';
     return this.check()?.matches === true ? 'ok' : 'neutral';
   });
 
   protected readonly statusText = computed(() => {
     if (!this.master()) return 'Sin asignar';
+    if (this.warning() && this.statusLabel()) return this.statusLabel()!;
+    if (this.ok() && this.statusLabel()) return this.statusLabel()!;
+    if (this.assignable()) return 'Vigente en el plan';
     if (this.warning()) return 'Distinta del archivo';
     const check = this.check();
     if (check?.matches === true) return 'Coincide con el archivo';

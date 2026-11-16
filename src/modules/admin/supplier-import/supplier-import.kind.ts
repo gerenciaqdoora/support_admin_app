@@ -22,6 +22,12 @@ export const SUPPLIER_KIND: ImportKind = {
   searchLabel: 'Buscar por código, RUT o nombre',
   masterAccountLabel: 'Cuenta maestra Proveedor Nacional',
   masterName: 'Proveedor Nacional',
+  extraMasterAccounts: [{
+    categoryCode: 'IVA_CREDITO_FISCAL', path: 'extra-account/vat',
+    missingNote: 'No bloquea la importación. La centralización de las compras exige esta cuenta.',
+    hint: 'Solo se ofrecen cuentas de clase Activo. Al asignarla queda asociada al impuesto IVA GENERAL (compra), igual que en el catálogo de impuestos.',
+  }],
+  rcvDefaultsOperation: 'purchase',
   memberLabelPlural: 'proveedores',
   api: SupplierImportService,
   parser: SupplierImportParserService,

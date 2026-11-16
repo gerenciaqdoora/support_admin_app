@@ -43,7 +43,9 @@ export interface ConsigneeImportSession {
 export interface ConsigneeImportRequirements {
   ready: boolean;
   modules: { aduana: boolean; contabilidad: boolean; account_plan: boolean };
-  client_account: { code: string; name: string; node_type: string } | null;
+  client_account: { code: string; name: string; node_type: string; display_code: string } | null;
+  /** Misma cuenta que `client_account`, con el nombre común a todas las importaciones por rol. */
+  role_account: { code: string; name: string; node_type: string; display_code: string } | null;
   blockers: { code: string; message: string }[];
 }
 
@@ -58,3 +60,7 @@ export interface ParsedSigadRow { row_number: number; columns: Record<string, st
 export interface ParsedSigadFile { signature: string; headers: Record<string, string>; rows: ParsedSigadRow[]; errors: string[]; inactive: number; }
 
 export interface AnnexMunicipality { id: number; code: string; name: string; }
+
+/** Cuenta mayor del plan que puede ser la maestra Cliente Nacional. */
+export interface MasterAccountOption { account_id: number; type: 'cuenta' | 'subcuenta'; code: string; name: string; }
+export interface MasterAccountOptions { accounts: MasterAccountOption[]; members_on_current_master: number; }
